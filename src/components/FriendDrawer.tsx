@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { SKILLS, SPORTS } from '../lib/labels';
+import { BOARD_TIERS, GEAR_PIECES, SKI_TIERS, SKILLS, SPORTS } from '../lib/labels';
 import { FRIEND_COLORS, cx } from '../lib/util';
 import { newFriend, useStore } from '../store/useStore';
-import type { Friend, Winter } from '../types';
+import type { Friend, GearNeeds, Sport, Winter } from '../types';
 import { Button, Drawer, Field, NumberInput, Segmented, Toggle } from './ui';
 
 interface Props {
@@ -128,14 +128,7 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
         <NumberInput value={budget} onChange={setBudget} min={0} />
       </Field>
 
-      <div className="rounded-2xl bg-slate-50/80 p-4">
-        <Toggle checked={draft.needsRental} onChange={(needsRental) => set({ needsRental })} label="Needs equipment rental" />
-        {draft.needsRental && (
-          <Field label={`Rental per day (${currency})`} className="mt-3">
-            <NumberInput value={draft.rentalPerDay} onChange={(rentalPerDay) => set({ rentalPerDay })} min={0} />
-          </Field>
-        )}
-      </div>
+      <GearPicker gear={draft.gear} sport={draft.sport} onChange={(gear) => set({ gear })} />
 
       <div className="rounded-2xl bg-slate-50/80 p-4">
         <Toggle checked={draft.lessons.wanted} onChange={(wanted) => setLessons({ wanted })} label="Wants lessons" />
@@ -163,5 +156,58 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
         <textarea className="input min-h-20" value={draft.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="Dietary needs, room preferences, flying from…" />
       </Field>
     </Drawer>
+  );
+}
+
+/** What a rider rents: a ski / board tier (or their own) plus individual pieces. */
+function GearPicker({ gear, sport, onChange }: { gear: GearNeeds; sport: Sport; onChange: (g: GearNeeds) => void }) {
+  const tierRow = <T extends string>(label: string, value: T | null, tiers: { value: T; label: string; hint: string }[], set: (v: T | null) => void) => (
+    <div>
+      <div className="mb-1.5 text-xs font-semibold text-slate-600">{label}</div>
+      <div className="flex flex-wrap gap-1.5">
+        {[{ value: null, label: 'Own', hint: 'brings their own' }, ...tiers].map((t) => (
+          <button
+            key={t.value ?? 'own'}
+            type="button"
+            title={t.hint}
+            onClick={() => set(t.value as T | null)}
+            className={cx(
+              'rounded-full border px-3 py-1 text-xs font-semibold transition',
+              value === t.value ? 'border-sky-400 bg-sky-50 text-sky-800' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300',
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+  const togglePiece = (p: GearNeeds['pieces'][number]) =>
+    onChange({ ...gear, pieces: gear.pieces.includes(p) ? gear.pieces.filter((x) => x !== p) : [...gear.pieces, p] });
+
+  return (
+    <div className="space-y-3 rounded-2xl bg-slate-50/80 p-4">
+      <span className="label mb-0">Rental gear</span>
+      {sport !== 'snowboard' && tierRow('Skis', gear.skis, SKI_TIERS, (skis) => onChange({ ...gear, skis }))}
+      {sport !== 'ski' && tierRow('Snowboard', gear.snowboard, BOARD_TIERS, (snowboard) => onChange({ ...gear, snowboard }))}
+      <div>
+        <div className="mb-1.5 text-xs font-semibold text-slate-600">Pieces</div>
+        <div className="flex flex-wrap gap-1.5">
+          {GEAR_PIECES.filter((p) => !(p.value === 'skiBoots' && sport === 'snowboard') && !(p.value === 'boardBoots' && sport === 'ski')).map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => togglePiece(p.value)}
+              className={cx(
+                'rounded-full border px-3 py-1 text-xs font-semibold transition',
+                gear.pieces.includes(p.value) ? 'border-sky-400 bg-sky-50 text-sky-800' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300',
+              )}
+            >
+              {p.emoji} {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

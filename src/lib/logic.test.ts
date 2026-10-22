@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { newFriend } from '../store/useStore';
 import type { PricedTrip, WinterFriend } from '../types';
 import { bestWindows, freeForRange } from './availability';
-import { buildCombos, friendCosts, hotelPerPerson, transferPerPerson } from './combinations';
-import { daysBetween, nightsOf } from './dates';
+import { buildCombos, hotelPerPerson, shopQuote, transferPerPerson } from './combinations';
+import { daysBetween } from './dates';
 
 const friend = (id: string, days: string[], extra: Partial<WinterFriend> = {}): WinterFriend => ({ ...newFriend(0, { id, name: id }), availability: days, budget: 0, ...extra });
 
@@ -45,67 +45,117 @@ describe('cost math', () => {
     expect(hotelPerPerson({ pricing: 'per-person', pricePerNight: 90 } as never, 3, 7)).toBe(630);
   });
 
-  it('builds only airport-matching combos and computes totals', () => {
-    const trip: PricedTrip = {
-      id: 't', name: 'VT', vacationId: 'v', resortId: 'val-thorens', createdAt: '', selectedComboId: null,
-      dates: { start: '2027-01-09', end: '2027-01-16' },
-      attendeeIds: ['a', 'b', 'c', 'd'],
-      liftPassPerPerson: 350,
-      flights: [
-        { id: 'f1', airport: 'GVA', airline: 'X', fromCity: '', pricePerPerson: 300, outbound: '', inbound: '', link: '', notes: '' },
-        { id: 'f2', airport: 'LYS', airline: 'Y', fromCity: '', pricePerPerson: 250, outbound: '', inbound: '', link: '', notes: '' },
-      ],
-      transfers: [
-        { id: 't1', airport: 'GVA', type: 'shuttle', provider: '', pricing: 'per-person', price: 120, vehicleCapacity: 1, link: '', notes: '' },
-        { id: 't2', airport: 'GVA', type: 'private', provider: '', pricing: 'per-vehicle', price: 800, vehicleCapacity: 8, link: '', notes: '' },
-        { id: 't3', airport: 'LYS', type: 'bus', provider: '', pricing: 'per-person', price: 90, vehicleCapacity: 1, link: '', notes: '' },
-      ],
-      hotels: [
-        { id: 'h1', name: 'A', pricePerNight: 200, pricing: 'per-room', roomCapacity: 2, board: 'BB', skiInOut: true, distanceToLiftM: 0, link: '', notes: '' },
-        { id: 'h2', name: 'B', pricePerNight: 80, pricing: 'per-person', roomCapacity: 2, board: 'HB', skiInOut: false, distanceToLiftM: 300, link: '', notes: '' },
-      ],
-    };
-    expect(nightsOf(trip.dates)).toBe(7);
-    const combos = buildCombos(trip);
-    expect(combos).toHaveLength(6); // (2 GVA transfers + 1 LYS transfer) × 2 hotels
-    const c = combos.find((x) => x.id === 'f1|t2|h1')!;
-    expect(c.perPerson).toMatchObject({ flight: 300, transfer: 200, hotel: 700, liftPass: 350, total: 1550 });
-    expect(c.groupTotal).toBe(6200);
+  const flight = (id: string, direction: 'outbound' | 'return', airport: string, price: number, trolley: number, checked: number) => ({
+    id, direction, airport, airline: id, homeCity: 'TLV', when: '', pricePerPerson: price, trolleyPrice: trolley, checkedPrice: checked, link: '', notes: '',
+  });
+  const shop = (id: string, basis: 'per-day' | 'whole-stay', prices: object, groupLessonPerDay = 0) => ({
+    id, name: id, basis, prices, groupLessonPerDay, privateLessonPerDay: 0, link: '', notes: '',
+  });
 
-    const lessonFriend = friend('a', [], {
-      budget: 1800, needsRental: true, rentalPerDay: 30,
-      lessons: { wanted: true, type: 'group', days: 3, budgetPerDay: 60 },
-    });
-    const [cost] = friendCosts(c, [lessonFriend], trip);
-    // 6 ski days of rental, 3 lesson days
-    expect(cost).toMatchObject({ lessons: 180, rental: 180, total: 1910, overBy: 110 });
+  // 4 riders, 7 nights → 6 ski days, 8 vacation days
+  const trip: PricedTrip = {
+    id: 't', name: 'VT', vacationId: 'v', resortId: 'val-thorens', createdAt: '', selectedComboId: null,
+    dates: { start: '2027-01-09', end: '2027-01-16' },
+    attendeeIds: ['a', 'b', 'c', 'd'],
+    flights: [
+      flight('o1', 'outbound', 'GVA', 150, 40, 60),
+      flight('o2', 'outbound', 'LYS', 120, 30, 50),
+      flight('r1', 'return', 'GVA', 170, 40, 60),
+    ],
+    transfers: [
+      { id: 't1', airport: 'GVA', type: 'shuttle', provider: '', pricing: 'per-person', price: 100, vehicleCapacity: 1, link: '', notes: '' },
+      { id: 't2', airport: 'LYS', type: 'bus', provider: '', pricing: 'per-person', price: 80, vehicleCapacity: 1, link: '', notes: '' },
+    ],
+    hotels: [{ id: 'h1', name: 'A', pricePerNight: 200, pricing: 'per-room', roomCapacity: 2, board: 'BB', skiInOut: true, walkToLiftMin: 0, link: '', notes: '' }],
+    skiPasses: [
+      { id: 'p1', name: 'Local', basis: 'whole-stay', price: 300, notes: '' },
+      { id: 'p2', name: 'Full area', basis: 'per-day', price: 70, notes: '' },
+    ],
+    shops: [
+      shop('s1', 'per-day', { 'skis:sport': 20, skiBoots: 8, helmet: 5 }, 60),
+      shop('s2', 'whole-stay', { 'skis:sport': 100, skiBoots: 50 }), // no helmets, no lessons
+    ],
+    expenses: [
+      { id: 'gas', name: 'Gas', split: 'shared', amount: { min: 400, max: 400 }, per: 'trip', friendIds: null, notes: '' },
+      { id: 'food', name: 'Food', split: 'individual', amount: { min: 30, max: 50 }, per: 'day', friendIds: null, notes: '' },
+    ],
+    flightChoice: { c: { outbound: 'none' } }, // c drives there
+    passChoice: { c: 'none', d: 'p2' },
+    shopChoice: {},
+    luggage: [
+      { id: 'bag1', type: 'checked', friendIds: ['a'] },
+      { id: 'bag2', type: 'trolley', friendIds: ['b', 'c'] },
+    ],
+  };
+  const riders = [
+    friend('a', [], { budget: 2100, gear: { skis: 'sport', snowboard: null, pieces: ['skiBoots', 'helmet'] } }),
+    friend('b', [], { lessons: { wanted: true, type: 'group', days: 3, budgetPerDay: 50 } }),
+    friend('c', []),
+    friend('d', []),
+  ];
+
+  it('quotes shops per item and falls back to the lesson budget', () => {
+    expect(shopQuote(trip.shops[0], riders[0], 6)).toMatchObject({ rental: 198, missing: [] });
+    expect(shopQuote(trip.shops[1], riders[0], 6)).toMatchObject({ rental: 150, missing: ['helmet'] });
+    expect(shopQuote(trip.shops[1], riders[1], 6)).toMatchObject({ lessons: 150 }); // 3 days × own budget
+  });
+
+  it('combines legs, transfers by airport, and prices every friend individually', () => {
+    const combos = buildCombos(trip, riders);
+    expect(combos.map((c) => c.id)).toEqual(['o1|r1|t1|h1', 'o2|r1|t2|h1']);
+    const c = combos[0];
+    const cost = (id: string) => c.costs.find((x) => x.friendId === id)!;
+
+    // a: 320 flights + 120 checked bag both ways + 100 + 700 + 300 pass + 198 rental (s1: only shop with helmets)
+    //    + 100 gas share + food 240–400
+    expect(cost('a')).toMatchObject({ flights: 320, luggage: 120, rental: 198, total: { min: 2078, max: 2238 }, overBy: 0, mayExceed: true });
+    expect(cost('a').quote?.shop.id).toBe('s1');
+    // b: trolley alone outbound (40) + half the return trolley (20); lessons at s2 on own budget (150)
+    expect(cost('b')).toMatchObject({ luggage: 60, lessons: 150, total: { min: 1970, max: 2130 } });
+    // c: return flight only, half a trolley, no pass
+    expect(cost('c')).toMatchObject({ flights: 170, luggage: 20, skiPass: 0, total: { min: 1330, max: 1490 } });
+    // d: full-area pass, 70 × 6 days
+    expect(cost('d')).toMatchObject({ skiPass: 420, total: { min: 1880, max: 2040 } });
+    expect(c.groupTotal).toEqual({ min: 7258, max: 7898 });
+    expect(c.incomplete).toBe(false);
   });
 
   it('marks combos without transfers or hotels as incomplete', () => {
-    const trip = {
-      attendeeIds: ['a'], dates: null, liftPassPerPerson: 0, transfers: [], hotels: [],
-      flights: [{ id: 'f', airport: 'GVA', pricePerPerson: 100 }],
-    } as unknown as PricedTrip;
-    const [c] = buildCombos(trip);
+    const bare: PricedTrip = {
+      ...trip, attendeeIds: ['c'], flights: [trip.flights[0]], transfers: [], hotels: [], skiPasses: [], shops: [], expenses: [],
+      luggage: [], flightChoice: {}, passChoice: {},
+    };
+    const [c] = buildCombos(bare, [riders[2]]);
     expect(c.incomplete).toBe(true);
-    expect(c.perPerson.total).toBe(100);
+    expect(c.perPerson).toEqual({ min: 150, max: 150 });
   });
 });
 
-describe('migration v1 → v2', () => {
-  it('moves availability and budget into a winter and trips into a vacation', async () => {
-    const { migrateV1 } = await import('../store/migrate');
-    const d = migrateV1({
+describe('migration', () => {
+  it('upgrades v1 data all the way to v3', async () => {
+    const { migrate } = await import('../store/migrate');
+    const d = migrate({
       settings: { currency: 'USD' },
       season: { start: '2026-12-01', end: '2027-04-18', chosenDates: { start: '2027-01-09', end: '2027-01-16' } },
-      friends: [{ id: 'a', name: 'A', availability: ['2027-01-09'], budget: 1500, lessons: {} }],
-      trips: [{ id: 't', resortId: 'val-thorens', attendeeIds: ['a'], dates: null, status: 'draft', flights: [], transfers: [], hotels: [], selectedComboId: 'x' }],
-    });
-    expect(d.friends[0]).toMatchObject({ id: 'a', defaultBudget: 1500 });
+      friends: [{ id: 'a', name: 'A', sport: 'ski', availability: ['2027-01-09'], budget: 1500, needsRental: true, rentalPerDay: 30, lessons: {} }],
+      trips: [{
+        id: 't', resortId: 'val-thorens', attendeeIds: ['a'], dates: null, status: 'draft', liftPassPerPerson: 350,
+        flights: [{ id: 'f', airport: 'GVA', airline: 'X', fromCity: 'TLV', pricePerPerson: 300, outbound: 'Sat 06:10', inbound: 'Sat 18:00' }],
+        transfers: [{ id: 'x' }], hotels: [{ id: 'h', distanceToLiftM: 400 }], selectedComboId: 'f|x|h',
+      }],
+    }, 1);
+    expect(d.friends[0]).toMatchObject({ id: 'a', defaultBudget: 1500, gear: { skis: 'sport', pieces: ['skiBoots', 'helmet'] } });
     expect(d.friends[0]).not.toHaveProperty('availability');
     expect(d.winters[0]).toMatchObject({ year: 2027, participants: [{ friendId: 'a', availability: ['2027-01-09'], budget: 1500 }] });
-    expect(d.vacations[0]).toMatchObject({ attendeeIds: ['a'], dates: { start: '2027-01-09' }, selectedTripId: 't' });
-    expect(d.trips[0]).toMatchObject({ vacationId: d.vacations[0].id });
+    expect(d.vacations[0]).toMatchObject({ attendeeIds: ['a'], dates: { start: '2027-01-09' }, selectedTripId: 't', luggage: [] });
+    const t = d.trips[0];
+    expect(t.flights.map((f) => [f.id, f.direction, f.pricePerPerson, f.when])).toEqual([
+      ['f-o', 'outbound', 150, 'Sat 06:10'],
+      ['f-r', 'return', 150, 'Sat 18:00'],
+    ]);
+    expect(t.hotels[0]).toMatchObject({ walkToLiftMin: 5 });
+    expect(t.skiPasses).toMatchObject([{ basis: 'whole-stay', price: 350 }]);
+    expect(t.selectedComboId).toBe('f-o|f-r|x|h');
     expect(d.settings).toMatchObject({ currency: 'USD', activeWinterId: d.winters[0].id });
   });
 });

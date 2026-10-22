@@ -4,14 +4,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FriendReport, GroupReport, type ReportData } from '../components/Reports';
 import { Avatar, Badge, Button, Drawer, Field, Mountains } from '../components/ui';
 import { freeForRange } from '../lib/availability';
-import { friendCosts } from '../lib/combinations';
 import { formatRange, nightsOf, skiDaysOf } from '../lib/dates';
 import { skill, sport, STATUSES } from '../lib/labels';
 import { downloadPdf, fileSafe } from '../lib/pdf';
 import { cheapestCombo, selectedCombo, vacationPlan } from '../lib/plan';
-import { cx, money } from '../lib/util';
-import { pricedTrip, useActiveWinter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
-import type { Trip, Vacation, Winter, WinterFriend } from '../types';
+import { cx, money, moneyRange, uid } from '../lib/util';
+import { useActiveWinter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
+import type { LuggageItem, Trip, Vacation, Winter, WinterFriend } from '../types';
 
 export default function VacationPage() {
   const { vacationId } = useParams();
@@ -85,6 +84,7 @@ export default function VacationPage() {
         <div className="space-y-6">
           <Resorts winter={winter} vacation={vacation} trips={trips} />
           <Crew winter={winter} vacation={vacation} friends={friends} />
+          <Luggage vacation={vacation} friends={friends} />
         </div>
         <aside className="space-y-6">
           <ExportPanel vacation={vacation} trips={trips} friends={friends} />
@@ -100,16 +100,17 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
   const currency = useStore((s) => s.settings.currency);
   const createTrip = useStore((s) => s.createTrip);
   const updateVacation = useStore((s) => s.updateVacation);
+  const friends = useWinterFriends(winter);
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
   const [q, setQ] = useState('');
 
   const rows = trips.map((t) => {
-    const sel = selectedCombo(t, vacation);
-    const best = sel ?? cheapestCombo(t, vacation);
-    return { trip: t, resort: resorts.find((r) => r.id === t.resortId), sel, price: best?.perPerson.total ?? null };
+    const sel = selectedCombo(t, vacation, friends);
+    const best = sel ?? cheapestCombo(t, vacation, friends);
+    return { trip: t, resort: resorts.find((r) => r.id === t.resortId), sel, price: best?.perPerson ?? null };
   });
-  const maxPrice = Math.max(1, ...rows.map((r) => r.price ?? 0));
+  const maxPrice = Math.max(1, ...rows.map((r) => r.price?.max ?? 0));
   const tripUrl = (t: Trip) => `/w/${winter.id}/v/${vacation.id}/t/${t.id}`;
 
   return (
@@ -149,13 +150,13 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
                     </div>
                     {price !== null && (
                       <div className="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
-                        <div className={cx('h-full rounded-full', chosen ? 'bg-emerald-400' : 'bg-gradient-to-r from-sky-400 to-blue-600')} style={{ width: `${(price / maxPrice) * 100}%` }} />
+                        <div className={cx('h-full rounded-full', chosen ? 'bg-emerald-400' : 'bg-gradient-to-r from-sky-400 to-blue-600')} style={{ width: `${(price.min / maxPrice) * 100}%` }} />
                       </div>
                     )}
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{sel ? 'per person' : price !== null ? 'from' : ''}</div>
-                    <div className="text-xl font-extrabold">{price !== null ? money(price, currency) : <span className="text-sm font-medium text-slate-400">No prices yet</span>}</div>
+                    <div className="text-xl font-extrabold">{price !== null ? moneyRange(price, currency) : <span className="text-sm font-medium text-slate-400">No prices yet</span>}</div>
                   </div>
                 </Link>
                 <div className="flex items-center gap-2">
@@ -267,17 +268,16 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
   const airports = useStore((s) => s.airports);
   const currency = useStore((s) => s.settings.currency);
   const [busy, setBusy] = useState<string | null>(null);
-  const plan = vacationPlan(vacation, trips);
+  const plan = vacationPlan(vacation, trips, friends);
 
   const data: ReportData | null = useMemo(() => {
     if (!plan) return null;
-    const pt = pricedTrip(plan.trip, vacation);
     return {
       vacation,
       resort: resorts.find((r) => r.id === plan.trip.resortId),
       airport: airports.find((a) => a.iata === plan.combo.airport),
       combo: plan.combo,
-      costs: friendCosts(plan.combo, friends, pt),
+      costs: plan.combo.costs,
       friends,
       currency,
     };
@@ -302,7 +302,7 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
       ) : (
         <>
           <p className="mb-5 text-sm text-slate-500">
-            {data.resort?.name} · {money(data.combo.perPerson.total, currency)} shared per person
+            {data.resort?.name} · {moneyRange(data.combo.perPerson, currency)} average per person
           </p>
           <Button variant="accent" className="w-full" disabled={!!busy} onClick={() => run('group', () => downloadPdf([<GroupReport data={data} />], `${base}-group-summary.pdf`))}>
             {spin('group', <FileDown size={16} />)} Group price summary
@@ -321,7 +321,7 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
                   <Avatar name={f.name} color={f.color} size={30} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{f.name}</div>
-                    <div className={cx('text-xs', c.overBy ? 'text-rose-500' : 'text-slate-400')}>{money(c.total, currency)}{c.overBy ? ` · ${money(c.overBy, currency)} over` : ''}</div>
+                    <div className={cx('text-xs', c.overBy ? 'text-rose-500' : 'text-slate-400')}>{moneyRange(c.total, currency)}{c.overBy ? ` · ${money(c.overBy, currency)} over` : ''}</div>
                   </div>
                   <Button size="sm" disabled={!!busy} onClick={() => run(c.friendId, () => downloadPdf([<FriendReport data={data} friendId={c.friendId} />], `${base}-${fileSafe(f.name)}.pdf`))}>
                     {spin(c.friendId, <FileDown size={13} />)} PDF
@@ -336,3 +336,92 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
   );
 }
 
+
+const BAG_LABEL = { trolley: '🧳 Trolley', checked: '🛄 Checked bag' } as const;
+
+/** Who carries which bags. Bag prices come from each flight; no bags = backpack only. */
+function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFriend[] }) {
+  const setLuggage = useStore((s) => s.setLuggage);
+  const going = friends.filter((f) => vacation.attendeeIds.includes(f.id));
+  const bags = vacation.luggage;
+  const save = (next: LuggageItem[]) => setLuggage(vacation.id, next);
+  const personal = (friendId: string, type: LuggageItem['type']) => bags.filter((b) => !b.shared && b.type === type && b.friendIds[0] === friendId);
+  const shared = bags.filter((b) => b.shared);
+  const inShared = (friendId: string) => shared.some((b) => b.friendIds.includes(friendId));
+
+  const counter = (f: WinterFriend, type: LuggageItem['type']) => {
+    const n = personal(f.id, type).length;
+    return (
+      <div className="flex items-center gap-1 rounded-full bg-slate-100/80 p-0.5">
+        <button className="h-6 w-6 rounded-full text-sm font-bold text-slate-500 hover:bg-white disabled:opacity-30" disabled={!n}
+          onClick={() => { const last = personal(f.id, type).slice(-1)[0]; if (last) save(bags.filter((b) => b.id !== last.id)); }}>−</button>
+        <span className={cx('w-5 text-center text-sm font-bold', n ? 'text-slate-900' : 'text-slate-300')}>{n}</span>
+        <button className="h-6 w-6 rounded-full text-sm font-bold text-slate-500 hover:bg-white"
+          onClick={() => save([...bags, { id: uid(), type, friendIds: [f.id] }])}>+</button>
+      </div>
+    );
+  };
+
+  return (
+    <section className="card p-6">
+      <h2 className="text-xl font-extrabold">Luggage</h2>
+      <p className="mb-4 text-sm text-slate-500">Everyone flies with a backpack by default. Add trolleys or checked bags (ski bags count as checked); prices come from each flight.</p>
+      {going.length === 0 ? (
+        <p className="text-sm text-slate-400">Nobody is going yet.</p>
+      ) : (
+        <div className="space-y-2">
+          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-6 gap-y-2">
+            <span />
+            <span className="label mb-0 text-center">{BAG_LABEL.trolley}</span>
+            <span className="label mb-0 text-center">{BAG_LABEL.checked}</span>
+            {going.map((f) => (
+              <div key={f.id} className="contents">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <Avatar name={f.name} color={f.color} size={26} /> {f.name}
+                  {!personal(f.id, 'trolley').length && !personal(f.id, 'checked').length && !inShared(f.id) && <span className="text-xs font-normal text-slate-400">🎒 backpack only</span>}
+                </span>
+                {counter(f, 'trolley')}
+                {counter(f, 'checked')}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="label mb-0">Shared bags</span>
+              <div className="flex gap-2">
+                {(['trolley', 'checked'] as const).map((type) => (
+                  <Button key={type} size="sm" onClick={() => save([...bags, { id: uid(), type, friendIds: [], shared: true }])}>
+                    <Plus size={13} /> Shared {type === 'trolley' ? 'trolley' : 'checked bag'}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            {shared.length === 0 && <p className="text-xs text-slate-400">Two people sharing one bag? Add a shared bag and the price is split between them.</p>}
+            <div className="space-y-2">
+              {shared.map((bag) => (
+                <div key={bag.id} className="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-50/80 p-2.5">
+                  <span className="w-28 text-sm font-semibold">{BAG_LABEL[bag.type]}</span>
+                  <div className="flex flex-1 flex-wrap gap-1.5">
+                    {going.map((f) => {
+                      const on = bag.friendIds.includes(f.id);
+                      return (
+                        <button key={f.id}
+                          onClick={() => save(bags.map((b) => (b.id === bag.id ? { ...b, friendIds: on ? b.friendIds.filter((x) => x !== f.id) : [...b.friendIds, f.id] } : b)))}
+                          className={cx('flex items-center gap-1 rounded-full border py-0.5 pl-0.5 pr-2 text-xs font-semibold transition', on ? 'border-sky-300 bg-white text-sky-800' : 'border-transparent text-slate-400 hover:text-slate-600')}>
+                          <Avatar name={f.name} color={f.color} size={18} /> {f.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className="text-xs text-slate-400">{bag.friendIds.length ? `split ${bag.friendIds.length} ways` : 'pick who shares'}</span>
+                  <button className="rounded-full p-1 text-slate-300 hover:bg-rose-50 hover:text-rose-500" onClick={() => save(bags.filter((b) => b.id !== bag.id))}><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

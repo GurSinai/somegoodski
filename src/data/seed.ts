@@ -183,7 +183,7 @@ export const upcomingWinterYear = (today = new Date()) => (today.getMonth() >= 5
 
 export function createInitialData(): AppData {
   return {
-    version: 2,
+    version: 3,
     settings: { currency: 'EUR', activeWinterId: null },
     friends: [],
     winters: [],

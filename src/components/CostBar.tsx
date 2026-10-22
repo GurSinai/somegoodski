@@ -3,9 +3,10 @@ export const COST_COLORS = {
   transfer: '#f59e0b',
   hotel: '#8b5cf6',
   liftPass: '#10b981',
+  extras: '#f43f5e',
 } as const;
 
-export const COST_LABELS = { flight: 'Flight', transfer: 'Transfer', hotel: 'Hotel', liftPass: 'Lift pass' } as const;
+export const COST_LABELS = { flight: 'Flights & bags', transfer: 'Transfer', hotel: 'Hotel', liftPass: 'Ski pass', extras: 'Rental, lessons & extras' } as const;
 
 type Parts = Record<keyof typeof COST_COLORS, number>;
 

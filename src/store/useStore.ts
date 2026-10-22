@@ -2,16 +2,17 @@ import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
-  Airport, AppData, DateRange, FlightOption, Friend, HotelOption, ISODate, PricedTrip, Resort, Settings,
-  TransferOption, Trip, Vacation, Winter, WinterFriend, WinterParticipant,
+  Airport, AppData, DateRange, Expense, FlightOption, Friend, HotelOption, ISODate, Leg, LegChoice, LuggageItem, PricedTrip,
+  RentalShop, Resort, Settings, SkiPassOption, TransferOption, Trip, Vacation, Winter, WinterFriend, WinterParticipant,
 } from '../types';
 import { createInitialData, defaultSeason } from '../data/seed';
 import { freeForRange } from '../lib/availability';
 import { FRIEND_COLORS, uid } from '../lib/util';
-import { migrateV1 } from './migrate';
+import { CURRENT_VERSION, migrate } from './migrate';
 
-type OptionKind = 'flights' | 'transfers' | 'hotels';
-type OptionOf<K extends OptionKind> = K extends 'flights' ? FlightOption : K extends 'transfers' ? TransferOption : HotelOption;
+export type OptionKind = 'flights' | 'transfers' | 'hotels' | 'skiPasses' | 'shops' | 'expenses';
+type OptionMap = { flights: FlightOption; transfers: TransferOption; hotels: HotelOption; skiPasses: SkiPassOption; shops: RentalShop; expenses: Expense };
+type OptionOf<K extends OptionKind> = OptionMap[K];
 
 interface Actions {
   // friend profiles (shared across winters)
@@ -30,12 +31,17 @@ interface Actions {
   createVacation: (winterId: string, dates?: DateRange | null) => string;
   updateVacation: (id: string, patch: Partial<Vacation>) => void;
   removeVacation: (id: string) => void;
+  setLuggage: (vacationId: string, luggage: LuggageItem[]) => void;
   // trips (candidate resorts)
   createTrip: (vacationId: string, resortId: string) => string;
   updateTrip: (id: string, patch: Partial<Trip>) => void;
   removeTrip: (id: string) => void;
   saveOption: <K extends OptionKind>(tripId: string, kind: K, option: OptionOf<K>) => void;
   removeOption: (tripId: string, kind: OptionKind, optionId: string) => void;
+  /** null clears the override (back to the group default). */
+  setFlightChoice: (tripId: string, friendId: string, leg: Leg, choice: LegChoice | null) => void;
+  setPassChoice: (tripId: string, friendId: string, passId: string | null) => void;
+  setShopChoice: (tripId: string, friendId: string, shopId: string | null) => void;
   // resorts & airports
   addResort: (r: Omit<Resort, 'id'>) => string;
   updateResort: (id: string, patch: Partial<Resort>) => void;
@@ -55,8 +61,7 @@ export const newFriend = (existingCount: number, patch: Partial<Friend> = {}): F
   color: FRIEND_COLORS[existingCount % FRIEND_COLORS.length],
   skillLevel: 'intermediate',
   sport: 'ski',
-  needsRental: false,
-  rentalPerDay: 0,
+  gear: { skis: null, snowboard: null, pieces: [] },
   lessons: { wanted: false, type: 'group', days: 0, budgetPerDay: 0 },
   defaultBudget: 0,
   notes: '',
@@ -64,6 +69,14 @@ export const newFriend = (existingCount: number, patch: Partial<Friend> = {}): F
 });
 
 const mapById = <T extends { id: string }>(list: T[], id: string, fn: (t: T) => T) => list.map((t) => (t.id === id ? fn(t) : t));
+
+/** Sets or (with null) removes a key. */
+function withKey(rec: Record<string, string>, key: string, value: string | null): Record<string, string> {
+  const next = { ...rec };
+  if (value === null) delete next[key];
+  else next[key] = value;
+  return next;
+}
 
 const mapParticipant = (w: Winter, friendId: string, fn: (p: WinterParticipant) => WinterParticipant): Winter => ({
   ...w,
@@ -172,6 +185,7 @@ export const useStore = create<Store>()(
           attendeeIds: dates ? freeForRange(people, dates) : people.map((f) => f.id),
           status: 'planning',
           selectedTripId: null,
+          luggage: [],
           createdAt: new Date().toISOString(),
         };
         set((st) => ({ vacations: [...st.vacations, vacation] }));
@@ -180,6 +194,7 @@ export const useStore = create<Store>()(
       updateVacation: (id, patch) => set((s) => ({ vacations: mapById(s.vacations, id, (v) => ({ ...v, ...patch })) })),
       removeVacation: (id) =>
         set((s) => ({ vacations: s.vacations.filter((v) => v.id !== id), trips: s.trips.filter((t) => t.vacationId !== id) })),
+      setLuggage: (vacationId, luggage) => set((s) => ({ vacations: mapById(s.vacations, vacationId, (v) => ({ ...v, luggage })) })),
 
       createTrip: (vacationId, resortId) => {
         const resort = get().resorts.find((r) => r.id === resortId);
@@ -191,7 +206,12 @@ export const useStore = create<Store>()(
           flights: [],
           transfers: [],
           hotels: [],
-          liftPassPerPerson: 0,
+          skiPasses: [],
+          shops: [],
+          expenses: [],
+          flightChoice: {},
+          passChoice: {},
+          shopChoice: {},
           selectedComboId: null,
           createdAt: new Date().toISOString(),
         };
@@ -221,6 +241,19 @@ export const useStore = create<Store>()(
             selectedComboId: t.selectedComboId?.split('|').includes(optionId) ? null : t.selectedComboId,
           })),
         })),
+      setFlightChoice: (tripId, friendId, leg, choice) =>
+        set((s) => ({
+          trips: mapById(s.trips, tripId, (t) => {
+            const mine = { ...t.flightChoice[friendId] };
+            if (choice === null) delete mine[leg];
+            else mine[leg] = choice;
+            return { ...t, flightChoice: { ...t.flightChoice, [friendId]: mine } };
+          }),
+        })),
+      setPassChoice: (tripId, friendId, passId) =>
+        set((s) => ({ trips: mapById(s.trips, tripId, (t) => ({ ...t, passChoice: withKey(t.passChoice, friendId, passId) })) })),
+      setShopChoice: (tripId, friendId, shopId) =>
+        set((s) => ({ trips: mapById(s.trips, tripId, (t) => ({ ...t, shopChoice: withKey(t.shopChoice, friendId, shopId) })) })),
 
       addResort: (r) => {
         const id = uid();
@@ -242,8 +275,8 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'ski-planner',
-      version: 2,
-      migrate: (persisted, version) => (version < 2 ? migrateV1(persisted) : persisted) as Store,
+      version: CURRENT_VERSION,
+      migrate: (persisted, version) => migrate(persisted, version) as Store,
       partialize: ({ version, settings, friends, winters, vacations, airports, resorts, trips }) =>
         ({ version, settings, friends, winters, vacations, airports, resorts, trips }) as AppData,
     },
@@ -262,6 +295,7 @@ export const pricedTrip = (trip: Trip, vacation: Vacation | undefined): PricedTr
   ...trip,
   dates: vacation?.dates ?? null,
   attendeeIds: vacation?.attendeeIds ?? [],
+  luggage: vacation?.luggage ?? [],
 });
 
 export const useWinter = (id: string | undefined) => useStore((s) => s.winters.find((w) => w.id === id));

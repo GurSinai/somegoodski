@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import FriendDrawer from '../components/FriendDrawer';
 import { Avatar, Badge, Button, Empty, PageHeader, Stat } from '../components/ui';
+import { gearKeys } from '../lib/combinations';
 import { SKILLS, skill, sport } from '../lib/labels';
 import { money } from '../lib/util';
 import { useActiveWinter, useStore, useWinterFriends } from '../store/useStore';
@@ -30,7 +31,7 @@ export default function People() {
       boards: friends.filter((f) => f.sport !== 'ski').length,
       lessons: friends.filter((f) => f.lessons.wanted).length,
       lessonCost: friends.reduce((s, f) => s + (f.lessons.wanted ? f.lessons.days * f.lessons.budgetPerDay : 0), 0),
-      rentals: friends.filter((f) => f.needsRental).length,
+      rentals: friends.filter((f) => gearKeys(f).length > 0).length,
       ceiling: budgets.length ? Math.min(...budgets) : 0,
       bySkill: SKILLS.map((s) => ({ ...s, count: friends.filter((f) => f.skillLevel === s.value).length })),
     };
@@ -107,7 +108,7 @@ export default function People() {
                           {f.lessons.budgetPerDay ? ` · ${money(f.lessons.budgetPerDay, currency)}/d` : ''}
                         </Badge>
                       )}
-                      {f.needsRental && <Badge><Package size={12} /> Rental</Badge>}
+                      {gearKeys(f).length > 0 && <Badge><Package size={12} /> Rents {gearKeys(f).length} item{gearKeys(f).length > 1 ? 's' : ''}</Badge>}
                     </div>
                   </div>
                 </div>

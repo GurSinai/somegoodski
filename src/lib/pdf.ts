@@ -27,6 +27,15 @@ export async function downloadPdf(pages: ReactElement[], filename: string) {
       await document.fonts.ready;
       const canvas = await html2canvas(host, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
       const slicePx = Math.floor((canvas.width * pageH) / pageW);
+      // slightly too tall for one page: shrink it to fit rather than spilling a few lines over
+      if (canvas.height <= slicePx * 1.25) {
+        if (!first) pdf.addPage();
+        first = false;
+        const scale = Math.min(1, slicePx / canvas.height);
+        const w = pageW * scale;
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', (pageW - w) / 2, 0, w, (canvas.height * w) / canvas.width);
+        continue;
+      }
       // a few px of rounding overflow shouldn't produce an empty extra page
       for (let y = 0; y < canvas.height - slicePx * 0.03; y += slicePx) {
         const slice = document.createElement('canvas');

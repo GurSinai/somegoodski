@@ -4,7 +4,7 @@ import { Avatar, Badge, Button, Field, Mountains } from '../components/ui';
 import { formatRange, nightsOf } from '../lib/dates';
 import { statusOf } from '../lib/labels';
 import { cheapestCombo, vacationPlan } from '../lib/plan';
-import { cx, money } from '../lib/util';
+import { cx, money, moneyRange } from '../lib/util';
 import { useActiveWinter, useStore, useVacationsOf, useWinterFriends } from '../store/useStore';
 import type { Vacation, Winter } from '../types';
 
@@ -138,10 +138,10 @@ function VacationCard({ winter, vacation: v }: { winter: Winter; vacation: Vacat
   const currency = useStore((s) => s.settings.currency);
   const friends = useWinterFriends(winter);
   const trips = allTrips.filter((t) => t.vacationId === v.id);
-  const plan = vacationPlan(v, trips);
+  const plan = vacationPlan(v, trips, friends);
   const st = statusOf(v.status);
   const cheapest = trips
-    .map((t) => cheapestCombo(t, v)?.perPerson.total)
+    .map((t) => cheapestCombo(t, v, friends)?.perPerson.min)
     .filter((n): n is number => n !== undefined)
     .sort((a, b) => a - b)[0];
 
@@ -174,7 +174,7 @@ function VacationCard({ winter, vacation: v }: { winter: Winter; vacation: Vacat
           {(plan || cheapest !== undefined) && (
             <div className="text-right">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{plan ? 'per person' : 'from'}</div>
-              <div className="text-lg font-extrabold">{money(plan ? plan.combo.perPerson.total : cheapest!, currency)}</div>
+              <div className="text-lg font-extrabold">{plan ? moneyRange(plan.combo.perPerson, currency) : money(cheapest!, currency)}</div>
             </div>
           )}
         </div>
