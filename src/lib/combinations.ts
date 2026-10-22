@@ -1,4 +1,4 @@
-import type { FlightOption, Friend, HotelOption, TransferOption, Trip } from '../types';
+import type { FlightOption, HotelOption, PricedTrip, TransferOption, WinterFriend } from '../types';
 import { nightsOf, skiDaysOf } from './dates';
 
 export interface Combo {
@@ -44,7 +44,7 @@ export function hotelPerPerson(h: HotelOption, people: number, nights: number): 
  * Transfers must leave from the flight's airport. A category with no options yet
  * still produces combos (marked incomplete) so partial data is visible.
  */
-export function buildCombos(trip: Trip): Combo[] {
+export function buildCombos(trip: PricedTrip): Combo[] {
   const people = Math.max(1, trip.attendeeIds.length);
   const nights = nightsOf(trip.dates);
   const hotels: (HotelOption | null)[] = trip.hotels.length ? trip.hotels : [null];
@@ -79,14 +79,14 @@ export function buildCombos(trip: Trip): Combo[] {
   return combos;
 }
 
-export function friendExtras(friend: Friend, trip: Trip): { lessons: number; rental: number } {
+export function friendExtras(friend: WinterFriend, trip: PricedTrip): { lessons: number; rental: number } {
   const skiDays = skiDaysOf(trip.dates);
   const lessons = friend.lessons.wanted ? Math.min(friend.lessons.days, skiDays) * friend.lessons.budgetPerDay : 0;
   const rental = friend.needsRental ? friend.rentalPerDay * skiDays : 0;
   return { lessons, rental };
 }
 
-export function friendCosts(combo: Combo, friends: Friend[], trip: Trip): FriendCost[] {
+export function friendCosts(combo: Combo, friends: WinterFriend[], trip: PricedTrip): FriendCost[] {
   return friends
     .filter((f) => trip.attendeeIds.includes(f.id))
     .map((f) => {
@@ -104,5 +104,5 @@ export function friendCosts(combo: Combo, friends: Friend[], trip: Trip): Friend
     });
 }
 
-export const withinEveryonesBudget = (combo: Combo, friends: Friend[], trip: Trip) =>
+export const withinEveryonesBudget = (combo: Combo, friends: WinterFriend[], trip: PricedTrip) =>
   friendCosts(combo, friends, trip).every((c) => c.overBy === 0);

@@ -175,12 +175,19 @@ export const SEED_RESORTS: Resort[] = [
   },
 ];
 
+/** Season ending in `year`: 1 Dec of the previous year to 30 Apr. */
+export const defaultSeason = (year: number) => ({ start: `${year - 1}-12-01`, end: `${year}-04-30` });
+
+/** The winter worth planning now: from June onward it's next winter, Jan–May it's the current one. */
+export const upcomingWinterYear = (today = new Date()) => (today.getMonth() >= 5 ? today.getFullYear() + 1 : today.getFullYear());
+
 export function createInitialData(): AppData {
   return {
-    version: 1,
-    settings: { currency: 'EUR' },
+    version: 2,
+    settings: { currency: 'EUR', activeWinterId: null },
     friends: [],
-    season: { start: '2026-12-01', end: '2027-04-18', chosenDates: null },
+    winters: [],
+    vacations: [],
     airports: SEED_AIRPORTS,
     resorts: SEED_RESORTS,
     trips: [],

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { newFriend } from '../store/useStore';
-import type { Trip } from '../types';
+import type { PricedTrip, WinterFriend } from '../types';
 import { bestWindows, freeForRange } from './availability';
 import { buildCombos, friendCosts, hotelPerPerson, transferPerPerson } from './combinations';
 import { daysBetween, nightsOf } from './dates';
 
-const friend = (id: string, days: string[], extra = {}) => newFriend(0, { id, name: id, availability: days, ...extra });
+const friend = (id: string, days: string[], extra: Partial<WinterFriend> = {}): WinterFriend => ({ ...newFriend(0, { id, name: id }), availability: days, budget: 0, ...extra });
 
 describe('availability', () => {
   const a = friend('a', daysBetween('2027-01-01', '2027-01-20'));
@@ -46,8 +46,8 @@ describe('cost math', () => {
   });
 
   it('builds only airport-matching combos and computes totals', () => {
-    const trip: Trip = {
-      id: 't', name: 'VT', resortId: 'val-thorens', status: 'draft', createdAt: '', selectedComboId: null,
+    const trip: PricedTrip = {
+      id: 't', name: 'VT', vacationId: 'v', resortId: 'val-thorens', createdAt: '', selectedComboId: null,
       dates: { start: '2027-01-09', end: '2027-01-16' },
       attendeeIds: ['a', 'b', 'c', 'd'],
       liftPassPerPerson: 350,
@@ -85,9 +85,27 @@ describe('cost math', () => {
     const trip = {
       attendeeIds: ['a'], dates: null, liftPassPerPerson: 0, transfers: [], hotels: [],
       flights: [{ id: 'f', airport: 'GVA', pricePerPerson: 100 }],
-    } as unknown as Trip;
+    } as unknown as PricedTrip;
     const [c] = buildCombos(trip);
     expect(c.incomplete).toBe(true);
     expect(c.perPerson.total).toBe(100);
+  });
+});
+
+describe('migration v1 → v2', () => {
+  it('moves availability and budget into a winter and trips into a vacation', async () => {
+    const { migrateV1 } = await import('../store/migrate');
+    const d = migrateV1({
+      settings: { currency: 'USD' },
+      season: { start: '2026-12-01', end: '2027-04-18', chosenDates: { start: '2027-01-09', end: '2027-01-16' } },
+      friends: [{ id: 'a', name: 'A', availability: ['2027-01-09'], budget: 1500, lessons: {} }],
+      trips: [{ id: 't', resortId: 'val-thorens', attendeeIds: ['a'], dates: null, status: 'draft', flights: [], transfers: [], hotels: [], selectedComboId: 'x' }],
+    });
+    expect(d.friends[0]).toMatchObject({ id: 'a', defaultBudget: 1500 });
+    expect(d.friends[0]).not.toHaveProperty('availability');
+    expect(d.winters[0]).toMatchObject({ year: 2027, participants: [{ friendId: 'a', availability: ['2027-01-09'], budget: 1500 }] });
+    expect(d.vacations[0]).toMatchObject({ attendeeIds: ['a'], dates: { start: '2027-01-09' }, selectedTripId: 't' });
+    expect(d.trips[0]).toMatchObject({ vacationId: d.vacations[0].id });
+    expect(d.settings).toMatchObject({ currency: 'USD', activeWinterId: d.winters[0].id });
   });
 });

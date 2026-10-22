@@ -1,4 +1,4 @@
-import type { Board, SkillLevel, Sport, TransferType, TripStatus } from '../types';
+import type { Board, SkillLevel, Sport, TransferType, VacationStatus } from '../types';
 
 export const SKILLS: { value: SkillLevel; label: string; color: string; dot: string }[] = [
   { value: 'never', label: 'First timer', color: 'slate', dot: '#94a3b8' },
@@ -24,6 +24,7 @@ export const TRANSFER_TYPES: { value: TransferType; label: string }[] = [
   { value: 'rental-car', label: 'Rental car' },
   { value: 'other', label: 'Other' },
 ];
+export const transferLabel = (type: string) => TRANSFER_TYPES.find((t) => t.value === type)?.label ?? type;
 
 export const BOARDS: { value: Board; label: string }[] = [
   { value: 'RO', label: 'Room only' },
@@ -33,9 +34,11 @@ export const BOARDS: { value: Board; label: string }[] = [
   { value: 'FB', label: 'Full board' },
   { value: 'AI', label: 'All inclusive' },
 ];
+export const boardLabel = (b: Board) => BOARDS.find((x) => x.value === b)?.label ?? b;
 
-export const STATUSES: { value: TripStatus; label: string; color: string }[] = [
-  { value: 'draft', label: 'Draft', color: 'slate' },
-  { value: 'shortlisted', label: 'Shortlisted', color: 'amber' },
+export const STATUSES: { value: VacationStatus; label: string; color: string }[] = [
+  { value: 'planning', label: 'Planning', color: 'sky' },
+  { value: 'decided', label: 'Decided', color: 'amber' },
   { value: 'booked', label: 'Booked', color: 'green' },
 ];
+export const statusOf = (v: VacationStatus) => STATUSES.find((s) => s.value === v)!;

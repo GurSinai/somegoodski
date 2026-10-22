@@ -2,19 +2,32 @@ import { useEffect, useState } from 'react';
 import { SKILLS, SPORTS } from '../lib/labels';
 import { FRIEND_COLORS, cx } from '../lib/util';
 import { newFriend, useStore } from '../store/useStore';
-import type { Friend } from '../types';
+import type { Friend, Winter } from '../types';
 import { Button, Drawer, Field, NumberInput, Segmented, Toggle } from './ui';
 
-export default function FriendDrawer({ friend, open, onClose }: { friend: Friend | null; open: boolean; onClose: () => void }) {
-  const friends = useStore((s) => s.friends);
+interface Props {
+  friend: Friend | null; // null = new friend
+  winter: Winter;
+  open: boolean;
+  onClose: () => void;
+}
+
+/** Edits a friend's shared profile plus their budget for this winter. */
+export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
+  const friendCount = useStore((s) => s.friends.length);
   const currency = useStore((s) => s.settings.currency);
   const addFriend = useStore((s) => s.addFriend);
   const updateFriend = useStore((s) => s.updateFriend);
   const removeFriend = useStore((s) => s.removeFriend);
-  const [draft, setDraft] = useState<Friend>(() => friend ?? newFriend(friends.length));
+  const setInWinter = useStore((s) => s.setInWinter);
+  const updateParticipant = useStore((s) => s.updateParticipant);
+  const [draft, setDraft] = useState<Friend>(() => friend ?? newFriend(friendCount));
+  const [budget, setBudget] = useState(0);
 
   useEffect(() => {
-    if (open) setDraft(friend ?? newFriend(friends.length));
+    if (!open) return;
+    setDraft(friend ?? newFriend(friendCount));
+    setBudget(friend ? winter.participants.find((p) => p.friendId === friend.id)?.budget ?? friend.defaultBudget : 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, friend]);
 
@@ -23,8 +36,14 @@ export default function FriendDrawer({ friend, open, onClose }: { friend: Friend
 
   const save = () => {
     if (!draft.name.trim()) return;
-    if (friend) updateFriend(friend.id, draft);
-    else addFriend(draft);
+    // this winter's budget also becomes the default for future winters
+    const profile = { ...draft, defaultBudget: budget };
+    if (friend) {
+      updateFriend(friend.id, profile);
+      updateParticipant(winter.id, friend.id, { budget });
+    } else {
+      addFriend(profile, winter.id);
+    }
     onClose();
   };
 
@@ -32,26 +51,31 @@ export default function FriendDrawer({ friend, open, onClose }: { friend: Friend
     <Drawer
       open={open}
       onClose={onClose}
-      title={friend ? `Edit ${friend.name}` : 'Add a friend'}
+      title={friend ? friend.name : 'Add a rider'}
       footer={
         <>
           {friend && (
-            <Button
-              variant="danger"
-              className="mr-auto"
-              onClick={() => {
-                if (confirm(`Remove ${friend.name}?`)) {
-                  removeFriend(friend.id);
-                  onClose();
-                }
-              }}
-            >
-              Remove
-            </Button>
+            <div className="mr-auto flex gap-1">
+              <Button variant="ghost" size="sm" onClick={() => { setInWinter(winter.id, friend.id, false); onClose(); }}>
+                Not this winter
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  if (confirm(`Delete ${friend.name} from all winters?`)) {
+                    removeFriend(friend.id);
+                    onClose();
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </div>
           )}
           <Button onClick={onClose}>Cancel</Button>
           <Button variant="primary" onClick={save} disabled={!draft.name.trim()}>
-            {friend ? 'Save' : 'Add friend'}
+            {friend ? 'Save' : 'Add rider'}
           </Button>
         </>
       }
@@ -68,7 +92,7 @@ export default function FriendDrawer({ friend, open, onClose }: { friend: Friend
               key={c}
               type="button"
               onClick={() => set({ color: c })}
-              className={cx('h-7 w-7 rounded-full ring-offset-2 transition', draft.color === c && 'ring-2 ring-slate-900')}
+              className={cx('h-8 w-8 rounded-full ring-offset-2 transition hover:scale-110', draft.color === c && 'ring-2 ring-slate-900')}
               style={{ background: c }}
             />
           ))}
@@ -89,8 +113,8 @@ export default function FriendDrawer({ friend, open, onClose }: { friend: Friend
               type="button"
               onClick={() => set({ skillLevel: s.value })}
               className={cx(
-                'flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-xs font-medium transition',
-                draft.skillLevel === s.value ? 'border-sky-500 bg-sky-50 text-sky-900' : 'border-slate-200 text-slate-600 hover:border-slate-300',
+                'flex flex-col items-center gap-1.5 rounded-2xl border px-1 py-2.5 text-xs font-semibold transition',
+                draft.skillLevel === s.value ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-slate-100 text-slate-500 hover:border-slate-200',
               )}
             >
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.dot }} />
@@ -100,11 +124,11 @@ export default function FriendDrawer({ friend, open, onClose }: { friend: Friend
         </div>
       </div>
 
-      <Field label={`Total trip budget per person (${currency})`} hint="Everything: flights, transfer, hotel, pass, lessons, rental. Leave empty if no limit.">
-        <NumberInput value={draft.budget} onChange={(budget) => set({ budget })} min={0} />
+      <Field label={`Budget per vacation, Winter ${winter.year} (${currency})`} hint="Everything: flights, transfer, hotel, pass, lessons, rental. Leave empty for no limit.">
+        <NumberInput value={budget} onChange={setBudget} min={0} />
       </Field>
 
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl bg-slate-50/80 p-4">
         <Toggle checked={draft.needsRental} onChange={(needsRental) => set({ needsRental })} label="Needs equipment rental" />
         {draft.needsRental && (
           <Field label={`Rental per day (${currency})`} className="mt-3">
@@ -113,7 +137,7 @@ export default function FriendDrawer({ friend, open, onClose }: { friend: Friend
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl bg-slate-50/80 p-4">
         <Toggle checked={draft.lessons.wanted} onChange={(wanted) => setLessons({ wanted })} label="Wants lessons" />
         {draft.lessons.wanted && (
           <div className="mt-3 space-y-3">

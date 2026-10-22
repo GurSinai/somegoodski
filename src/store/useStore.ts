@@ -1,36 +1,46 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
-  Airport, AppData, DateRange, FlightOption, Friend, HotelOption, ISODate, Resort, Season, Settings,
-  TransferOption, Trip,
+  Airport, AppData, DateRange, FlightOption, Friend, HotelOption, ISODate, PricedTrip, Resort, Settings,
+  TransferOption, Trip, Vacation, Winter, WinterFriend, WinterParticipant,
 } from '../types';
-import { createInitialData } from '../data/seed';
+import { createInitialData, defaultSeason } from '../data/seed';
 import { freeForRange } from '../lib/availability';
 import { FRIEND_COLORS, uid } from '../lib/util';
+import { migrateV1 } from './migrate';
 
 type OptionKind = 'flights' | 'transfers' | 'hotels';
 type OptionOf<K extends OptionKind> = K extends 'flights' ? FlightOption : K extends 'transfers' ? TransferOption : HotelOption;
 
 interface Actions {
-  // friends
-  addFriend: (f?: Partial<Friend>) => string;
+  // friend profiles (shared across winters)
+  addFriend: (f: Friend, joinWinterId?: string) => string;
   updateFriend: (id: string, patch: Partial<Friend>) => void;
   removeFriend: (id: string) => void;
-  setAvailability: (id: string, days: ISODate[], available: boolean) => void;
-  // season
-  updateSeason: (patch: Partial<Season>) => void;
-  setChosenDates: (r: DateRange | null) => void;
+  // winters
+  createWinter: (year: number) => string;
+  updateWinter: (id: string, patch: Partial<Pick<Winter, 'start' | 'end'>>) => void;
+  removeWinter: (id: string) => void;
+  setActiveWinter: (id: string | null) => void;
+  setInWinter: (winterId: string, friendId: string, inWinter: boolean) => void;
+  updateParticipant: (winterId: string, friendId: string, patch: Partial<Omit<WinterParticipant, 'friendId'>>) => void;
+  setAvailability: (winterId: string, friendId: string, days: ISODate[], available: boolean) => void;
+  // vacations
+  createVacation: (winterId: string, dates?: DateRange | null) => string;
+  updateVacation: (id: string, patch: Partial<Vacation>) => void;
+  removeVacation: (id: string) => void;
+  // trips (candidate resorts)
+  createTrip: (vacationId: string, resortId: string) => string;
+  updateTrip: (id: string, patch: Partial<Trip>) => void;
+  removeTrip: (id: string) => void;
+  saveOption: <K extends OptionKind>(tripId: string, kind: K, option: OptionOf<K>) => void;
+  removeOption: (tripId: string, kind: OptionKind, optionId: string) => void;
   // resorts & airports
   addResort: (r: Omit<Resort, 'id'>) => string;
   updateResort: (id: string, patch: Partial<Resort>) => void;
   removeResort: (id: string) => void;
   upsertAirport: (a: Airport) => void;
-  // trips
-  createTrip: (resortId: string) => string;
-  updateTrip: (id: string, patch: Partial<Trip>) => void;
-  removeTrip: (id: string) => void;
-  saveOption: <K extends OptionKind>(tripId: string, kind: K, option: OptionOf<K>) => void;
-  removeOption: (tripId: string, kind: OptionKind, optionId: string) => void;
   // misc
   updateSettings: (patch: Partial<Settings>) => void;
   importData: (d: AppData) => void;
@@ -48,70 +58,136 @@ export const newFriend = (existingCount: number, patch: Partial<Friend> = {}): F
   needsRental: false,
   rentalPerDay: 0,
   lessons: { wanted: false, type: 'group', days: 0, budgetPerDay: 0 },
-  budget: 0,
+  defaultBudget: 0,
   notes: '',
-  availability: [],
   ...patch,
 });
 
-const mapTrip = (trips: Trip[], id: string, fn: (t: Trip) => Trip) => trips.map((t) => (t.id === id ? fn(t) : t));
+const mapById = <T extends { id: string }>(list: T[], id: string, fn: (t: T) => T) => list.map((t) => (t.id === id ? fn(t) : t));
+
+const mapParticipant = (w: Winter, friendId: string, fn: (p: WinterParticipant) => WinterParticipant): Winter => ({
+  ...w,
+  participants: w.participants.map((p) => (p.friendId === friendId ? fn(p) : p)),
+});
 
 export const useStore = create<Store>()(
   persist(
     (set, get) => ({
       ...createInitialData(),
 
-      addFriend: (patch) => {
-        const f = newFriend(get().friends.length, patch);
-        set((s) => ({ friends: [...s.friends, f] }));
+      addFriend: (f, joinWinterId) => {
+        set((s) => ({
+          friends: [...s.friends, f],
+          winters: joinWinterId
+            ? mapById(s.winters, joinWinterId, (w) => ({
+                ...w,
+                participants: [...w.participants, { friendId: f.id, availability: [], budget: f.defaultBudget }],
+              }))
+            : s.winters,
+        }));
         return f.id;
       },
-      updateFriend: (id, patch) =>
-        set((s) => ({ friends: s.friends.map((f) => (f.id === id ? { ...f, ...patch } : f)) })),
+      updateFriend: (id, patch) => set((s) => ({ friends: mapById(s.friends, id, (f) => ({ ...f, ...patch })) })),
       removeFriend: (id) =>
         set((s) => ({
           friends: s.friends.filter((f) => f.id !== id),
-          trips: s.trips.map((t) => ({ ...t, attendeeIds: t.attendeeIds.filter((a) => a !== id) })),
-        })),
-      setAvailability: (id, days, available) =>
-        set((s) => ({
-          friends: s.friends.map((f) => {
-            if (f.id !== id) return f;
-            const next = new Set(f.availability);
-            days.forEach((d) => (available ? next.add(d) : next.delete(d)));
-            return { ...f, availability: [...next].sort() };
-          }),
+          winters: s.winters.map((w) => ({ ...w, participants: w.participants.filter((p) => p.friendId !== id) })),
+          vacations: s.vacations.map((v) => ({ ...v, attendeeIds: v.attendeeIds.filter((a) => a !== id) })),
         })),
 
-      updateSeason: (patch) => set((s) => ({ season: { ...s.season, ...patch } })),
-      setChosenDates: (r) => set((s) => ({ season: { ...s.season, chosenDates: r } })),
-
-      addResort: (r) => {
-        const id = uid();
-        set((s) => ({ resorts: [...s.resorts, { ...r, id }] }));
-        return id;
+      createWinter: (year) => {
+        const existing = get().winters.find((w) => w.year === year);
+        if (existing) {
+          set((s) => ({ settings: { ...s.settings, activeWinterId: existing.id } }));
+          return existing.id;
+        }
+        // carry over everyone from the most recent winter; they can be removed on the People page
+        const prev = [...get().winters].sort((a, b) => b.year - a.year)[0];
+        const friends = get().friends;
+        const ids = prev ? prev.participants.map((p) => p.friendId) : friends.map((f) => f.id);
+        const winter: Winter = {
+          id: uid(),
+          year,
+          ...defaultSeason(year),
+          participants: ids.map((friendId) => ({
+            friendId,
+            availability: [],
+            budget: friends.find((f) => f.id === friendId)?.defaultBudget ?? 0,
+          })),
+          createdAt: new Date().toISOString(),
+        };
+        set((s) => ({ winters: [...s.winters, winter], settings: { ...s.settings, activeWinterId: winter.id } }));
+        return winter.id;
       },
-      updateResort: (id, patch) =>
-        set((s) => ({ resorts: s.resorts.map((r) => (r.id === id ? { ...r, ...patch } : r)) })),
-      removeResort: (id) => set((s) => ({ resorts: s.resorts.filter((r) => r.id !== id) })),
-      upsertAirport: (a) =>
+      updateWinter: (id, patch) => set((s) => ({ winters: mapById(s.winters, id, (w) => ({ ...w, ...patch })) })),
+      removeWinter: (id) =>
+        set((s) => {
+          const vacationIds = new Set(s.vacations.filter((v) => v.winterId === id).map((v) => v.id));
+          return {
+            winters: s.winters.filter((w) => w.id !== id),
+            vacations: s.vacations.filter((v) => !vacationIds.has(v.id)),
+            trips: s.trips.filter((t) => !vacationIds.has(t.vacationId)),
+            settings: { ...s.settings, activeWinterId: s.settings.activeWinterId === id ? null : s.settings.activeWinterId },
+          };
+        }),
+      setActiveWinter: (id) => set((s) => ({ settings: { ...s.settings, activeWinterId: id } })),
+      setInWinter: (winterId, friendId, inWinter) =>
         set((s) => ({
-          airports: s.airports.some((x) => x.iata === a.iata)
-            ? s.airports.map((x) => (x.iata === a.iata ? a : x))
-            : [...s.airports, a],
+          winters: mapById(s.winters, winterId, (w) => {
+            const has = w.participants.some((p) => p.friendId === friendId);
+            if (inWinter && !has) {
+              const budget = s.friends.find((f) => f.id === friendId)?.defaultBudget ?? 0;
+              return { ...w, participants: [...w.participants, { friendId, availability: [], budget }] };
+            }
+            if (!inWinter && has) return { ...w, participants: w.participants.filter((p) => p.friendId !== friendId) };
+            return w;
+          }),
+          vacations: inWinter
+            ? s.vacations
+            : s.vacations.map((v) => (v.winterId === winterId ? { ...v, attendeeIds: v.attendeeIds.filter((a) => a !== friendId) } : v)),
+        })),
+      updateParticipant: (winterId, friendId, patch) =>
+        set((s) => ({ winters: mapById(s.winters, winterId, (w) => mapParticipant(w, friendId, (p) => ({ ...p, ...patch }))) })),
+      setAvailability: (winterId, friendId, days, available) =>
+        set((s) => ({
+          winters: mapById(s.winters, winterId, (w) =>
+            mapParticipant(w, friendId, (p) => {
+              const next = new Set(p.availability);
+              days.forEach((d) => (available ? next.add(d) : next.delete(d)));
+              return { ...p, availability: [...next].sort() };
+            }),
+          ),
         })),
 
-      createTrip: (resortId) => {
-        const { resorts, season, friends } = get();
-        const resort = resorts.find((r) => r.id === resortId);
-        const dates = season.chosenDates;
+      createVacation: (winterId, dates = null) => {
+        const s = get();
+        const winter = s.winters.find((w) => w.id === winterId);
+        const people = winter ? winterFriends(s.friends, winter) : [];
+        const count = s.vacations.filter((v) => v.winterId === winterId).length;
+        const vacation: Vacation = {
+          id: uid(),
+          winterId,
+          name: `Vacation ${count + 1}`,
+          dates,
+          attendeeIds: dates ? freeForRange(people, dates) : people.map((f) => f.id),
+          status: 'planning',
+          selectedTripId: null,
+          createdAt: new Date().toISOString(),
+        };
+        set((st) => ({ vacations: [...st.vacations, vacation] }));
+        return vacation.id;
+      },
+      updateVacation: (id, patch) => set((s) => ({ vacations: mapById(s.vacations, id, (v) => ({ ...v, ...patch })) })),
+      removeVacation: (id) =>
+        set((s) => ({ vacations: s.vacations.filter((v) => v.id !== id), trips: s.trips.filter((t) => t.vacationId !== id) })),
+
+      createTrip: (vacationId, resortId) => {
+        const resort = get().resorts.find((r) => r.id === resortId);
         const trip: Trip = {
           id: uid(),
-          name: resort ? resort.name : 'New trip',
+          vacationId,
           resortId,
-          dates,
-          attendeeIds: dates ? freeForRange(friends, dates) : friends.map((f) => f.id),
-          status: 'draft',
+          name: resort ? resort.name : 'New trip',
           flights: [],
           transfers: [],
           hotels: [],
@@ -122,11 +198,15 @@ export const useStore = create<Store>()(
         set((s) => ({ trips: [...s.trips, trip] }));
         return trip.id;
       },
-      updateTrip: (id, patch) => set((s) => ({ trips: mapTrip(s.trips, id, (t) => ({ ...t, ...patch })) })),
-      removeTrip: (id) => set((s) => ({ trips: s.trips.filter((t) => t.id !== id) })),
+      updateTrip: (id, patch) => set((s) => ({ trips: mapById(s.trips, id, (t) => ({ ...t, ...patch })) })),
+      removeTrip: (id) =>
+        set((s) => ({
+          trips: s.trips.filter((t) => t.id !== id),
+          vacations: s.vacations.map((v) => (v.selectedTripId === id ? { ...v, selectedTripId: null } : v)),
+        })),
       saveOption: (tripId, kind, option) =>
         set((s) => ({
-          trips: mapTrip(s.trips, tripId, (t) => {
+          trips: mapById(s.trips, tripId, (t) => {
             const list = t[kind] as OptionOf<typeof kind>[];
             const exists = list.some((o) => o.id === option.id);
             return { ...t, [kind]: exists ? list.map((o) => (o.id === option.id ? option : o)) : [...list, option] };
@@ -134,12 +214,26 @@ export const useStore = create<Store>()(
         })),
       removeOption: (tripId, kind, optionId) =>
         set((s) => ({
-          trips: mapTrip(s.trips, tripId, (t) => ({
+          trips: mapById(s.trips, tripId, (t) => ({
             ...t,
             [kind]: (t[kind] as { id: string }[]).filter((o) => o.id !== optionId),
             // a removed option invalidates the chosen combo if it was part of it
             selectedComboId: t.selectedComboId?.split('|').includes(optionId) ? null : t.selectedComboId,
           })),
+        })),
+
+      addResort: (r) => {
+        const id = uid();
+        set((s) => ({ resorts: [...s.resorts, { ...r, id }] }));
+        return id;
+      },
+      updateResort: (id, patch) => set((s) => ({ resorts: mapById(s.resorts, id, (r) => ({ ...r, ...patch })) })),
+      removeResort: (id) => set((s) => ({ resorts: s.resorts.filter((r) => r.id !== id) })),
+      upsertAirport: (a) =>
+        set((s) => ({
+          airports: s.airports.some((x) => x.iata === a.iata)
+            ? s.airports.map((x) => (x.iata === a.iata ? a : x))
+            : [...s.airports, a],
         })),
 
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
@@ -148,12 +242,45 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'ski-planner',
-      version: 1,
-      partialize: ({ version, settings, friends, season, airports, resorts, trips }) =>
-        ({ version, settings, friends, season, airports, resorts, trips }) as AppData,
+      version: 2,
+      migrate: (persisted, version) => (version < 2 ? migrateV1(persisted) : persisted) as Store,
+      partialize: ({ version, settings, friends, winters, vacations, airports, resorts, trips }) =>
+        ({ version, settings, friends, winters, vacations, airports, resorts, trips }) as AppData,
     },
   ),
 );
 
+/** Profiles of the friends in a winter, merged with that winter's availability and budget. */
+export function winterFriends(friends: Friend[], winter: Winter): WinterFriend[] {
+  return winter.participants.flatMap((p) => {
+    const f = friends.find((x) => x.id === p.friendId);
+    return f ? [{ ...f, availability: p.availability, budget: p.budget }] : [];
+  });
+}
+
+export const pricedTrip = (trip: Trip, vacation: Vacation | undefined): PricedTrip => ({
+  ...trip,
+  dates: vacation?.dates ?? null,
+  attendeeIds: vacation?.attendeeIds ?? [],
+});
+
+export const useWinter = (id: string | undefined) => useStore((s) => s.winters.find((w) => w.id === id));
+export const useVacation = (id: string | undefined) => useStore((s) => s.vacations.find((v) => v.id === id));
 export const useResort = (id: string | undefined) => useStore((s) => s.resorts.find((r) => r.id === id));
 export const useTrip = (id: string | undefined) => useStore((s) => s.trips.find((t) => t.id === id));
+export const useActiveWinter = () => useStore((s) => s.winters.find((w) => w.id === s.settings.activeWinterId));
+
+export function useWinterFriends(winter: Winter | undefined): WinterFriend[] {
+  const friends = useStore((s) => s.friends);
+  return useMemo(() => (winter ? winterFriends(friends, winter) : []), [friends, winter]);
+}
+
+export function useVacationsOf(winterId: string | undefined): Vacation[] {
+  const vacations = useStore((s) => s.vacations);
+  return useMemo(() => vacations.filter((v) => v.winterId === winterId), [vacations, winterId]);
+}
+
+export function useTripsOf(vacationId: string | undefined): Trip[] {
+  const trips = useStore((s) => s.trips);
+  return useMemo(() => trips.filter((t) => t.vacationId === vacationId), [trips, vacationId]);
+}

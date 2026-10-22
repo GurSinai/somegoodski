@@ -12,6 +12,7 @@ export interface Lessons {
   budgetPerDay: number;
 }
 
+/** A friend's profile, shared across winters. */
 export interface Friend {
   id: string;
   name: string;
@@ -21,20 +22,43 @@ export interface Friend {
   needsRental: boolean;
   rentalPerDay: number;
   lessons: Lessons;
-  budget: number; // total trip budget per person, in settings.currency
+  defaultBudget: number; // pre-fills the budget when the friend joins a new winter
   notes: string;
-  availability: ISODate[];
 }
 
 export interface DateRange {
   start: ISODate;
-  end: ISODate; // inclusive: last day on the mountain / departure day
+  end: ISODate; // inclusive: departure day
 }
 
-export interface Season {
+/** A friend's data for one winter. Shared by every vacation in that winter. */
+export interface WinterParticipant {
+  friendId: string;
+  availability: ISODate[];
+  budget: number; // total per-vacation budget, in settings.currency
+}
+
+export interface Winter {
+  id: string;
+  year: number; // the year the season ends, e.g. 2027 for Dec 2026 – Apr 2027
   start: ISODate;
   end: ISODate;
-  chosenDates: DateRange | null;
+  participants: WinterParticipant[];
+  createdAt: string;
+}
+
+export type VacationStatus = 'planning' | 'decided' | 'booked';
+
+/** A concrete getaway within a winter: dates + people, comparing candidate resorts (trips). */
+export interface Vacation {
+  id: string;
+  winterId: string;
+  name: string;
+  dates: DateRange | null;
+  attendeeIds: string[];
+  status: VacationStatus;
+  selectedTripId: string | null;
+  createdAt: string;
 }
 
 export interface Airport {
@@ -111,32 +135,37 @@ export interface HotelOption {
   notes: string;
 }
 
-export type TripStatus = 'draft' | 'shortlisted' | 'booked';
-
+/** A candidate resort for a vacation, with its price options. */
 export interface Trip {
   id: string;
-  name: string;
+  vacationId: string;
   resortId: string;
-  dates: DateRange | null;
-  attendeeIds: string[];
-  status: TripStatus;
+  name: string;
   flights: FlightOption[];
   transfers: TransferOption[];
   hotels: HotelOption[];
-  liftPassPerPerson: number; // whole trip, entered per trip
+  liftPassPerPerson: number; // whole trip
   selectedComboId: string | null;
   createdAt: string;
 }
 
+/** A friend as seen in a winter: profile + that winter's availability and budget. */
+export type WinterFriend = Friend & { availability: ISODate[]; budget: number };
+
+/** A trip with dates and attendees resolved from its vacation, ready for pricing. */
+export type PricedTrip = Trip & { dates: DateRange | null; attendeeIds: string[] };
+
 export interface Settings {
   currency: string;
+  activeWinterId: string | null;
 }
 
 export interface AppData {
-  version: 1;
+  version: 2;
   settings: Settings;
   friends: Friend[];
-  season: Season;
+  winters: Winter[];
+  vacations: Vacation[];
   airports: Airport[];
   resorts: Resort[];
   trips: Trip[];

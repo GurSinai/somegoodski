@@ -2,21 +2,21 @@ import { AlertTriangle, ArrowDownUp, Check, ExternalLink, LayoutGrid, Pin, PinOf
 import { useMemo, useState } from 'react';
 import { buildCombos, friendCosts, withinEveryonesBudget, type Combo } from '../lib/combinations';
 import { nightsOf } from '../lib/dates';
-import { BOARDS, TRANSFER_TYPES } from '../lib/labels';
+import { BOARDS, transferLabel as label } from '../lib/labels';
 import { cx, money } from '../lib/util';
 import { useStore } from '../store/useStore';
-import type { Trip } from '../types';
+import type { PricedTrip, Vacation, WinterFriend } from '../types';
 import CostBar, { CostLegend } from './CostBar';
 import { Avatar, Badge, Button, Empty, Segmented, Toggle } from './ui';
 
 type SortKey = 'total' | 'flight' | 'transfer' | 'hotel' | 'drive';
 type View = 'table' | 'cards';
 
-export default function TripComparison({ trip }: { trip: Trip }) {
-  const friends = useStore((s) => s.friends);
+export default function TripComparison({ trip, vacation, friends }: { trip: PricedTrip; vacation: Vacation; friends: WinterFriend[] }) {
   const currency = useStore((s) => s.settings.currency);
   const resort = useStore((s) => s.resorts.find((r) => r.id === trip.resortId));
   const updateTrip = useStore((s) => s.updateTrip);
+  const updateVacation = useStore((s) => s.updateVacation);
 
   const [view, setView] = useState<View>('table');
   const [sort, setSort] = useState<SortKey>('total');
@@ -307,7 +307,14 @@ export default function TripComparison({ trip }: { trip: Trip }) {
                 <Check size={16} className="text-emerald-600" /> Selected plan (click to unselect)
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => updateTrip(trip.id, { selectedComboId: focus.id, status: trip.status === 'draft' ? 'shortlisted' : trip.status })}>
+              <Button
+                variant="accent"
+                onClick={() => {
+                  updateTrip(trip.id, { selectedComboId: focus.id });
+                  // the first resort with a chosen combination becomes the vacation's pick
+                  if (!vacation.selectedTripId) updateVacation(vacation.id, { selectedTripId: trip.id });
+                }}
+              >
                 <Trophy size={16} /> Select this combination
               </Button>
             )}
@@ -362,8 +369,6 @@ export default function TripComparison({ trip }: { trip: Trip }) {
     </div>
   );
 }
-
-const label = (type: string) => TRANSFER_TYPES.find((t) => t.value === type)?.label ?? type;
 
 function Summary({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (

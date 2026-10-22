@@ -1,19 +1,20 @@
-import { ArrowLeft, ExternalLink, Pencil, Plane, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Pencil, Plane, Plus, Snowflake, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Badge, Button, Field, NumberInput } from '../components/ui';
+import { Badge, Button, Field, Mountains, NumberInput } from '../components/ui';
 import { formatRange } from '../lib/dates';
-import { STATUSES } from '../lib/labels';
-import { useResort, useStore } from '../store/useStore';
+import { useActiveWinter, useResort, useStore, useVacationsOf } from '../store/useStore';
 import type { Resort, ResortInfo } from '../types';
 import { driveTime } from './Resorts';
 
 export default function ResortDetail() {
   const { id } = useParams();
   const resort = useResort(id);
+  const winter = useActiveWinter();
+  const vacations = useVacationsOf(winter?.id);
   const allTrips = useStore((s) => s.trips);
-  const trips = allTrips.filter((t) => t.resortId === id);
-  const chosen = useStore((s) => s.season.chosenDates);
+  const allVacations = useStore((s) => s.vacations);
+  const winters = useStore((s) => s.winters);
   const createTrip = useStore((s) => s.createTrip);
   const removeResort = useStore((s) => s.removeResort);
   const navigate = useNavigate();
@@ -26,44 +27,62 @@ export default function ResortDetail() {
     );
   }
 
-  const newTrip = () => navigate(`/trips/${createTrip(resort.id)}`);
+  const trips = allTrips.filter((t) => t.resortId === resort.id);
+  const addTo = (vacationId: string) => {
+    const existing = trips.find((t) => t.vacationId === vacationId);
+    const tripId = existing?.id ?? createTrip(vacationId, resort.id);
+    navigate(`/w/${winter!.id}/v/${vacationId}/t/${tripId}`);
+  };
 
   return (
     <div>
-      <Link to="/resorts" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+      <Link to="/resorts" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-800">
         <ArrowLeft size={16} /> All resorts
       </Link>
 
-      <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-sky-900 to-sky-600 p-6 text-white">
-        <svg viewBox="0 0 600 120" className="absolute inset-x-0 bottom-0 h-24 w-full opacity-20" preserveAspectRatio="none">
-          <path d="M0 120 L90 40 L150 80 L250 10 L340 70 L420 30 L520 85 L600 50 L600 120 Z" fill="white" />
-        </svg>
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
+      <div className="relative mb-6 overflow-hidden rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-100 via-white to-indigo-50 px-8 pb-20 pt-8 shadow-soft">
+        <Mountains className="absolute inset-x-0 bottom-0 h-24 w-full text-sky-200" />
+        <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div>
-            <div className="text-sm text-sky-200">{resort.country}{resort.region && resort.region !== resort.country ? ` · ${resort.region}` : ''}</div>
-            <h1 className="text-3xl font-bold tracking-tight">{resort.name}</h1>
-            {resort.info.skiArea && <div className="mt-1 text-sky-100">{resort.info.skiArea}</div>}
+            <div className="eyebrow">{resort.country}{resort.region && resort.region !== resort.country ? ` · ${resort.region}` : ''}</div>
+            <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">{resort.name}</h1>
+            {resort.info.skiArea && <div className="mt-1 text-slate-500">{resort.info.skiArea}</div>}
           </div>
-          <div className="text-right">
-            <Button variant="secondary" className="border-transparent font-semibold" onClick={newTrip}>
-              <Plus size={16} /> Create trip to {resort.name}
-            </Button>
-            <div className="mt-1 text-xs text-sky-200">{chosen ? `Uses chosen dates: ${formatRange(chosen)}` : 'No dates chosen yet; you can set them on the trip'}</div>
-          </div>
+          {winter && (
+            <div className="glass max-w-sm rounded-2xl p-3 shadow-soft">
+              <div className="label">Add to a Winter {winter.year} vacation</div>
+              {vacations.length === 0 ? (
+                <Link to={`/w/${winter.id}`} className="text-sm font-semibold text-sky-600">Create a vacation first →</Link>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {vacations.map((v) => {
+                    const added = trips.some((t) => t.vacationId === v.id);
+                    return (
+                      <Button key={v.id} size="sm" variant={added ? 'secondary' : 'primary'} onClick={() => addTo(v.id)} title={formatRange(v.dates)}>
+                        {added ? <Snowflake size={13} /> : <Plus size={13} />} {v.name}{added ? ' (open)' : ''}
+                      </Button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {trips.length > 0 && (
-        <div className="card mb-6 p-4">
-          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Trips to this resort</div>
+        <div className="card mb-6 p-5">
+          <div className="label">In your vacations</div>
           <div className="flex flex-wrap gap-2">
             {trips.map((t) => {
-              const st = STATUSES.find((s) => s.value === t.status)!;
+              const v = allVacations.find((x) => x.id === t.vacationId);
+              const w = winters.find((x) => x.id === v?.winterId);
+              if (!v || !w) return null;
               return (
-                <Link key={t.id} to={`/trips/${t.id}`} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm hover:border-sky-300 hover:bg-sky-50">
-                  <span className="font-medium">{t.name}</span>
-                  <span className="text-slate-500">{formatRange(t.dates)}</span>
-                  <Badge color={st.color}>{st.label}</Badge>
+                <Link key={t.id} to={`/w/${w.id}/v/${v.id}/t/${t.id}`} className="flex items-center gap-2 rounded-full border border-slate-100 px-3 py-1.5 text-sm hover:border-sky-200 hover:bg-sky-50">
+                  <span className="font-semibold">{v.name}</span>
+                  <span className="text-slate-400">Winter {w.year} · {formatRange(v.dates)}</span>
+                  {v.selectedTripId === t.id && <Badge color="green">chosen</Badge>}
                 </Link>
               );
             })}
@@ -244,7 +263,7 @@ function AirportsCard({ resort }: { resort: Resort }) {
         {sorted.map((ra) => {
           const a = airports.find((x) => x.iata === ra.iata);
           return (
-            <div key={ra.iata} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3">
+            <div key={ra.iata} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3">
               <div className="flex h-11 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-sky-50 text-sky-700">
                 <Plane size={13} />
                 <span className="text-sm font-bold">{ra.iata}</span>

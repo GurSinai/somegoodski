@@ -2,7 +2,6 @@ import { Mountain, Plane, Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge, Button, Drawer, Field, PageHeader } from '../components/ui';
-import { formatRange } from '../lib/dates';
 import { useStore } from '../store/useStore';
 
 export const driveTime = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}h${min % 60 ? String(min % 60).padStart(2, '0') : ''}` : `${min}m`);
@@ -10,7 +9,6 @@ export const driveTime = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}h
 export default function Resorts() {
   const resorts = useStore((s) => s.resorts);
   const trips = useStore((s) => s.trips);
-  const chosen = useStore((s) => s.season.chosenDates);
   const addResort = useStore((s) => s.addResort);
   const navigate = useNavigate();
   const [q, setQ] = useState('');
@@ -28,13 +26,7 @@ export default function Resorts() {
     <div>
       <PageHeader
         title="Resorts"
-        subtitle={
-          chosen ? (
-            <>Trip dates: <b className="text-slate-700">{formatRange(chosen)}</b>. Open a resort and create a trip to it.</>
-          ) : (
-            'Your resort catalog. Pick dates on the Dates page first so new trips get them automatically.'
-          )
-        }
+        subtitle="Your resort catalog. Open one to see its info and airports, or add it to a vacation."
         actions={
           <Button variant="primary" onClick={() => setAdding(true)}>
             <Plus size={16} /> Add resort
@@ -45,7 +37,7 @@ export default function Resorts() {
       <div className="mb-5 flex flex-wrap gap-3">
         <div className="relative min-w-60 flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input className="input pl-9" placeholder="Search resorts, countries, ski areas or airports…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="input pl-10" placeholder="Search resorts, countries, ski areas or airports…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <select className="input w-auto" value={country} onChange={(e) => setCountry(e.target.value)}>
           <option value="">All countries</option>
@@ -57,13 +49,13 @@ export default function Resorts() {
         {shown.map((r) => {
           const tripCount = trips.filter((t) => t.resortId === r.id).length;
           return (
-            <Link key={r.id} to={`/resorts/${r.id}`} className="card group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
-              <div className="relative h-20 bg-gradient-to-br from-sky-700 via-sky-500 to-cyan-300">
+            <Link key={r.id} to={`/resorts/${r.id}`} className="card group overflow-hidden transition hover:-translate-y-1 hover:shadow-lift">
+              <div className="relative h-24 bg-gradient-to-br from-sky-200 via-sky-50 to-indigo-100">
                 <svg viewBox="0 0 300 80" className="absolute bottom-0 h-full w-full" preserveAspectRatio="none">
-                  <path d="M0 80 L60 30 L95 55 L150 10 L205 50 L240 28 L300 60 L300 80 Z" fill="white" opacity="0.9" />
-                  <path d="M150 10 L135 24 L150 20 L165 26 Z" fill="#e0f2fe" />
+                  <path d="M0 80 L60 30 L95 55 L150 10 L205 50 L240 28 L300 60 L300 80 Z" fill="white" />
+                  
                 </svg>
-                {tripCount > 0 && <Badge color="amber" className="absolute right-3 top-3">{tripCount} trip{tripCount > 1 ? 's' : ''}</Badge>}
+                {tripCount > 0 && <Badge color="amber" className="absolute right-3 top-3">in {tripCount} vacation{tripCount > 1 ? 's' : ''}</Badge>}
               </div>
               <div className="p-4 pt-1">
                 <div className="font-semibold text-slate-900 group-hover:text-sky-700">{r.name}</div>

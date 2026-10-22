@@ -4,24 +4,45 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
+    @apply bg-white text-slate-800 antialiased;
+    background-image:
+      radial-gradient(1200px 500px at 10% -10%, rgba(224, 242, 254, 0.7), transparent 60%),
+      radial-gradient(900px 400px at 100% 0%, rgba(238, 242, 255, 0.7), transparent 60%);
+    background-attachment: fixed;
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
   }
 }
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none transition
-      focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 placeholder:text-slate-400;
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition
+      placeholder:text-slate-400 hover:border-slate-300 focus:border-sky-400 focus:ring-4 focus:ring-sky-100;
   }
   .label {
-    @apply mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500;
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400;
   }
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-3xl border border-slate-100 bg-white/90 shadow-soft backdrop-blur-sm;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-600;
+  }
+  .glass {
+    @apply border border-white/60 bg-white/70 backdrop-blur-xl;
   }
 }
 
 .no-select {
   user-select: none;
   -webkit-user-select: none;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }

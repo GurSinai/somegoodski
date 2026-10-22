@@ -1,3 +1,4 @@
+import { migrateV1 } from '../store/migrate';
 import type { AppData } from '../types';
 
 export function exportData(data: AppData) {
@@ -12,7 +13,9 @@ export function exportData(data: AppData) {
 
 export async function readImportFile(file: File): Promise<AppData> {
   const data = JSON.parse(await file.text());
-  const required = ['friends', 'season', 'airports', 'resorts', 'trips', 'settings'] as const;
+  // backups made before winters existed are upgraded on import
+  if (!data.version || data.version < 2) return migrateV1(data);
+  const required = ['friends', 'winters', 'vacations', 'airports', 'resorts', 'trips', 'settings'] as const;
   for (const k of required) if (!(k in data)) throw new Error(`Missing "${k}" in file`);
-  return { ...data, version: 1 } as AppData;
+  return data as AppData;
 }

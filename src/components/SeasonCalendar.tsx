@@ -19,24 +19,26 @@ interface Props {
   onLeave?: () => void;
 }
 
-const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+// Weeks start on Sunday; Friday and Saturday are the weekend.
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+export const isWeekend = (iso: ISODate) => [5, 6].includes(getDay(fromISO(iso)));
 
-/** Multi-month calendar for the ski season. Weeks start on Monday. */
+/** Multi-month calendar for the ski season. */
 export default function SeasonCalendar({ start, end, renderDay, onDayDown, onDayEnter, onLeave }: Props) {
   if (end < start) return null;
   const months = eachMonthOfInterval({ start: fromISO(start), end: fromISO(end) });
 
   return (
-    <div className="no-select grid gap-6 sm:grid-cols-2 xl:grid-cols-3" onMouseLeave={onLeave}>
+    <div className="no-select grid gap-x-8 gap-y-7 sm:grid-cols-2 xl:grid-cols-3" onMouseLeave={onLeave}>
       {months.map((m) => {
         const days = daysBetween(toISO(startOfMonth(m)), toISO(endOfMonth(m)));
-        const offset = (getDay(m) + 6) % 7;
+        const offset = getDay(m);
         return (
           <div key={m.toISOString()}>
-            <div className="mb-2 text-sm font-semibold text-slate-700">{format(m, 'MMMM yyyy')}</div>
+            <div className="mb-3 text-sm font-bold text-slate-800">{format(m, 'MMMM')} <span className="font-medium text-slate-400">{format(m, 'yyyy')}</span></div>
             <div className="grid grid-cols-7 gap-1">
               {WEEKDAYS.map((d, i) => (
-                <div key={i} className={cx('pb-1 text-center text-[10px] font-medium', i >= 5 ? 'text-sky-600' : 'text-slate-400')}>
+                <div key={i} className={cx('pb-1 text-center text-[10px] font-bold', i >= 5 ? 'text-sky-500' : 'text-slate-300')}>
                   {d}
                 </div>
               ))}
@@ -54,8 +56,8 @@ export default function SeasonCalendar({ start, end, renderDay, onDayDown, onDay
                     }}
                     onMouseEnter={(e) => inSeason && onDayEnter?.(iso, e)}
                     className={cx(
-                      'relative flex aspect-square items-center justify-center rounded-md text-xs transition-colors',
-                      inSeason ? 'cursor-pointer' : 'text-slate-300',
+                      'relative flex aspect-square items-center justify-center rounded-xl text-xs transition-colors',
+                      inSeason ? 'cursor-pointer' : 'text-slate-200',
                       r.className,
                     )}
                     style={r.style}

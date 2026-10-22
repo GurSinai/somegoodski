@@ -1,3 +1,7 @@
 node_modules
 dist
 *.local
+
+# home page media (can be large)
+src/assets/home/*
+!src/assets/home/README.md
