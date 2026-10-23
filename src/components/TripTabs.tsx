@@ -2,7 +2,7 @@ import { Check, ExternalLink, GraduationCap, Pencil, Plus, RotateCcw } from 'luc
 import type { ReactNode } from 'react';
 import { expenseShare, gasPerVehicle, gearKeys, lessonRiders, lessonShare, hotelPerPerson, passFor, passPrice, quoteFor, shopQuote, transferPerPerson, vacationDaysOf, vehiclesNeeded } from '../lib/combinations';
 import { nightsOf, skiDaysOf } from '../lib/dates';
-import { boardLabel, gearLabel, transferLabel } from '../lib/labels';
+import { gearLabel, liftLabel, stayLabel, transferLabel } from '../lib/labels';
 import { cx, money, moneyRange } from '../lib/util';
 import { useResort, useStore } from '../store/useStore';
 import { symbolOf } from '../lib/fx';
@@ -166,8 +166,9 @@ export function HotelsTab({ trip, edit }: TabProps) {
         <OptionCard key={h.id} origin={h.currency} onClick={() => edit('hotels', h, false)} link={h.link} notes={h.notes}
           title={h.name || 'Unnamed hotel'}
           tags={<>
-            <Badge color="violet">{boardLabel(h.board)}</Badge>
-            {h.skiInOut ? <Badge color="green">Ski-in/out</Badge> : h.walkToLiftMin ? <Badge>🚶 {h.walkToLiftMin} min to lift</Badge> : null}
+            <Badge color="violet">{stayLabel(h.type)}</Badge>
+            {h.rating ? <Badge color="amber">{'★'.repeat(h.rating)}</Badge> : null}
+            {h.skiInOut ? <Badge color="green">Ski-in/out</Badge> : liftLabel(h) ? <Badge>{h.walkable ? '🚶' : '🚗'} {liftLabel(h)}</Badge> : null}
           </>}
           price={m(hotelPerPerson(h, people, nights))}
           unit="total per person"

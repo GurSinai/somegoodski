@@ -1,4 +1,5 @@
 import { FALLBACK_RATES } from '../lib/fx';
+import { INDEX_AIRPORT_LIST, INDEXED_RESORTS, SEED_TO_INDEX } from './resortIndex';
 import type { Airport, AppData, Resort } from '../types';
 
 export const SEED_AIRPORTS: Airport[] = [
@@ -176,6 +177,10 @@ export const SEED_RESORTS: Resort[] = [
   },
 ];
 
+/** The starting catalog: the indexed European resorts plus starter resorts outside them. */
+export const STARTER_RESORTS: Resort[] = [...INDEXED_RESORTS, ...SEED_RESORTS.filter((r) => !SEED_TO_INDEX[r.id])];
+export const STARTER_AIRPORTS: Airport[] = [...SEED_AIRPORTS, ...INDEX_AIRPORT_LIST.filter((a) => !SEED_AIRPORTS.some((s) => s.iata === a.iata))];
+
 /** Season ending in `year`: 1 Dec of the previous year to 30 Apr. */
 export const defaultSeason = (year: number) => ({ start: `${year - 1}-12-01`, end: `${year}-04-30` });
 
@@ -184,13 +189,13 @@ export const upcomingWinterYear = (today = new Date()) => (today.getMonth() >= 5
 
 export function createInitialData(): AppData {
   return {
-    version: 5,
+    version: 7,
     settings: { currency: 'ILS', entryCurrency: 'ILS', fx: FALLBACK_RATES, activeWinterId: null },
     friends: [],
     winters: [],
     vacations: [],
-    airports: SEED_AIRPORTS,
-    resorts: SEED_RESORTS,
+    airports: STARTER_AIRPORTS,
+    resorts: STARTER_RESORTS,
     trips: [],
   };
 }

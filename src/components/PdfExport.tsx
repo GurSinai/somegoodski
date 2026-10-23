@@ -40,7 +40,7 @@ export function usePdfExport() {
       const msg = (e as Error).message || 'Unknown error';
       // the release server stops after 10 idle minutes; the page can't load code it hasn't fetched yet
       setError(/dynamically imported module|Failed to fetch|Importing a module script failed/i.test(msg)
-        ? 'SkiPlanner’s local server has stopped (it shuts down after 10 minutes without use). Double-click the SkiPlanner shortcut to restart it, reload this page and try again.'
+        ? 'SomeGoodSki’s local server has stopped (it shuts down after 10 minutes without use). Double-click the SomeGoodSki shortcut to restart it, reload this page and try again.'
         : msg);
     }
     setBusy(null);

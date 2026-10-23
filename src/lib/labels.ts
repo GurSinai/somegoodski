@@ -1,4 +1,4 @@
-import type { Board, GearPiece, GearPriceKey, GearTier, SkillLevel, Sport, TransferType, VacationStatus } from '../types';
+import type { HotelOption, StayType, GearPiece, GearPriceKey, GearTier, SkillLevel, Sport, TransferType, VacationStatus } from '../types';
 
 export const SKILLS: { value: SkillLevel; label: string; color: string; dot: string }[] = [
   { value: 'never', label: 'First timer', color: 'slate', dot: '#94a3b8' },
@@ -26,15 +26,22 @@ export const TRANSFER_TYPES: { value: TransferType; label: string }[] = [
 ];
 export const transferLabel = (type: string) => TRANSFER_TYPES.find((t) => t.value === type)?.label ?? type;
 
-export const BOARDS: { value: Board; label: string }[] = [
-  { value: 'RO', label: 'Room only' },
-  { value: 'SC', label: 'Self-catering' },
-  { value: 'BB', label: 'Bed & breakfast' },
-  { value: 'HB', label: 'Half board' },
-  { value: 'FB', label: 'Full board' },
-  { value: 'AI', label: 'All inclusive' },
+export const STAY_TYPES: { value: StayType; label: string }[] = [
+  { value: 'dorm', label: 'Dorms' },
+  { value: 'apartment', label: 'Apartment' },
+  { value: 'hotel', label: 'Hotel' },
 ];
-export const boardLabel = (b: Board) => BOARDS.find((x) => x.value === b)?.label ?? b;
+export const stayLabel = (t: StayType) => STAY_TYPES.find((x) => x.value === t)?.label ?? t;
+
+type LiftFields = Pick<HotelOption, 'skiInOut' | 'walkable' | 'liftMin'>;
+/** "Ski-in / ski-out", "5 min walk to the lift", "15 min drive to the lift"… */
+export function liftLabel(h: LiftFields): string {
+  if (h.skiInOut) return 'Ski-in / ski-out';
+  if (h.liftMin) return `${h.liftMin} min ${h.walkable ? 'walk' : 'drive'} to the lift`;
+  return h.walkable ? 'Walking distance to the lift' : '';
+}
+/** Sort key: ski-in/out first, then walks, then drives. */
+export const liftRank = (h: LiftFields) => (h.skiInOut ? 0 : h.walkable ? h.liftMin || 30 : 100 + (h.liftMin || 60));
 
 export const STATUSES: { value: VacationStatus; label: string; color: string }[] = [
   { value: 'planning', label: 'Planning', color: 'sky' },

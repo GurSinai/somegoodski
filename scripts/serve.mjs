@@ -124,8 +124,8 @@ process.on('uncaughtException', (err) => console.error('Unexpected error (still 
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    // most likely SkiPlanner is already running: just open it
-    console.log(`Port ${PORT} is busy (SkiPlanner probably already running). Opening ${URL_}`);
+    // most likely SomeGoodSki is already running: just open it
+    console.log(`Port ${PORT} is busy (SomeGoodSki probably already running). Opening ${URL_}`);
     openBrowser(URL_);
     process.exit(0);
   }
@@ -133,7 +133,7 @@ server.on('error', (err) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  ❄  SkiPlanner is running at ${URL_}`);
+  console.log(`\n  ❄  SomeGoodSki is running at ${URL_}`);
   console.log(`     It stops by itself ${IDLE_MINUTES} minutes after you close the app, or close this window to stop now.\n`);
   openBrowser(URL_);
 });

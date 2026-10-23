@@ -1,0 +1,3619 @@
+{
+  "fetchedAt": "2026-10-23T11:24:17.825Z",
+  "source": "https://www.skiresort.com/en/ski-resorts/europe/sorted/slope-length/",
+  "filter": {
+    "minRating": 3,
+    "minKm": 140
+  },
+  "resorts": [
+    {
+      "name": "Les 3 Vallées – Val Thorens/Les Menuires/Méribel/Courchevel",
+      "url": "https://www.skiresort.com/en/ski-resort/les-3-vallees-val-thorens-les-menuires-meribel-courchevel/",
+      "rating": 4.7,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Tarentaise",
+      "elevation": {
+        "diff": 2130,
+        "base": 1100,
+        "top": 3230
+      },
+      "km": {
+        "total": 600,
+        "easy": 336,
+        "intermediate": 204,
+        "difficult": 60
+      },
+      "lifts": 159,
+      "slug": "les-3-vallees-val-thorens-les-menuires-meribel-courchevel",
+      "source": "https://www.skiresort.com/en/ski-resort/les-3-vallees-val-thorens-les-menuires-meribel-courchevel/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "CMF",
+          "name": "Chambery",
+          "country": "France",
+          "km": 120,
+          "driveMin": 97
+        },
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 127,
+          "driveMin": 105
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 193,
+          "driveMin": 141
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 197,
+          "driveMin": 141
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 199,
+          "driveMin": 146
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "Two high-speed train/TGV stations are located near the entry points. The one in Saint-Michel-de-Maurienne/Valloire is about 6 km from Orelle. The Moûtiers - Salins-les-Thermes - Brides-les-Bains station is about the same distance from the gondola in Brides-les-Bains. From the station in Moûtiers, you can continue to the valleys (Courchevel, Méribel, and Les Menuires/Val Thorens) using public transportation."
+      },
+      "towns": [
+        "Méribel-Mottaret",
+        "Val Thorens",
+        "Les Menuires",
+        "Courchevel",
+        "La Tania",
+        "Saint-Martin-de-Belleville",
+        "Courchevel-Moriond",
+        "Méribel-Village",
+        "Courchevel-Village",
+        "Méribel-Centre",
+        "Brides-les-Bains",
+        "Orelle"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/69/93/36/67/e986cc5c90.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/69/93/36/67/19d28d38c1.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/les-3-vallees-val-thorens-les-menuires-meribel-courchevel/trail-map/"
+      },
+      "snowmakingPct": 60,
+      "longestRun": {
+        "name": "Cime de Caron - Les Menuires",
+        "km": 12
+      }
+    },
+    {
+      "name": "Les Portes du Soleil – Morzine/Avoriaz/Les Gets/Châtel/Morgins/Champéry",
+      "url": "https://www.skiresort.com/en/ski-resort/les-portes-du-soleil-morzine-avoriaz-les-gets-chatel-morgins-champery/",
+      "rating": 4.3,
+      "country": "Switzerland",
+      "region": "Lemanic Region / Valais (Wallis) / Val d'Illiez",
+      "elevation": {
+        "diff": 1269,
+        "base": 985,
+        "top": 2254
+      },
+      "km": {
+        "total": 580,
+        "easy": 310,
+        "intermediate": 210,
+        "difficult": 60
+      },
+      "lifts": 163,
+      "slug": "les-portes-du-soleil-morzine-avoriaz-les-gets-chatel-morgins-champery",
+      "source": "https://www.skiresort.com/en/ski-resort/les-portes-du-soleil-morzine-avoriaz-les-gets-chatel-morgins-champery/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 4,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 3,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 79,
+          "driveMin": 102
+        },
+        {
+          "iata": "BRN",
+          "name": "Bern",
+          "country": "Switzerland",
+          "km": 137,
+          "driveMin": 113
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 237,
+          "driveMin": 169
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 240,
+          "driveMin": 170
+        },
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 235,
+          "driveMin": 199
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Champéry"
+      },
+      "towns": [
+        "Avoriaz",
+        "Châtel",
+        "Les Gets",
+        "Champoussin",
+        "Les Crosets",
+        "Morgins",
+        "Champéry",
+        "Morzine",
+        "La Chapelle d'Abondance",
+        "Torgon",
+        "Montriond",
+        "Plaine Dranse"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/d6/68/87/75/cbe8333923.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/d6/68/87/75/04b30ed3e7.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/les-portes-du-soleil-morzine-avoriaz-les-gets-chatel-morgins-champery/trail-map/"
+      },
+      "snowmakingPct": null,
+      "longestRun": {
+        "name": "Chamossière-Morzine",
+        "km": 11
+      }
+    },
+    {
+      "name": "4 Vallées – Verbier/La Tzoumaz/Nendaz/Veysonnaz/Thyon",
+      "url": "https://www.skiresort.com/en/ski-resort/4-vallees-verbier-la-tzoumaz-nendaz-veysonnaz-thyon/",
+      "rating": 4.3,
+      "country": "Switzerland",
+      "region": "Lemanic Region / Valais (Wallis) / Val d’Hérens",
+      "elevation": {
+        "diff": 1980,
+        "base": 1350,
+        "top": 3330
+      },
+      "km": {
+        "total": 412,
+        "easy": 107,
+        "intermediate": 202,
+        "difficult": 103
+      },
+      "lifts": 65,
+      "slug": "4-vallees-verbier-la-tzoumaz-nendaz-veysonnaz-thyon",
+      "source": "https://www.skiresort.com/en/ski-resort/4-vallees-verbier-la-tzoumaz-nendaz-veysonnaz-thyon/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 3,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 3,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 152,
+          "driveMin": 94
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Directly opposite Le Châble train station, the Le Châble gondola lift takes you straight into the ski area."
+      },
+      "towns": [
+        "Verbier",
+        "Thyon",
+        "Les Collons",
+        "La Tzoumaz",
+        "Nendaz",
+        "Veysonnaz",
+        "Le Châble",
+        "Bruson",
+        "Les Masses",
+        "Siviez",
+        "Hérémence",
+        "Sion"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/7c/cf/f0/0c/96966a76ea.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/7c/cf/f0/0c/e00d4b6024.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/4-vallees-verbier-la-tzoumaz-nendaz-veysonnaz-thyon/trail-map/"
+      },
+      "snowmakingPct": 95,
+      "longestRun": {
+        "name": "Mont-Fort-Siviez",
+        "km": 8
+      }
+    },
+    {
+      "name": "Via Lattea – Sestriere/Sauze d’Oulx/San Sicario/Claviere/Montgenèvre",
+      "url": "https://www.skiresort.com/en/ski-resort/via-lattea-sestriere-sauze-doulx-san-sicario-claviere-montgenevre/",
+      "rating": 4.2,
+      "country": "Italy",
+      "region": "Piedmont (Piemonte) / Turin (Torino)",
+      "elevation": {
+        "diff": 1251,
+        "base": 1538,
+        "top": 2789
+      },
+      "km": {
+        "total": 400,
+        "easy": 96,
+        "intermediate": 220,
+        "difficult": 84
+      },
+      "lifts": 69,
+      "slug": "via-lattea-sestriere-sauze-doulx-san-sicario-claviere-montgenevre",
+      "source": "https://www.skiresort.com/en/ski-resort/via-lattea-sestriere-sauze-doulx-san-sicario-claviere-montgenevre/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 4,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 3,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 106,
+          "driveMin": 89
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "The nearest train station is Oulx, about 5 km from Sauze d'Oulx. It is located on the Paris-Turin high-speed line and is served by the TGV (approx. 4.5 hours from Paris). Shuttle buses are available from here. Briançon station is 12 km from Montgenèvre."
+      },
+      "towns": [
+        "Sestriere",
+        "Sauze d'Oulx",
+        "San Sicario",
+        "Claviere",
+        "Montgenèvre",
+        "Cesana Torinese",
+        "Pattemouche",
+        "Pragelato",
+        "La Ruà",
+        "Oulx"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/28/84/4d/da/e354a3a1fd.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/28/84/4d/da/3728cae7a8.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/via-lattea-sestriere-sauze-doulx-san-sicario-claviere-montgenevre/trail-map/"
+      },
+      "snowmakingPct": 50,
+      "longestRun": {
+        "name": "Monte Fraiteve - Sansicario Pariol",
+        "km": 7
+      }
+    },
+    {
+      "name": "Zermatt/Breuil-Cervinia/Valtournenche – Matterhorn",
+      "url": "https://www.skiresort.com/en/ski-resort/zermatt-breuil-cervinia-valtournenche-matterhorn/",
+      "rating": 4.5,
+      "country": "Switzerland",
+      "region": "Lemanic Region / Valais (Wallis) / Zermatt-Matterhorn",
+      "elevation": {
+        "diff": 2337,
+        "base": 1562,
+        "top": 3899
+      },
+      "km": {
+        "total": 322,
+        "easy": 75,
+        "intermediate": 220,
+        "difficult": 27
+      },
+      "lifts": 51,
+      "slug": "zermatt-breuil-cervinia-valtournenche-matterhorn",
+      "source": "https://www.skiresort.com/en/ski-resort/zermatt-breuil-cervinia-valtournenche-matterhorn/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 120,
+          "driveMin": 94
+        },
+        {
+          "iata": "MXP",
+          "name": "Milano/Malpensa",
+          "country": "Italy",
+          "km": 182,
+          "driveMin": 128
+        },
+        {
+          "iata": "BRN",
+          "name": "Bern",
+          "country": "Switzerland",
+          "km": 133,
+          "driveMin": 156
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 238,
+          "driveMin": 172
+        },
+        {
+          "iata": "BSL",
+          "name": "Basel/Mulhouse",
+          "country": "France",
+          "km": 232,
+          "driveMin": 196
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 258,
+          "driveMin": 219
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Zermatt has a direct train station. Since the village is car-free and can only be reached via the Matterhorn Gotthard Railway, arriving entirely by train is the obvious choice. The nearest train station to Breuil-Cervinia is in Châtillon/Saint-Vincent. Scheduled buses run to the ski area."
+      },
+      "towns": [
+        "Zermatt",
+        "Breuil-Cervinia",
+        "Valtournenche",
+        "Täsch",
+        "Randa"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/24/43/31/15/acb664d2ae.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/24/43/31/15/a49947030e.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/zermatt-breuil-cervinia-valtournenche-matterhorn/trail-map/"
+      },
+      "snowmakingPct": 80,
+      "longestRun": {
+        "name": "Klein Matterhorn - Zermatt (No. 85, 84, 81, 73, 66, 64, 62, 50)",
+        "km": 16
+      }
+    },
+    {
+      "name": "Tignes/Val d'Isère",
+      "url": "https://www.skiresort.com/en/ski-resort/tignes-val-disere/",
+      "rating": 4.7,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Tarentaise",
+      "elevation": {
+        "diff": 1906,
+        "base": 1550,
+        "top": 3456
+      },
+      "km": {
+        "total": 300,
+        "easy": 165,
+        "intermediate": 75,
+        "difficult": 60
+      },
+      "lifts": 80,
+      "slug": "tignes-val-disere",
+      "source": "https://www.skiresort.com/en/ski-resort/tignes-val-disere/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 217,
+          "driveMin": 161
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 221,
+          "driveMin": 163
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 223,
+          "driveMin": 168
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "Nearest train station in Bourg St Maurice (30 km)"
+      },
+      "towns": [
+        "Tignes le Lac",
+        "Val d'Isère",
+        "La Daille",
+        "Val Claret",
+        "Le Fornet",
+        "Le Laisinant",
+        "Legettaz",
+        "Tignes 1800 Les Boisses",
+        "Tignes-Le Lavachet",
+        "Les Brévières",
+        "Le Joseray",
+        "Le Crêt"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/70/07/71/18/a0ac676a39.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/70/07/71/18/89391bc2be.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/tignes-val-disere/trail-map/"
+      },
+      "snowmakingPct": 50,
+      "longestRun": {
+        "name": "Grande Motte - Tignes Val Claret",
+        "km": 6.5
+      }
+    },
+    {
+      "name": "St. Anton/St. Christoph/Stuben/Lech/Zürs/Warth/Schröcken – Ski Arlberg",
+      "url": "https://www.skiresort.com/en/ski-resort/st-anton-st-christoph-stuben-lech-zuers-warth-schroecken-ski-arlberg/",
+      "rating": 4.8,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Oberland / Landeck / St. Anton am Arlberg",
+      "elevation": {
+        "diff": 1507,
+        "base": 1304,
+        "top": 2811
+      },
+      "km": {
+        "total": 299.7,
+        "easy": 130,
+        "intermediate": 120,
+        "difficult": 49.7
+      },
+      "lifts": 85,
+      "slug": "st-anton-st-christoph-stuben-lech-zuers-warth-schroecken-ski-arlberg",
+      "source": "https://www.skiresort.com/en/ski-resort/st-anton-st-christoph-stuben-lech-zuers-warth-schroecken-ski-arlberg/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 94,
+          "driveMin": 69
+        },
+        {
+          "iata": "FDH",
+          "name": "Friedrichshafen",
+          "country": "Germany",
+          "km": 130,
+          "driveMin": 98
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 196,
+          "driveMin": 129
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 236,
+          "driveMin": 183
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "St. Anton am Arlberg train station is only a five-minute walk from the Galzigbahn and Rendlbahn lifts. There is also the Langen am Arlberg train station. From there, regular buses and shared taxis run to Lech and Zürs. Warth and Schröcken are not as easily accessible by train."
+      },
+      "towns": [
+        "St. Anton am Arlberg",
+        "Lech",
+        "Zürs",
+        "Warth",
+        "Schröcken",
+        "St. Christoph am Arlberg",
+        "Stuben",
+        "Oberlech",
+        "Zug (Lech)",
+        "St. Jakob am Arlberg",
+        "Nasserein",
+        "Klösterle"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/ff/ff/f3/33/dfd64cb021.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/ff/ff/f3/33/c160f046a7.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/st-anton-st-christoph-stuben-lech-zuers-warth-schroecken-ski-arlberg/trail-map/"
+      },
+      "snowmakingPct": null,
+      "longestRun": {
+        "name": "Valluga-St. Anton",
+        "km": 10
+      }
+    },
+    {
+      "name": "SkiWelt Wilder Kaiser-Brixental",
+      "url": "https://www.skiresort.com/en/ski-resort/skiwelt-wilder-kaiser-brixental/",
+      "rating": 4.8,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Unterland / Wilder Kaiser",
+      "elevation": {
+        "diff": 1249,
+        "base": 620,
+        "top": 1869
+      },
+      "km": {
+        "total": 275,
+        "easy": 115,
+        "intermediate": 121,
+        "difficult": 39
+      },
+      "lifts": 81,
+      "slug": "skiwelt-wilder-kaiser-brixental",
+      "source": "https://www.skiresort.com/en/ski-resort/skiwelt-wilder-kaiser-brixental/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 4,
+        "Slope preparation": 5,
+        "Access, on-site parking": 5,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 5
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 84,
+          "driveMin": 61
+        },
+        {
+          "iata": "SZG",
+          "name": "Salzburg",
+          "country": "Austria",
+          "km": 79,
+          "driveMin": 76
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 148,
+          "driveMin": 92
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "There are train stations in Hopfgarten, Westendorf, and Brixen im Thale. The Hopfgarten train station is only a few meters from the gondola lift."
+      },
+      "towns": [
+        "Ellmau",
+        "Söll",
+        "Westendorf",
+        "Hopfgarten im Brixental",
+        "Brixen im Thale",
+        "Going am Wilden Kaiser",
+        "Scheffau am Wilden Kaiser",
+        "Itter",
+        "Aschau im Spertental",
+        "Kirchberg in Tirol",
+        "Kelchsau",
+        "Wörgl"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/e7/7c/ca/a2/165623c3e3.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/e7/7c/ca/a2/a86b2a64f9.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/skiwelt-wilder-kaiser-brixental/trail-map/"
+      },
+      "snowmakingPct": 80,
+      "longestRun": {
+        "name": "Valley run from the Hohe Salve",
+        "km": 7.3
+      }
+    },
+    {
+      "name": "Les Sybelles – Le Corbier/La Toussuire/Les Bottières/St Sorlin/St Jean d’Arves",
+      "url": "https://www.skiresort.com/en/ski-resort/les-sybelles-le-corbier-la-toussuire-les-bottieres-st-sorlin-st-jean-darves/",
+      "rating": 4,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Maurienne",
+      "elevation": {
+        "diff": 1520,
+        "base": 1100,
+        "top": 2620
+      },
+      "km": {
+        "total": 275,
+        "easy": 59,
+        "intermediate": 194,
+        "difficult": 22
+      },
+      "lifts": 61,
+      "slug": "les-sybelles-le-corbier-la-toussuire-les-bottieres-st-sorlin-st-jean-darves",
+      "source": "https://www.skiresort.com/en/ski-resort/les-sybelles-le-corbier-la-toussuire-les-bottieres-st-sorlin-st-jean-darves/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3,
+        "Snow reliability": 4,
+        "Slope preparation": 4,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 3,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 4,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "CMF",
+          "name": "Chambery",
+          "country": "France",
+          "km": 97,
+          "driveMin": 78
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 170,
+          "driveMin": 120
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 174,
+          "driveMin": 122
+        },
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 159,
+          "driveMin": 132
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "Saint-Jean-de-Maurienne TGV connections from Nantes, Marseille, Lille, Paris, and Lyon, bus connections from the train station to the ski resorts"
+      },
+      "towns": [
+        "Le Corbier",
+        "Les Bottières",
+        "La Chal",
+        "La Toussuire",
+        "Saint-Sorlin-d'Arves",
+        "Saint-Jean-d'Arves",
+        "Les Ecourts",
+        "Les Chambons"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/ed/d0/0d/da/95f3ef3337.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/ed/d0/0d/da/a4aa9d1063.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/les-sybelles-le-corbier-la-toussuire-les-bottieres-st-sorlin-st-jean-darves/trail-map/"
+      },
+      "snowmakingPct": 51,
+      "longestRun": {
+        "name": "L’Ouillon – St Colomban",
+        "km": 7.8
+      }
+    },
+    {
+      "name": "Saalbach Hinterglemm Leogang Fieberbrunn (Skicircus)",
+      "url": "https://www.skiresort.com/en/ski-resort/saalbach-hinterglemm-leogang-fieberbrunn-skicircus/",
+      "rating": 4.7,
+      "country": "Austria",
+      "region": "Salzburg (Salzburger Land) / Pinzgau / Glemmtal",
+      "elevation": {
+        "diff": 1266,
+        "base": 830,
+        "top": 2096
+      },
+      "km": {
+        "total": 270,
+        "easy": 140,
+        "intermediate": 112,
+        "difficult": 18
+      },
+      "lifts": 69,
+      "slug": "saalbach-hinterglemm-leogang-fieberbrunn-skicircus",
+      "source": "https://www.skiresort.com/en/ski-resort/saalbach-hinterglemm-leogang-fieberbrunn-skicircus/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 4,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "SZG",
+          "name": "Salzburg",
+          "country": "Austria",
+          "km": 86,
+          "driveMin": 85
+        },
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 158,
+          "driveMin": 139
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 214,
+          "driveMin": 154
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Stops Fieberbrunn, Leogang, and Maishofen-Saalbach with bus connection or taxi to the ski area."
+      },
+      "towns": [
+        "Saalbach",
+        "Hinterglemm",
+        "Leogang",
+        "Fieberbrunn",
+        "Vorderglemm",
+        "Rain",
+        "Hütten",
+        "Viehhofen",
+        "Saalfelden am Steinernen Meer"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/57/74/42/25/f2cc62359b.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/57/74/42/25/8b5fa79e90.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/saalbach-hinterglemm-leogang-fieberbrunn-skicircus/trail-map/"
+      },
+      "snowmakingPct": 90,
+      "longestRun": {
+        "name": "Jausern descent (Vorderglemm)",
+        "km": 7
+      }
+    },
+    {
+      "name": "Le Grand Massif – Flaine/Les Carroz/Morillon/Samoëns/Sixt",
+      "url": "https://www.skiresort.com/en/ski-resort/le-grand-massif-flaine-les-carroz-morillon-samoens-sixt/",
+      "rating": 4.1,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Haute-Savoie / Bonneville / Faucigny",
+      "elevation": {
+        "diff": 1783,
+        "base": 697,
+        "top": 2480
+      },
+      "km": {
+        "total": 265,
+        "easy": 135,
+        "intermediate": 95,
+        "difficult": 35
+      },
+      "lifts": 63,
+      "slug": "le-grand-massif-flaine-les-carroz-morillon-samoens-sixt",
+      "source": "https://www.skiresort.com/en/ski-resort/le-grand-massif-flaine-les-carroz-morillon-samoens-sixt/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 4,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 3,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 3,
+        "Mountain restaurants, ski huts, gastronomy": 3,
+        "Après-ski": 2,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 60,
+          "driveMin": 60
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "Morillon-Les Esserts",
+        "Samoëns-Les Saix",
+        "Salvagny",
+        "Vercland",
+        "Morillon",
+        "Flaine",
+        "Les Carroz d'Arâches",
+        "Samoëns",
+        "Arâches"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/1b/be/ee/e6/2db0200c7b.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/1b/be/ee/e6/c4bd8e3409.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/le-grand-massif-flaine-les-carroz-morillon-samoens-sixt/trail-map/"
+      },
+      "snowmakingPct": 50,
+      "longestRun": {
+        "name": "Les Cascades",
+        "km": 14
+      }
+    },
+    {
+      "name": "Serre Chevalier – Briançon/Chantemerle/Villeneuve-la-Salle/Le Monêtier-les-Bains",
+      "url": "https://www.skiresort.com/en/ski-resort/serre-chevalier-briancon-chantemerle-villeneuve-la-salle-le-monetier-les-bains/",
+      "rating": 4.4,
+      "country": "France",
+      "region": "Provence-Alpes-Côte d’Azur / Hautes-Alpes / Briançon / Vallée de la Guisane",
+      "elevation": {
+        "diff": 1600,
+        "base": 1200,
+        "top": 2800
+      },
+      "km": {
+        "total": 250,
+        "easy": 137.5,
+        "intermediate": 80,
+        "difficult": 32.5
+      },
+      "lifts": 59,
+      "slug": "serre-chevalier-briancon-chantemerle-villeneuve-la-salle-le-monetier-les-bains",
+      "source": "https://www.skiresort.com/en/ski-resort/serre-chevalier-briancon-chantemerle-villeneuve-la-salle-le-monetier-les-bains/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 118,
+          "driveMin": 105
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 115,
+          "driveMin": 117
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "SNCF stop Briançon"
+      },
+      "towns": [
+        "Chantemerle",
+        "Villeneuve-la-Salle",
+        "Le Monêtier-les-Bains",
+        "Briançon",
+        "La Salle-les-Alpes",
+        "Saint-Chaffrey"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/e6/6e/eb/bf/9f8b143150.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/e6/6e/eb/bf/afd9ca8f81.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/serre-chevalier-briancon-chantemerle-villeneuve-la-salle-le-monetier-les-bains/trail-map/"
+      },
+      "snowmakingPct": 30,
+      "longestRun": {
+        "name": "Le Prorel-Briancon",
+        "km": 9
+      }
+    },
+    {
+      "name": "Alpe d'Huez",
+      "url": "https://www.skiresort.com/en/ski-resort/alpe-dhuez/",
+      "rating": 4.2,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Isère / Grenoble",
+      "elevation": {
+        "diff": 2205,
+        "base": 1125,
+        "top": 3330
+      },
+      "km": {
+        "total": 250,
+        "easy": 70,
+        "intermediate": 130,
+        "difficult": 50
+      },
+      "lifts": 68,
+      "slug": "alpe-dhuez",
+      "source": "https://www.skiresort.com/en/ski-resort/alpe-dhuez/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 107,
+          "driveMin": 96
+        },
+        {
+          "iata": "CMF",
+          "name": "Chambery",
+          "country": "France",
+          "km": 132,
+          "driveMin": 110
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 154,
+          "driveMin": 120
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 211,
+          "driveMin": 159
+        },
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 201,
+          "driveMin": 198
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "From Grenoble train station, Alpe d'Huez can be reached by various bus lines."
+      },
+      "towns": [
+        "Alpe d'Huez",
+        "Auris en Oisans",
+        "Oz Station",
+        "Vaujany",
+        "Huez",
+        "Maronne",
+        "Villard-Reculas",
+        "Allemond",
+        "L'Enversin d'Oz",
+        "La Villette",
+        "Oz en Oisans"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/fa/a2/23/3b/cfa37c1211.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/fa/a2/23/3b/23cf260948.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/alpe-dhuez/trail-map/"
+      },
+      "snowmakingPct": 35,
+      "longestRun": {
+        "name": "La Sarenne (Pic Blanc - Auris En Oisans)",
+        "km": 16
+      }
+    },
+    {
+      "name": "Ischgl/Samnaun – Silvretta Arena",
+      "url": "https://www.skiresort.com/en/ski-resort/ischgl-samnaun-silvretta-arena/",
+      "rating": 4.9,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Oberland / Landeck / Paznaun-Ischgl",
+      "elevation": {
+        "diff": 1512,
+        "base": 1360,
+        "top": 2872
+      },
+      "km": {
+        "total": 239,
+        "easy": 47,
+        "intermediate": 140,
+        "difficult": 52
+      },
+      "lifts": 45,
+      "slug": "ischgl-samnaun-silvretta-arena",
+      "source": "https://www.skiresort.com/en/ski-resort/ischgl-samnaun-silvretta-arena/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 100,
+          "driveMin": 70
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 235,
+          "driveMin": 155
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 304,
+          "driveMin": 174
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "The nearest train station is Landeck. The 4240 bus line departs directly from the station forecourt towards Paznaun. The bus ride to Ischgl takes only about an hour."
+      },
+      "towns": [
+        "Ischgl",
+        "Samnaun",
+        "Samnaun-Ravaisch",
+        "Samnaun-Dorf",
+        "Samnaun-Plan",
+        "Samnaun-Laret",
+        "Samnaun-Compatsch",
+        "Versahl",
+        "Mathon",
+        "Valzur"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/90/0d/d1/1e/2d8a2ae94e.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/90/0d/d1/1e/91a7505ef2.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/ischgl-samnaun-silvretta-arena/trail-map/"
+      },
+      "snowmakingPct": 95,
+      "longestRun": {
+        "name": "Eleven (Greitspitze-Ischgl village)",
+        "km": 11
+      }
+    },
+    {
+      "name": "Arosa Lenzerheide",
+      "url": "https://www.skiresort.com/en/ski-resort/arosa-lenzerheide/",
+      "rating": 4.7,
+      "country": "Switzerland",
+      "region": "Eastern Switzerland / Graubünden / Arosa",
+      "elevation": {
+        "diff": 1636,
+        "base": 1229,
+        "top": 2865
+      },
+      "km": {
+        "total": 225,
+        "easy": 110,
+        "intermediate": 87,
+        "difficult": 28
+      },
+      "lifts": 43,
+      "slug": "arosa-lenzerheide",
+      "source": "https://www.skiresort.com/en/ski-resort/arosa-lenzerheide/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "FDH",
+          "name": "Friedrichshafen",
+          "country": "Germany",
+          "km": 153,
+          "driveMin": 127
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 173,
+          "driveMin": 130
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Arosa railway station of the Rhaetian Railway offers direct access to the Weisshornbahn. From Chur station, there is a bus connection to Lenzerheide. The ski pass is also valid on public transport on the routes Chur-Arosa and Chur-Lenzerheide-Tiefencastel."
+      },
+      "towns": [
+        "Arosa",
+        "Lenzerheide",
+        "Churwalden",
+        "Parpan",
+        "Valbella",
+        "Vaz/Obervaz",
+        "Litzirüti",
+        "Lain",
+        "Muldain",
+        "Malix",
+        "Zorten",
+        "Lantsch/Lenz"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/13/30/0f/fb/352b2b7649.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/13/30/0f/fb/f29de34722.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/arosa-lenzerheide/trail-map/"
+      },
+      "snowmakingPct": 60,
+      "longestRun": {
+        "name": "Weisshorn - Arosa",
+        "km": 4.5
+      }
+    },
+    {
+      "name": "La Plagne (Paradiski)",
+      "url": "https://www.skiresort.com/en/ski-resort/la-plagne-paradiski/",
+      "rating": 4.4,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Tarentaise",
+      "elevation": {
+        "diff": 1960,
+        "base": 1207,
+        "top": 3167
+      },
+      "km": {
+        "total": 225,
+        "easy": 139,
+        "intermediate": 59,
+        "difficult": 27
+      },
+      "lifts": 74,
+      "slug": "la-plagne-paradiski",
+      "source": "https://www.skiresort.com/en/ski-resort/la-plagne-paradiski/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 192,
+          "driveMin": 137
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 196,
+          "driveMin": 138
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 197,
+          "driveMin": 142
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "Plagne Centre",
+        "Plagne Soleil",
+        "Aime la Plagne",
+        "Plagne Villages",
+        "Montalbert",
+        "Montchavin",
+        "Plagne 1800",
+        "Plagne Bellecôte",
+        "Champagny-en-Vanoise",
+        "La Roche",
+        "Les Coches"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/39/98/8d/d3/a36935e287.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/39/98/8d/d3/73aca193d7.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/la-plagne-paradiski/trail-map/"
+      },
+      "snowmakingPct": 34,
+      "longestRun": {
+        "name": "Le mont de la guerre",
+        "km": 6
+      }
+    },
+    {
+      "name": "Les 2 Alpes",
+      "url": "https://www.skiresort.com/en/ski-resort/les-2-alpes/",
+      "rating": 4.3,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Isère / Grenoble",
+      "elevation": {
+        "diff": 2243,
+        "base": 1280,
+        "top": 3523
+      },
+      "km": {
+        "total": 220,
+        "easy": 143,
+        "intermediate": 39,
+        "difficult": 38
+      },
+      "lifts": 40,
+      "slug": "les-2-alpes",
+      "source": "https://www.skiresort.com/en/ski-resort/les-2-alpes/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 2,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 3,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 111,
+          "driveMin": 97
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 158,
+          "driveMin": 122
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 214,
+          "driveMin": 161
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "The nearest train station is Grenoble, from where there are shuttle buses available for a fee."
+      },
+      "towns": [
+        "Les Deux Alpes",
+        "Les 2 Alpes 1800",
+        "Alpe de Mont de Lans",
+        "Alpe de Vénosc",
+        "Mont de Lans",
+        "Vénosc",
+        "Bons"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/34/4b/b0/01/ad5f44d76d.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/34/4b/b0/01/795c5e08a2.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/les-2-alpes/trail-map/"
+      },
+      "snowmakingPct": 15,
+      "longestRun": {
+        "name": "Dôme de la Lauze-Mont de Lans (Les Deux Alpes)",
+        "km": 16
+      }
+    },
+    {
+      "name": "Grandvalira – Pas de la Casa/Grau Roig/Soldeu/El Tarter/Canillo/Encamp",
+      "url": "https://www.skiresort.com/en/ski-resort/grandvalira-pas-de-la-casa-grau-roig-soldeu-el-tarter-canillo-encamp/",
+      "rating": 4.4,
+      "country": "Andorra",
+      "region": "",
+      "elevation": {
+        "diff": 930,
+        "base": 1710,
+        "top": 2640
+      },
+      "km": {
+        "total": 215,
+        "easy": 100,
+        "intermediate": 82,
+        "difficult": 33
+      },
+      "lifts": 75,
+      "slug": "grandvalira-pas-de-la-casa-grau-roig-soldeu-el-tarter-canillo-encamp",
+      "source": "https://www.skiresort.com/en/ski-resort/grandvalira-pas-de-la-casa-grau-roig-soldeu-el-tarter-canillo-encamp/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "TLS",
+          "name": "Toulouse",
+          "country": "France",
+          "km": 187,
+          "driveMin": 144
+        },
+        {
+          "iata": "CCF",
+          "name": "Carcassonne",
+          "country": "France",
+          "km": 169,
+          "driveMin": 150
+        },
+        {
+          "iata": "BCN",
+          "name": "Barcelona",
+          "country": "Spain",
+          "km": 202,
+          "driveMin": 165
+        },
+        {
+          "iata": "GRO",
+          "name": "Girona",
+          "country": "Spain",
+          "km": 234,
+          "driveMin": 175
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "In France, the nearest train stations are L'Hospitalet-près-l'Andorre and La Tour de Carol. Buses operate from there. On the Spanish side, there are daily bus connections from the AVE (high-speed train) stations Lleida, Viatges Montmantell, and Alsina-Graells."
+      },
+      "towns": [
+        "Canillo",
+        "Encamp",
+        "El Tarter",
+        "Soldeu",
+        "Pas de la Casa",
+        "Grau Roig"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/e1/1e/e7/7e/64ed9be85f.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/e1/1e/e7/7e/b045cd7542.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/grandvalira-pas-de-la-casa-grau-roig-soldeu-el-tarter-canillo-encamp/trail-map/"
+      },
+      "snowmakingPct": 65,
+      "longestRun": {
+        "name": "Tosa de la Llosada - El Tarter",
+        "km": 6
+      }
+    },
+    {
+      "name": "Les Arcs/Peisey-Vallandry (Paradiski)",
+      "url": "https://www.skiresort.com/en/ski-resort/les-arcs-peisey-vallandry-paradiski/",
+      "rating": 4.1,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Tarentaise",
+      "elevation": {
+        "diff": 2026,
+        "base": 1200,
+        "top": 3226
+      },
+      "km": {
+        "total": 200,
+        "easy": 104,
+        "intermediate": 70,
+        "difficult": 26
+      },
+      "lifts": 52,
+      "slug": "les-arcs-peisey-vallandry-paradiski",
+      "source": "https://www.skiresort.com/en/ski-resort/les-arcs-peisey-vallandry-paradiski/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 3,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 3,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 3,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "CMF",
+          "name": "Chambery",
+          "country": "France",
+          "km": 127,
+          "driveMin": 97
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 200,
+          "driveMin": 141
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 204,
+          "driveMin": 142
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 205,
+          "driveMin": 147
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Bourg Saint Maurice, from the SNCF train station there is an underpass leading directly to the valley station of the Funiculaire Arc en Ciel."
+      },
+      "towns": [
+        "Arc 1600",
+        "Arc 1950",
+        "Vallandry",
+        "Arc 1800",
+        "Arc 2000",
+        "Plan Peisey",
+        "Bourg Saint Maurice",
+        "Peisey",
+        "Villaroger",
+        "Nancroix",
+        "Séez",
+        "Landry"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/02/22/2d/d4/192f6b1f87.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/02/22/2d/d4/fd14f5122a.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/les-arcs-peisey-vallandry-paradiski/trail-map/"
+      },
+      "snowmakingPct": null,
+      "longestRun": {
+        "name": "Aiguille Rouge",
+        "km": 7
+      }
+    },
+    {
+      "name": "Espace Diamant – Les Saisies/Notre-Dame-de-Bellecombe/Praz sur Arly/Flumet/Crest-Voland",
+      "url": "https://www.skiresort.com/en/ski-resort/espace-diamant-les-saisies-notre-dame-de-bellecombe-praz-sur-arly-flumet-crest-voland/",
+      "rating": 4.1,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Beaufortain",
+      "elevation": {
+        "diff": 1069,
+        "base": 1000,
+        "top": 2069
+      },
+      "km": {
+        "total": 192,
+        "easy": 132,
+        "intermediate": 49,
+        "difficult": 11
+      },
+      "lifts": 80,
+      "slug": "espace-diamant-les-saisies-notre-dame-de-bellecombe-praz-sur-arly-flumet-crest-voland",
+      "source": "https://www.skiresort.com/en/ski-resort/espace-diamant-les-saisies-notre-dame-de-bellecombe-praz-sur-arly-flumet-crest-voland/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3,
+        "Snow reliability": 4,
+        "Slope preparation": 4,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 4,
+        "Snow parks": 3,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 110,
+          "driveMin": 106
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 164,
+          "driveMin": 122
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 168,
+          "driveMin": 123
+        },
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 233,
+          "driveMin": 181
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "Sallanches: The train station on the Annemasse–Chamonix line is 16.5 km from the entry point in Praz sur Arly."
+      },
+      "towns": [
+        "Les Saisies",
+        "Crest-Voland",
+        "Le Cernix",
+        "Notre-Dame-de-Bellecombe",
+        "Hauteluce",
+        "Praz-sur-Arly",
+        "Flumet",
+        "Les Frasses (N.D. de Bellecombe 1450)",
+        "Les Evettes (Flumet)",
+        "Bisanne 1500",
+        "Le Planay (N.D. de Bellecombe 1350)",
+        "Saint-Nicolas-la-Chapelle"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/a5/5c/c2/27/fac6d99c8d.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/a5/5c/c2/27/2270418c28.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/espace-diamant-les-saisies-notre-dame-de-bellecombe-praz-sur-arly-flumet-crest-voland/trail-map/"
+      },
+      "snowmakingPct": null,
+      "longestRun": {
+        "name": "Choucas – Crest Voland Connections",
+        "km": 7
+      }
+    },
+    {
+      "name": "KitzSki – Kitzbühel/Kirchberg",
+      "url": "https://www.skiresort.com/en/ski-resort/kitzski-kitzbuehel-kirchberg/",
+      "rating": 4.9,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Unterland / Kitzbühel (District) / Kitzbühel",
+      "elevation": {
+        "diff": 1200,
+        "base": 800,
+        "top": 2000
+      },
+      "km": {
+        "total": 188,
+        "easy": 102,
+        "intermediate": 66,
+        "difficult": 20
+      },
+      "lifts": 58,
+      "slug": "kitzski-kitzbuehel-kirchberg",
+      "source": "https://www.skiresort.com/en/ski-resort/kitzski-kitzbuehel-kirchberg/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 5
+      },
+      "airports": [
+        {
+          "iata": "SZG",
+          "name": "Salzburg",
+          "country": "Austria",
+          "km": 75,
+          "driveMin": 74
+        },
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 102,
+          "driveMin": 79
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 166,
+          "driveMin": 116
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "The train stops directly at the Hahnenkammbahn in Kitzbühel and in Kirchberg in Tirol. From Kirchberg station, you can take the ski bus to the ski area. Additionally, the Streifzug can be used free of charge with ski clothing between Kirchberg, Kitzbühel, and St. Johann in Tirol."
+      },
+      "towns": [
+        "Kitzbühel",
+        "Kirchberg in Tirol",
+        "Pass Thurn",
+        "Jochberg",
+        "Klausen",
+        "Hollersbach im Pinzgau",
+        "Reith bei Kitzbühel",
+        "Aschau im Spertental",
+        "Aurach bei Kitzbühel",
+        "Mittersill"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/c1/15/5a/ab/acfb058a31.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/c1/15/5a/ab/170b5748bc.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/kitzski-kitzbuehel-kirchberg/trail-map/"
+      },
+      "snowmakingPct": 90,
+      "longestRun": {
+        "name": "KitzSki Extended (via 16a, 16, 26, 25b)",
+        "km": 8.3
+      }
+    },
+    {
+      "name": "Serfaus-Fiss-Ladis",
+      "url": "https://www.skiresort.com/en/ski-resort/serfaus-fiss-ladis/",
+      "rating": 4.8,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Oberland (region) / Landeck / Serfaus-Fiss-Ladis",
+      "elevation": {
+        "diff": 1628,
+        "base": 1200,
+        "top": 2828
+      },
+      "km": {
+        "total": 186,
+        "easy": 47,
+        "intermediate": 112,
+        "difficult": 27
+      },
+      "lifts": 38,
+      "slug": "serfaus-fiss-ladis",
+      "source": "https://www.skiresort.com/en/ski-resort/serfaus-fiss-ladis/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 90,
+          "driveMin": 69
+        },
+        {
+          "iata": "FDH",
+          "name": "Friedrichshafen",
+          "country": "Germany",
+          "km": 175,
+          "driveMin": 135
+        },
+        {
+          "iata": "FMM",
+          "name": "Memmingen",
+          "country": "Germany",
+          "km": 177,
+          "driveMin": 141
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 240,
+          "driveMin": 182
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "Landeck-Zams train station is about 25 km away. Buses run to Serfaus, Fiss, and Ladis."
+      },
+      "towns": [
+        "Serfaus",
+        "Fiss",
+        "Ladis",
+        "Ried im Oberinntal",
+        "Prutz",
+        "Tösens"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/4d/d5/58/8a/b2221c3841.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/4d/d5/58/8a/56b4df5723.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/serfaus-fiss-ladis/trail-map/"
+      },
+      "snowmakingPct": 80,
+      "longestRun": {
+        "name": "Frommes run (Fiss)",
+        "km": 7.2
+      }
+    },
+    {
+      "name": "Megève/Saint-Gervais",
+      "url": "https://www.skiresort.com/en/ski-resort/megeve-saint-gervais/",
+      "rating": 4.1,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Haute-Savoie / Bonneville / Pays du Mont Blanc",
+      "elevation": {
+        "diff": 1503,
+        "base": 850,
+        "top": 2353
+      },
+      "km": {
+        "total": 185,
+        "easy": 70,
+        "intermediate": 90,
+        "difficult": 25
+      },
+      "lifts": 60,
+      "slug": "megeve-saint-gervais",
+      "source": "https://www.skiresort.com/en/ski-resort/megeve-saint-gervais/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3,
+        "Snow reliability": 4,
+        "Slope preparation": 4,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "MVV",
+          "name": "Megeve",
+          "country": "France",
+          "km": 5,
+          "driveMin": 9
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 90,
+          "driveMin": 74
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "From the Saint-Gervais-les-Bains/Le Fayet train station, you can reach the Saint-Gervais-Bettex gondola lift in just 10 minutes by bus. The station is very well connected to the TGV to Paris and Lille. Saint-Gervais is also easily accessible by train from Geneva."
+      },
+      "towns": [
+        "Megève",
+        "Saint Nicolas de Véroce",
+        "Saint-Gervais-Le-Bettex",
+        "Saint-Gervais-les-Bains",
+        "Demi-Quartier",
+        "Combloux",
+        "Le Plan",
+        "La Giettaz",
+        "Le Fayet"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/6b/b7/7c/cd/da09c1dce1.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/6b/b7/7c/cd/6e60e9909d.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/megeve-saint-gervais/trail-map/"
+      },
+      "snowmakingPct": 20,
+      "longestRun": {
+        "name": "Pierre/Chateluy/Saint-Gervais",
+        "km": 7
+      }
+    },
+    {
+      "name": "Vars/Risoul – La Forêt Blanche",
+      "url": "https://www.skiresort.com/en/ski-resort/vars-risoul-la-foret-blanche/",
+      "rating": 3.9,
+      "country": "France",
+      "region": "Provence-Alpes-Côte d’Azur / Hautes-Alpes / Briançon",
+      "elevation": {
+        "diff": 1100,
+        "base": 1650,
+        "top": 2750
+      },
+      "km": {
+        "total": 185,
+        "easy": 75,
+        "intermediate": 90,
+        "difficult": 20
+      },
+      "lifts": 34,
+      "slug": "vars-risoul-la-foret-blanche",
+      "source": "https://www.skiresort.com/en/ski-resort/vars-risoul-la-foret-blanche/",
+      "snowReliability": null,
+      "ratings": {
+        "Ski resort size": 4.8,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3.7
+      },
+      "airports": [
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 171,
+          "driveMin": 157
+        },
+        {
+          "iata": "MRS",
+          "name": "Marseille",
+          "country": "France",
+          "km": 243,
+          "driveMin": 172
+        },
+        {
+          "iata": "NCE",
+          "name": "Nice",
+          "country": "France",
+          "km": 160,
+          "driveMin": 184
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 206,
+          "driveMin": 194
+        },
+        {
+          "iata": "GOA",
+          "name": "Genoa/Genova",
+          "country": "Italy",
+          "km": 245,
+          "driveMin": 218
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "Risoul 1850",
+        "Vars les Claux",
+        "Vars Sainte Marie",
+        "Risoul"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/b6/67/78/8c/d10c140c3c.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/b6/67/78/8c/fe87eefc70.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/vars-risoul-la-foret-blanche/trail-map/"
+      },
+      "snowmakingPct": 70,
+      "longestRun": null
+    },
+    {
+      "name": "Val Gardena (Gröden)",
+      "url": "https://www.skiresort.com/en/ski-resort/val-gardena-groeden/",
+      "rating": 4.7,
+      "country": "Italy",
+      "region": "Trentino-Alto Adige (Trentino-Südtirol) / South Tyrol (Südtirol) / Val Gardena (Gröden)",
+      "elevation": {
+        "diff": 1282,
+        "base": 1236,
+        "top": 2518
+      },
+      "km": {
+        "total": 181,
+        "easy": 52,
+        "intermediate": 108,
+        "difficult": 21
+      },
+      "lifts": 79,
+      "slug": "val-gardena-groeden",
+      "source": "https://www.skiresort.com/en/ski-resort/val-gardena-groeden/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 4,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 5
+      },
+      "airports": [
+        {
+          "iata": "BZO",
+          "name": "Bozen/Bolzano",
+          "country": "Italy",
+          "km": 43,
+          "driveMin": 49
+        },
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 115,
+          "driveMin": 81
+        },
+        {
+          "iata": "VRN",
+          "name": "Verona",
+          "country": "Italy",
+          "km": 191,
+          "driveMin": 134
+        },
+        {
+          "iata": "BGY",
+          "name": "Bergamo",
+          "country": "Italy",
+          "km": 274,
+          "driveMin": 186
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 314,
+          "driveMin": 213
+        },
+        {
+          "iata": "MXP",
+          "name": "Milano/Malpensa",
+          "country": "Italy",
+          "km": 357,
+          "driveMin": 234
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "St. Ulrich (Ortisei)",
+        "Wolkenstein (Selva di Val Gardena)",
+        "St. Christina (Santa Cristina)"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/49/92/23/3e/10730f1701.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/49/92/23/3e/3bf565a1b1.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/val-gardena-groeden/trail-map/"
+      },
+      "snowmakingPct": 98,
+      "longestRun": {
+        "name": "Seceda-St. Ulrich (La Longia)",
+        "km": 10.5
+      }
+    },
+    {
+      "name": "Espace Lumière – Pra Loup/Val d’Allos",
+      "url": "https://www.skiresort.com/en/ski-resort/espace-lumiere-pra-loup-val-dallos/",
+      "rating": 3.8,
+      "country": "France",
+      "region": "Provence-Alpes-Côte d’Azur / Alpes-de-Haute-Provence / Castellane / Val d'Allos (Haut Verdon)",
+      "elevation": {
+        "diff": 968,
+        "base": 1608,
+        "top": 2576
+      },
+      "km": {
+        "total": 180,
+        "easy": 56,
+        "intermediate": 93.5,
+        "difficult": 30.5
+      },
+      "lifts": 36,
+      "slug": "espace-lumiere-pra-loup-val-dallos",
+      "source": "https://www.skiresort.com/en/ski-resort/espace-lumiere-pra-loup-val-dallos/",
+      "snowReliability": null,
+      "ratings": {
+        "Ski resort size": 4.7,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3.3
+      },
+      "airports": [],
+      "train": null,
+      "towns": [],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/7e/e9/95/5d/276b5f65c5.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/7e/e9/95/5d/82e8037883.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/espace-lumiere-pra-loup-val-dallos/trail-map/"
+      },
+      "snowmakingPct": 48,
+      "longestRun": null
+    },
+    {
+      "name": "Laax/Flims/Falera",
+      "url": "https://www.skiresort.com/en/ski-resort/laax-flims-falera/",
+      "rating": 4.5,
+      "country": "Switzerland",
+      "region": "Eastern Switzerland / Graubünden / Flims Laax Falera",
+      "elevation": {
+        "diff": 1918,
+        "base": 1100,
+        "top": 3018
+      },
+      "km": {
+        "total": 176,
+        "easy": 85,
+        "intermediate": 76,
+        "difficult": 15
+      },
+      "lifts": 29,
+      "slug": "laax-flims-falera",
+      "source": "https://www.skiresort.com/en/ski-resort/laax-flims-falera/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "FDH",
+          "name": "Friedrichshafen",
+          "country": "Germany",
+          "km": 146,
+          "driveMin": 107
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 152,
+          "driveMin": 109
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "The nearest train station is Ilanz (Rhaetian Railway), about 8 km from Laax."
+      },
+      "towns": [
+        "Flims",
+        "Laax",
+        "Falera",
+        "Fidaz"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/d1/1d/dd/d0/487d465899.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/d1/1d/dd/d0/a7fdfd9b16.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/laax-flims-falera/trail-map/"
+      },
+      "snowmakingPct": 37,
+      "longestRun": {
+        "name": "Vorab Glacier-Flims (Der Weisse Schuss)",
+        "km": 14
+      }
+    },
+    {
+      "name": "Baqueira/Beret",
+      "url": "https://www.skiresort.com/en/ski-resort/baqueira-beret/",
+      "rating": 4.2,
+      "country": "Spain",
+      "region": "Catalonia (Catalunya) / Lleida / Val d’Aran",
+      "elevation": {
+        "diff": 1110,
+        "base": 1500,
+        "top": 2610
+      },
+      "km": {
+        "total": 166,
+        "easy": 77,
+        "intermediate": 68,
+        "difficult": 21
+      },
+      "lifts": 36,
+      "slug": "baqueira-beret",
+      "source": "https://www.skiresort.com/en/ski-resort/baqueira-beret/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 4,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "LDE",
+          "name": "Lourdes/Tarbes",
+          "country": "France",
+          "km": 136,
+          "driveMin": 108
+        },
+        {
+          "iata": "TLS",
+          "name": "Toulouse",
+          "country": "France",
+          "km": 179,
+          "driveMin": 132
+        },
+        {
+          "iata": "HSK",
+          "name": "Huesca",
+          "country": "Spain",
+          "km": 196,
+          "driveMin": 155
+        },
+        {
+          "iata": "ZAZ",
+          "name": "Zaragoza",
+          "country": "Spain",
+          "km": 272,
+          "driveMin": 214
+        },
+        {
+          "iata": "BCN",
+          "name": "Barcelona",
+          "country": "Spain",
+          "km": 282,
+          "driveMin": 214
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "Baqueira",
+        "Ruda",
+        "Tanau",
+        "Salardú",
+        "Arties",
+        "Vielha e Mijaran",
+        "València d'Àneu",
+        "Esterri d'Àneu"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/67/72/25/5a/f7089408bd.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/67/72/25/5a/6640014595.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/baqueira-beret/trail-map/"
+      },
+      "snowmakingPct": 70,
+      "longestRun": {
+        "name": "Cap de Baqueira - valley run",
+        "km": 5
+      }
+    },
+    {
+      "name": "Le Grand Domaine – Valmorel/Doucy/Celliers/St François Longchamp",
+      "url": "https://www.skiresort.com/en/ski-resort/le-grand-domaine-valmorel-doucy-celliers-st-francois-longchamp/",
+      "rating": 3.9,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Tarentaise",
+      "elevation": {
+        "diff": 1264,
+        "base": 1250,
+        "top": 2514
+      },
+      "km": {
+        "total": 165,
+        "easy": 115,
+        "intermediate": 35,
+        "difficult": 15
+      },
+      "lifts": 43,
+      "slug": "le-grand-domaine-valmorel-doucy-celliers-st-francois-longchamp",
+      "source": "https://www.skiresort.com/en/ski-resort/le-grand-domaine-valmorel-doucy-celliers-st-francois-longchamp/",
+      "snowReliability": null,
+      "ratings": {
+        "Ski resort size": 4.8,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3.6
+      },
+      "airports": [],
+      "train": null,
+      "towns": [],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/0c/c3/38/87/123ac0685f.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/0c/c3/38/87/802a910553.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/le-grand-domaine-valmorel-doucy-celliers-st-francois-longchamp/trail-map/"
+      },
+      "snowmakingPct": null,
+      "longestRun": null
+    },
+    {
+      "name": "Galibier Thabor – Valmeinier/Valloire",
+      "url": "https://www.skiresort.com/en/ski-resort/galibier-thabor-valmeinier-valloire/",
+      "rating": 3.9,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Maurienne",
+      "elevation": {
+        "diff": 1320,
+        "base": 1430,
+        "top": 2750
+      },
+      "km": {
+        "total": 160,
+        "easy": 60,
+        "intermediate": 85,
+        "difficult": 15
+      },
+      "lifts": 30,
+      "slug": "galibier-thabor-valmeinier-valloire",
+      "source": "https://www.skiresort.com/en/ski-resort/galibier-thabor-valmeinier-valloire/",
+      "snowReliability": null,
+      "ratings": {
+        "Ski resort size": 4.8,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 3.7
+      },
+      "airports": [],
+      "train": null,
+      "towns": [],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/c2/22/20/04/67aab53602.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/c2/22/20/04/21272961f3.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/galibier-thabor-valmeinier-valloire/trail-map/"
+      },
+      "snowmakingPct": 50,
+      "longestRun": null
+    },
+    {
+      "name": "Madonna di Campiglio/Pinzolo/Folgàrida/Marilleva",
+      "url": "https://www.skiresort.com/en/ski-resort/madonna-di-campiglio-pinzolo-folgarida-marilleva/",
+      "rating": 4.7,
+      "country": "Italy",
+      "region": "Trentino-Alto Adige (Trentino-Südtirol) / Trentino / Val di Sole (Sole Valley)",
+      "elevation": {
+        "diff": 1652,
+        "base": 852,
+        "top": 2504
+      },
+      "km": {
+        "total": 155,
+        "easy": 50,
+        "intermediate": 72,
+        "difficult": 33
+      },
+      "lifts": 58,
+      "slug": "madonna-di-campiglio-pinzolo-folgarida-marilleva",
+      "source": "https://www.skiresort.com/en/ski-resort/madonna-di-campiglio-pinzolo-folgarida-marilleva/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "BZO",
+          "name": "Bozen/Bolzano",
+          "country": "Italy",
+          "km": 107,
+          "driveMin": 99
+        },
+        {
+          "iata": "VRN",
+          "name": "Verona",
+          "country": "Italy",
+          "km": 176,
+          "driveMin": 130
+        },
+        {
+          "iata": "BGY",
+          "name": "Bergamo",
+          "country": "Italy",
+          "km": 178,
+          "driveMin": 161
+        },
+        {
+          "iata": "LIN",
+          "name": "Milano/Linate",
+          "country": "Italy",
+          "km": 210,
+          "driveMin": 200
+        },
+        {
+          "iata": "MXP",
+          "name": "Milano/Malpensa",
+          "country": "Italy",
+          "km": 264,
+          "driveMin": 228
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "With the Dolomiti Express, you have excellent access to the ski area. An 8-seater gondola lift starts directly at the Daolasa-Commezzadura train station in Val di Sole. Other train stations in Val di Sole are: Male, Dimaro, and Marilleva. A gondola lift also starts directly from the train station in Marilleva."
+      },
+      "towns": [
+        "Madonna di Campiglio",
+        "Folgàrida",
+        "Marilleva 900",
+        "Marilleva 1400",
+        "Pinzolo",
+        "Daolasa",
+        "Commezzadura",
+        "Campo Carlo Magno",
+        "Mezzana",
+        "Sant'Antonio di Mavignola",
+        "Dimaro",
+        "Monclassico"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/5e/ea/ac/cf/ab98c653b7.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/5e/ea/ac/cf/e3e545722b.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/madonna-di-campiglio-pinzolo-folgarida-marilleva/trail-map/"
+      },
+      "snowmakingPct": 95,
+      "longestRun": {
+        "name": "DoloMitica (Pinzolo)",
+        "km": 5.8
+      }
+    },
+    {
+      "name": "St. Moritz – Corviglia",
+      "url": "https://www.skiresort.com/en/ski-resort/st-moritz-corviglia/",
+      "rating": 4.7,
+      "country": "Switzerland",
+      "region": "Eastern Switzerland / Graubünden / Engadin St. Moritz",
+      "elevation": {
+        "diff": 1285,
+        "base": 1772,
+        "top": 3057
+      },
+      "km": {
+        "total": 155,
+        "easy": 42,
+        "intermediate": 79,
+        "difficult": 34
+      },
+      "lifts": 23,
+      "slug": "st-moritz-corviglia",
+      "source": "https://www.skiresort.com/en/ski-resort/st-moritz-corviglia/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 5
+      },
+      "airports": [
+        {
+          "iata": "LIN",
+          "name": "Milano/Linate",
+          "country": "Italy",
+          "km": 169,
+          "driveMin": 153
+        },
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 187,
+          "driveMin": 154
+        },
+        {
+          "iata": "BGY",
+          "name": "Bergamo",
+          "country": "Italy",
+          "km": 152,
+          "driveMin": 157
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 212,
+          "driveMin": 165
+        },
+        {
+          "iata": "MXP",
+          "name": "Milano/Malpensa",
+          "country": "Italy",
+          "km": 186,
+          "driveMin": 165
+        },
+        {
+          "iata": "BSL",
+          "name": "Basel/Mulhouse",
+          "country": "France",
+          "km": 292,
+          "driveMin": 206
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Arrival by train is very convenient. The Swiss Federal Railways SBB is a central means of transportation. The train stations are St. Moritz and Celerina."
+      },
+      "towns": [
+        "St. Moritz",
+        "St. Moritz-Dorf",
+        "St. Moritz-Bad",
+        "Celerina/Schlarigna",
+        "Suvretta",
+        "Champfèr",
+        "Samedan",
+        "Silvaplana",
+        "Pontresina",
+        "Bever",
+        "Sils im Engadin/Segl",
+        "La Punt Chamues-ch"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/d0/01/15/5b/920993bec4.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/d0/01/15/5b/e621555675.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/st-moritz-corviglia/trail-map/"
+      },
+      "snowmakingPct": 80,
+      "longestRun": {
+        "name": "Fuorcla Grischa-Celerina No. 17, 21, 25",
+        "km": 6
+      }
+    },
+    {
+      "name": "Zillertal Arena – Zell am Ziller/Gerlos/Königsleiten/Hochkrimml",
+      "url": "https://www.skiresort.com/en/ski-resort/zillertal-arena-zell-am-ziller-gerlos-koenigsleiten-hochkrimml/",
+      "rating": 4.7,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Unterland / Schwaz / Zillertal / Zell-Gerlos",
+      "elevation": {
+        "diff": 1920,
+        "base": 580,
+        "top": 2500
+      },
+      "km": {
+        "total": 150.1,
+        "easy": 50,
+        "intermediate": 88.1,
+        "difficult": 12
+      },
+      "lifts": 52,
+      "slug": "zillertal-arena-zell-am-ziller-gerlos-koenigsleiten-hochkrimml",
+      "source": "https://www.skiresort.com/en/ski-resort/zillertal-arena-zell-am-ziller-gerlos-koenigsleiten-hochkrimml/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 5,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 5,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 4
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 65,
+          "driveMin": 53
+        },
+        {
+          "iata": "SZG",
+          "name": "Salzburg",
+          "country": "Austria",
+          "km": 163,
+          "driveMin": 100
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 188,
+          "driveMin": 115
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "In the Zillertal, the Zillertalbahn railway operates. This narrow-gauge railway runs from Jenbach to Mayrhofen. The Zillertalbahn station in Zell am Ziller is about 2 km from the Rosenalm and Karspitz gondola lifts. There is a ski bus service."
+      },
+      "towns": [
+        "Zell am Ziller",
+        "Gerlos",
+        "Königsleiten",
+        "Rohr",
+        "Hochkrimml",
+        "Rohrberg",
+        "Zellberg",
+        "Hainzenberg",
+        "Gerlosberg",
+        "Krimml",
+        "Wald im Pinzgau"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/a4/48/86/66/50d3519cc1.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/a4/48/86/66/818421a44e.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/zillertal-arena-zell-am-ziller-gerlos-koenigsleiten-hochkrimml/trail-map/"
+      },
+      "snowmakingPct": 88,
+      "longestRun": {
+        "name": "Übergangsjoch in Zell am Ziller down to the valley No. 22, No. 19, No. 18, No. 10",
+        "km": 11
+      }
+    },
+    {
+      "name": "La Molina/Masella – Alp2500",
+      "url": "https://www.skiresort.com/en/ski-resort/la-molina-masella-alp2500/",
+      "rating": 4.3,
+      "country": "Spain",
+      "region": "Catalonia (Catalunya) / Girona",
+      "elevation": {
+        "diff": 921,
+        "base": 1616,
+        "top": 2537
+      },
+      "km": {
+        "total": 145,
+        "easy": 80,
+        "intermediate": 47,
+        "difficult": 18
+      },
+      "lifts": 33,
+      "slug": "la-molina-masella-alp2500",
+      "source": "https://www.skiresort.com/en/ski-resort/la-molina-masella-alp2500/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 3,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 4,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 1
+      },
+      "airports": [
+        {
+          "iata": "BCN",
+          "name": "Barcelona",
+          "country": "Spain",
+          "km": 152,
+          "driveMin": 114
+        },
+        {
+          "iata": "GRO",
+          "name": "Girona",
+          "country": "Spain",
+          "km": 136,
+          "driveMin": 118
+        },
+        {
+          "iata": "PGF",
+          "name": "Perpignan",
+          "country": "France",
+          "km": 120,
+          "driveMin": 124
+        },
+        {
+          "iata": "TLS",
+          "name": "Toulouse",
+          "country": "France",
+          "km": 198,
+          "driveMin": 162
+        },
+        {
+          "iata": "CCF",
+          "name": "Carcassonne",
+          "country": "France",
+          "km": 179,
+          "driveMin": 163
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "La Molina train station is just under 5 km from the ski area, and there is a regular bus service to the slopes."
+      },
+      "towns": [
+        "La Molina",
+        "Masella",
+        "Alp"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/8d/d5/59/9e/17dbadf967.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/8d/d5/59/9e/04e0243820.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/la-molina-masella-alp2500/trail-map/"
+      },
+      "snowmakingPct": 79,
+      "longestRun": {
+        "name": "La Tosa-Masella (Dues Estacion, Bona Vista, La Corda, Familiar)",
+        "km": 6
+      }
+    },
+    {
+      "name": "Sölden",
+      "url": "https://www.skiresort.com/en/ski-resort/soelden/",
+      "rating": 4.7,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Oberland (region) / Imst (District) / Ötztal",
+      "elevation": {
+        "diff": 1990,
+        "base": 1350,
+        "top": 3340
+      },
+      "km": {
+        "total": 144.1,
+        "easy": 76.4,
+        "intermediate": 40.1,
+        "difficult": 27.6
+      },
+      "lifts": 31,
+      "slug": "soelden",
+      "source": "https://www.skiresort.com/en/ski-resort/soelden/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 5,
+        "Families and children": 4,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 80,
+          "driveMin": 64
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 287,
+          "driveMin": 175
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "Sölden",
+        "Hochsölden",
+        "Zwieselstein",
+        "Huben",
+        "Längenfeld"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/9a/a3/3a/ac/af4529ef8e.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/9a/a3/3a/ac/1552d987fa.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/soelden/trail-map/"
+      },
+      "snowmakingPct": 91,
+      "longestRun": {
+        "name": "Glacier-Sölden No. 32, 35, 33, 30, 7a, 9",
+        "km": 15
+      }
+    },
+    {
+      "name": "Espace San Bernardo – La Rosière/La Thuile",
+      "url": "https://www.skiresort.com/en/ski-resort/espace-san-bernardo-la-rosiere-la-thuile/",
+      "rating": 4.3,
+      "country": "France",
+      "region": "Auvergne-Rhône-Alpes / Savoie Mont Blanc / Savoie / Albertville / Tarentaise",
+      "elevation": {
+        "diff": 1610,
+        "base": 1190,
+        "top": 2800
+      },
+      "km": {
+        "total": 143.1,
+        "easy": 56,
+        "intermediate": 70.5,
+        "difficult": 16.6
+      },
+      "lifts": 37,
+      "slug": "espace-san-bernardo-la-rosiere-la-thuile",
+      "source": "https://www.skiresort.com/en/ski-resort/espace-san-bernardo-la-rosiere-la-thuile/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 5,
+        "Slope preparation": 4,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 5,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "TRN",
+          "name": "Torino",
+          "country": "Italy",
+          "km": 157,
+          "driveMin": 116
+        },
+        {
+          "iata": "GNB",
+          "name": "Grenoble",
+          "country": "France",
+          "km": 205,
+          "driveMin": 153
+        },
+        {
+          "iata": "LYS",
+          "name": "Lyon",
+          "country": "France",
+          "km": 209,
+          "driveMin": 153
+        },
+        {
+          "iata": "GVA",
+          "name": "Geneva",
+          "country": "Switzerland",
+          "km": 165,
+          "driveMin": 161
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": ""
+      },
+      "towns": [
+        "La Thuile",
+        "La Rosière",
+        "Les Eucherts",
+        "Petite Golette",
+        "Entrèves",
+        "Grande Golette",
+        "Les Escudets",
+        "Le Gollet",
+        "Séez",
+        "Montvalezan"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/a7/77/7d/dd/e7fe78c645.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/a7/77/7d/dd/7a3380395a.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/espace-san-bernardo-la-rosiere-la-thuile/trail-map/"
+      },
+      "snowmakingPct": null,
+      "longestRun": {
+        "name": "Mont Belvedere-La Thuile",
+        "km": 7
+      }
+    },
+    {
+      "name": "Formigal",
+      "url": "https://www.skiresort.com/en/ski-resort/formigal/",
+      "rating": 4,
+      "country": "Spain",
+      "region": "Aragon / Huesca",
+      "elevation": {
+        "diff": 764,
+        "base": 1501,
+        "top": 2265
+      },
+      "km": {
+        "total": 143,
+        "easy": 48,
+        "intermediate": 75,
+        "difficult": 20
+      },
+      "lifts": 21,
+      "slug": "formigal",
+      "source": "https://www.skiresort.com/en/ski-resort/formigal/",
+      "snowReliability": 4,
+      "ratings": {
+        "Ski resort size": 4,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 4,
+        "Snow reliability": 4,
+        "Slope preparation": 5,
+        "Access, on-site parking": 3,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 4,
+        "Environmentally friendly ski operation": 3,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 2,
+        "Families and children": 4,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 4,
+        "Cross-country skiing and trails": 2
+      },
+      "airports": [
+        {
+          "iata": "HSK",
+          "name": "Huesca",
+          "country": "Spain",
+          "km": 103,
+          "driveMin": 84
+        },
+        {
+          "iata": "PUF",
+          "name": "Pau",
+          "country": "France",
+          "km": 87,
+          "driveMin": 97
+        },
+        {
+          "iata": "ZAZ",
+          "name": "Zaragoza",
+          "country": "Spain",
+          "km": 170,
+          "driveMin": 116
+        },
+        {
+          "iata": "PNA",
+          "name": "Pamplona",
+          "country": "Spain",
+          "km": 157,
+          "driveMin": 118
+        },
+        {
+          "iata": "TLS",
+          "name": "Toulouse",
+          "country": "France",
+          "km": 270,
+          "driveMin": 193
+        },
+        {
+          "iata": "BCN",
+          "name": "Barcelona",
+          "country": "Spain",
+          "km": 354,
+          "driveMin": 217
+        }
+      ],
+      "train": {
+        "direct": false,
+        "lines": [
+          "No direct train connection"
+        ],
+        "info": "Next train connection in Spain: Saragossa-Huesca AVE; in France: TGV to Pau"
+      },
+      "towns": [
+        "Formigal",
+        "Sallent de Gállego",
+        "Lanuza",
+        "Escarrilla",
+        "Sandiniés",
+        "Tramacastilla de Tena",
+        "Piedrafita de Jaca",
+        "El Pueyo de Jaca",
+        "Panticosa",
+        "Balneario de Panticosa",
+        "Hoz de Jaca",
+        "Biescas"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/ac/cf/f0/0b/2e36f35016.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/ac/cf/f0/0b/93d48da753.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/formigal/trail-map/"
+      },
+      "snowmakingPct": 50,
+      "longestRun": {
+        "name": "Pico Tres Hombres-Sextas",
+        "km": 6
+      }
+    },
+    {
+      "name": "Mayrhofen – Penken/Ahorn/Rastkogel/Eggalm (Mountopolis)",
+      "url": "https://www.skiresort.com/en/ski-resort/mayrhofen-penken-ahorn-rastkogel-eggalm-mountopolis/",
+      "rating": 4.7,
+      "country": "Austria",
+      "region": "Tyrol (Tirol) / Tiroler Unterland / Schwaz / Zillertal / Mayrhofen-Hippach",
+      "elevation": {
+        "diff": 1870,
+        "base": 630,
+        "top": 2500
+      },
+      "km": {
+        "total": 142,
+        "easy": 44,
+        "intermediate": 66,
+        "difficult": 32
+      },
+      "lifts": 61,
+      "slug": "mayrhofen-penken-ahorn-rastkogel-eggalm-mountopolis",
+      "source": "https://www.skiresort.com/en/ski-resort/mayrhofen-penken-ahorn-rastkogel-eggalm-mountopolis/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 4,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 4,
+        "Après-ski": 5,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 5,
+        "Beginners": 5,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 74,
+          "driveMin": 65
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 197,
+          "driveMin": 125
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "The Zillertalbahn runs every half hour from Jenbach in the Inntal valley to Ramsau-Hippach and Mayrhofen."
+      },
+      "towns": [
+        "Mayrhofen",
+        "Tux",
+        "Finkenberg",
+        "Lanersbach (Tux)",
+        "Vorderlanersbach (Tux)",
+        "Hippach",
+        "Dornau",
+        "Stockach",
+        "Schwendau",
+        "Persal",
+        "Hochschwendberg",
+        "Burgstall"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/04/43/30/05/26270babf9.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/04/43/30/05/45de747e93.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/mayrhofen-penken-ahorn-rastkogel-eggalm-mountopolis/trail-map/"
+      },
+      "snowmakingPct": 95,
+      "longestRun": {
+        "name": "Ski route to Stockach (Schwendau)",
+        "km": 10
+      }
+    },
+    {
+      "name": "Silvretta Montafon",
+      "url": "https://www.skiresort.com/en/ski-resort/silvretta-montafon/",
+      "rating": 4.6,
+      "country": "Austria",
+      "region": "Vorarlberg / Bludenz / Montafon",
+      "elevation": {
+        "diff": 1730,
+        "base": 700,
+        "top": 2430
+      },
+      "km": {
+        "total": 141.6,
+        "easy": 60,
+        "intermediate": 50,
+        "difficult": 31.6
+      },
+      "lifts": 35,
+      "slug": "silvretta-montafon",
+      "source": "https://www.skiresort.com/en/ski-resort/silvretta-montafon/",
+      "snowReliability": 5,
+      "ratings": {
+        "Ski resort size": 5,
+        "Slope offering, variety of runs": 5,
+        "Lifts and cable cars": 5,
+        "Snow reliability": 5,
+        "Slope preparation": 5,
+        "Access, on-site parking": 4,
+        "Orientation (trail map, information boards, sign-postings)": 5,
+        "Cleanliness and hygiene": 5,
+        "Environmentally friendly ski operation": 4,
+        "Friendliness of staff": 4,
+        "Mountain restaurants, ski huts, gastronomy": 5,
+        "Après-ski": 4,
+        "Accommodation offering directly at the slopes and lifts": 4,
+        "Families and children": 4,
+        "Beginners": 4,
+        "Advanced skiers, freeriders": 5,
+        "Snow parks": 5,
+        "Cross-country skiing and trails": 3
+      },
+      "airports": [
+        {
+          "iata": "FDH",
+          "name": "Friedrichshafen",
+          "country": "Germany",
+          "km": 106,
+          "driveMin": 77
+        },
+        {
+          "iata": "FMM",
+          "name": "Memmingen",
+          "country": "Germany",
+          "km": 150,
+          "driveMin": 98
+        },
+        {
+          "iata": "INN",
+          "name": "Innsbruck",
+          "country": "Austria",
+          "km": 145,
+          "driveMin": 113
+        },
+        {
+          "iata": "ZRH",
+          "name": "Zurich",
+          "country": "Switzerland",
+          "km": 176,
+          "driveMin": 116
+        },
+        {
+          "iata": "MUC",
+          "name": "München/Munich",
+          "country": "Germany",
+          "km": 287,
+          "driveMin": 162
+        }
+      ],
+      "train": {
+        "direct": true,
+        "lines": [
+          "Train connection available"
+        ],
+        "info": "Schruns (Montafon Railway) - from there take the ski bus to the valley stations."
+      },
+      "towns": [
+        "Schruns",
+        "St. Gallenkirch",
+        "Gaschurn",
+        "Garfrescha",
+        "Gortipohl",
+        "Tschagguns",
+        "Silbertal",
+        "Partenen",
+        "Gantschier",
+        "Bartholomäberg"
+      ],
+      "map": {
+        "full": "https://www.skiresort.com/fileadmin/_processed_/51/1e/e1/11/34f483b2b3.jpg",
+        "thumb": "https://www.skiresort.com/fileadmin/_processed_/51/1e/e1/11/f54186f955.jpg",
+        "page": "https://www.skiresort.com/en/ski-resort/silvretta-montafon/trail-map/"
+      },
+      "snowmakingPct": 66,
+      "longestRun": {
+        "name": "Hochjoch Totale",
+        "km": 12
+      }
+    }
+  ]
+}

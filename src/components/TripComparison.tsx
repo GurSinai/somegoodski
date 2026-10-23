@@ -3,7 +3,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { buildCombos, withinEveryonesBudget, type Combo } from '../lib/combinations';
 import { nightsOf } from '../lib/dates';
-import { BOARDS, boardLabel, transferLabel } from '../lib/labels';
+import { STAY_TYPES, liftLabel, liftRank, stayLabel, transferLabel } from '../lib/labels';
 import { cx, money, moneyRange } from '../lib/util';
 import { useStore } from '../store/useStore';
 import type { FlightOption, PricedTrip, Vacation, WinterFriend } from '../types';
@@ -25,7 +25,7 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
   const [sort, setSort] = useState<SortKey>('total');
   const [airport, setAirport] = useState('');
   const [maxPP, setMaxPP] = useState(0);
-  const [board, setBoard] = useState('');
+  const [stayType, setStayType] = useState('');
   const [skiInOut, setSkiInOut] = useState(false);
   const [inBudget, setInBudget] = useState(false);
   const [hideIncomplete, setHideIncomplete] = useState(false);
@@ -41,19 +41,19 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
     const list = all
       .filter((c) => !airport || c.airport === airport)
       .filter((c) => !maxPP || c.perPerson.min <= maxPP)
-      .filter((c) => !board || c.hotel?.board === board)
+      .filter((c) => !stayType || c.hotel?.type === stayType)
       .filter((c) => !skiInOut || c.hotel?.skiInOut)
       .filter((c) => !hideIncomplete || !c.incomplete)
       .filter((c) => !inBudget || withinEveryonesBudget(c));
     const key = (c: Combo) =>
       sort === 'drive' ? drive(c.airport)
-        : sort === 'walk' ? (c.hotel ? (c.hotel.skiInOut ? 0 : c.hotel.walkToLiftMin || 99) : 999)
+        : sort === 'walk' ? (c.hotel ? liftRank(c.hotel) : 999)
           : sort === 'flight' ? c.parts.flight
             : sort === 'hotel' ? c.parts.hotel
               : c.perPerson.min;
     return list.sort((a, b) => key(a) - key(b) || a.perPerson.min - b.perPerson.min);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [all, airport, maxPP, board, skiInOut, hideIncomplete, inBudget, sort]);
+  }, [all, airport, maxPP, stayType, skiInOut, hideIncomplete, inBudget, sort]);
 
   if (all.length === 0) {
     return (
@@ -87,9 +87,9 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
           <option value="">All airports</option>
           {airportsUsed.map((a) => <option key={a}>{a}</option>)}
         </select>
-        <select className="input w-auto py-1.5" value={board} onChange={(e) => setBoard(e.target.value)}>
-          <option value="">Any board</option>
-          {BOARDS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+        <select className="input w-auto py-1.5" value={stayType} onChange={(e) => setStayType(e.target.value)}>
+          <option value="">Any stay</option>
+          {STAY_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-slate-500">Max / person</span>
@@ -139,8 +139,8 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
                 ['Transfer', (c: Combo) => (c.transfer ? `${transferLabel(c.transfer.type)} · ${m(c.parts.transfer)}` : '—')],
                 ['Drive time', (c: Combo) => `${drive(c.airport)} min`],
                 ['Hotel', (c: Combo) => (c.hotel ? m(c.parts.hotel) : '—')],
-                ['Board', (c: Combo) => (c.hotel ? boardLabel(c.hotel.board) : '—')],
-                ['To the lift', (c: Combo) => (c.hotel?.skiInOut ? 'Ski-in/out' : c.hotel ? `${c.hotel.walkToLiftMin || '?'} min walk` : '—')],
+                ['Stay', (c: Combo) => (c.hotel ? `${stayLabel(c.hotel.type)}${c.hotel.rating ? ` ${'★'.repeat(c.hotel.rating)}` : ''}` : '—')],
+                ['To the lift', (c: Combo) => (c.hotel ? liftLabel(c.hotel) || '?' : '—')],
                 ['Per person (avg)', (c: Combo) => <b className="text-base">{mr(c.perPerson)}</b>],
                 ['Group total', (c: Combo) => mr(c.groupTotal)],
                 ['Over budget', (c: Combo) => {
@@ -199,7 +199,7 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
                       {c.hotel ? (
                         <>
                           <div className="flex items-center gap-1.5">{c.hotel.name || 'Hotel'}{c.hotel.skiInOut && <Badge color="green">ski-in/out</Badge>}</div>
-                          <div className="text-xs text-slate-500">{m(c.parts.hotel)} · {c.hotel.board}{!c.hotel.skiInOut && c.hotel.walkToLiftMin ? ` · 🚶${c.hotel.walkToLiftMin}′` : ''}</div>
+                          <div className="text-xs text-slate-500">{m(c.parts.hotel)} · {stayLabel(c.hotel.type)}{!c.hotel.skiInOut && c.hotel.liftMin ? ` · ${c.hotel.walkable ? '🚶' : '🚗'}${c.hotel.liftMin}′` : ''}</div>
                         </>
                       ) : <Badge color="amber"><AlertTriangle size={11} /> no hotel</Badge>}
                     </td>
@@ -247,7 +247,7 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
                 <Line k="🛫 Departure" v={c.outbound ? `${flightName(c.outbound)} · ${m(c.outbound.pricePerPerson)}` : 'missing'} warn={!c.outbound} />
                 <Line k="🛬 Return" v={c.ret ? `${flightName(c.ret)} · ${m(c.ret.pricePerPerson)}` : 'missing'} warn={!c.ret} />
                 <Line k="🚐 Transfer" v={c.transfer ? `${transferLabel(c.transfer.type)} · ${m(c.parts.transfer)}` : 'missing'} warn={!c.transfer} />
-                <Line k="🏨 Hotel" v={c.hotel ? `${c.hotel.board}${c.hotel.skiInOut ? ' · ski-in/out' : ''} · ${m(c.parts.hotel)}` : 'missing'} warn={!c.hotel} />
+                <Line k="🏨 Hotel" v={c.hotel ? `${stayLabel(c.hotel.type)}${c.hotel.skiInOut ? ' · ski-in/out' : ''} · ${m(c.parts.hotel)}` : 'missing'} warn={!c.hotel} />
               </div>
             </div>
           ))}

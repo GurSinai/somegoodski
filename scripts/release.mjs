@@ -1,4 +1,4 @@
-// One-command launch: if SkiPlanner is already running just open it, otherwise build and serve.
+// One-command launch: if SomeGoodSki is already running just open it, otherwise build and serve.
 // (Rebuilding while the server runs would fail on Windows: it holds the background videos open.)
 import { spawnSync } from 'node:child_process';
 import { connect } from 'node:net';
@@ -13,7 +13,7 @@ const running = await new Promise((resolve) => {
 });
 
 if (running) {
-  console.log(`SkiPlanner is already running, opening http://localhost:${PORT}`);
+  console.log(`SomeGoodSki is already running, opening http://localhost:${PORT}`);
   openBrowser(`http://localhost:${PORT}`);
   process.exit(0);
 }

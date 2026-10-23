@@ -1,7 +1,9 @@
 import { ArrowLeft, ExternalLink, Pencil, Plane, Plus, Snowflake, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import ResortIndexPanel, { Stars } from '../components/ResortIndexPanel';
 import { Badge, Button, Field, Mountains, NumberInput } from '../components/ui';
+import { RESORT_INDEX } from '../data/resortIndex';
 import { formatRange } from '../lib/dates';
 import { useActiveWinter, useResort, useStore, useVacationsOf } from '../store/useStore';
 import type { Resort, ResortInfo } from '../types';
@@ -28,6 +30,7 @@ export default function ResortDetail() {
   }
 
   const trips = allTrips.filter((t) => t.resortId === resort.id);
+  const indexEntry = resort.indexSlug ? RESORT_INDEX[resort.indexSlug] : undefined;
   const addTo = (vacationId: string) => {
     const existing = trips.find((t) => t.vacationId === vacationId);
     const tripId = existing?.id ?? createTrip(vacationId, resort.id);
@@ -47,6 +50,11 @@ export default function ResortDetail() {
             <div className="eyebrow">{resort.country}{resort.region && resort.region !== resort.country ? ` · ${resort.region}` : ''}</div>
             <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">{resort.name}</h1>
             {resort.info.skiArea && <div className="mt-1 text-slate-500">{resort.info.skiArea}</div>}
+            {indexEntry && (
+              <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-slate-600">
+                <Stars value={indexEntry.rating} size={18} /> {indexEntry.rating} · {indexEntry.km.total} km · {indexEntry.lifts} lifts
+              </div>
+            )}
           </div>
           {winter && (
             <div className="glass max-w-sm rounded-2xl p-3 shadow-soft">
@@ -90,6 +98,14 @@ export default function ResortDetail() {
         </div>
       )}
 
+      {indexEntry && (
+        <div className="mb-10">
+          <ResortIndexPanel entry={indexEntry} />
+        </div>
+      )}
+
+      {indexEntry && <h2 className="mb-1 text-xl font-extrabold">Your details</h2>}
+      {indexEntry && <p className="mb-4 text-sm text-slate-500">Editable copy used by your trips: the airports here are the ones you can add flights and transfers for.</p>}
       <div className="grid gap-6 lg:grid-cols-2">
         <InfoCard resort={resort} />
         <AirportsCard resort={resort} />

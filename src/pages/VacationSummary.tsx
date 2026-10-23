@@ -7,7 +7,7 @@ import { FriendReport, GroupReport } from '../components/Reports';
 import { Avatar, Badge, Button, Mountains, Stat } from '../components/ui';
 import { gasPerVehicle, vehiclesNeeded, type Combo, type FriendCost } from '../lib/combinations';
 import { formatRange, nightsOf, skiDaysOf } from '../lib/dates';
-import { boardLabel, gearLabel, statusOf, transferLabel } from '../lib/labels';
+import { gearLabel, liftLabel, stayLabel, statusOf, transferLabel } from '../lib/labels';
 import { fileSafe } from '../lib/pdf';
 import { vacationPlan } from '../lib/plan';
 import { addRange, cx, money, moneyRange, range } from '../lib/util';
@@ -304,7 +304,7 @@ function bookingItems(combo: Combo, trip: PricedTrip, people: number, currency: 
     items.push({
       icon: '🏨',
       title: h.name || 'Hotel',
-      details: [boardLabel(h.board), h.skiInOut ? 'Ski-in / ski-out' : h.walkToLiftMin ? `${h.walkToLiftMin} min walk to the lift` : '', h.link],
+      details: [stayLabel(h.type), h.rating ? '★'.repeat(h.rating) : '', liftLabel(h), h.link],
       qty: h.pricing === 'per-room' ? `${n(rooms, 'room')} × ${n(nights, 'night')}` : `${n(people, 'person', 'people')} × ${n(nights, 'night')}`,
       total: range(costs.reduce((s, c) => s + c.hotel, 0)),
       riders: costs.map((c) => c.friendId),
@@ -372,7 +372,7 @@ function RiderView({ friend: f, cost: c, combo, onPdf, exporter }: {
     { icon: '🛬', label: 'Return', title: c.ret ? `${c.ret.airline || 'Flight'} · ${c.ret.airport} → ${c.ret.homeCity || '?'}` : 'Making own way back', detail: c.ret?.when, amount: c.ret ? m(c.ret.pricePerPerson) : null },
     ...(c.luggage ? [{ icon: '🧳', label: 'Luggage', title: 'Your share of bags', amount: m(c.luggage) }] : []),
     ...(combo.transfer ? [{ icon: '🚐', label: 'Transfer', title: `${transferLabel(combo.transfer.type)}${combo.transfer.provider ? ` · ${combo.transfer.provider}` : ''}`, detail: gasPerVehicle(combo.transfer) ? 'Includes your share of gas' : undefined, amount: m(c.transfer) }] : []),
-    ...(h ? [{ icon: '🏨', label: 'Stay', title: h.name || 'Hotel', detail: [boardLabel(h.board), h.skiInOut ? 'ski-in / ski-out' : h.walkToLiftMin ? `${h.walkToLiftMin} min to the lift` : ''].filter(Boolean).join(' · '), amount: m(c.hotel) }] : []),
+    ...(h ? [{ icon: '🏨', label: 'Stay', title: h.name || 'Hotel', detail: [stayLabel(h.type), h.rating ? '★'.repeat(h.rating) : '', liftLabel(h)].filter(Boolean).join(' · '), amount: m(c.hotel) }] : []),
     ...(c.pass ? [{ icon: '🎟️', label: 'Ski pass', title: c.pass.name, amount: m(c.skiPass) }] : []),
     ...(c.quote && c.rental ? [{ icon: '🎿', label: 'Rental', title: c.quote.shop.name, detail: [f.gear.equipment && (f.sport === 'snowboard' ? 'Snowboard' : 'Skis'), ...f.gear.pieces.map((p) => gearLabel(p))].filter(Boolean).join(' · '), amount: m(c.rental) }] : []),
     ...c.lessonLines.map((l) => ({ icon: '🎓', label: 'Lesson', title: `${lessonTitle(l.lesson)} · ${l.shop.name}`, detail: lessonDaysLabel(l.lesson), amount: m(l.amount) })),

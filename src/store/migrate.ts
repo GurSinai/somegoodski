@@ -1,11 +1,12 @@
 import { createInitialData } from '../data/seed';
+import { INDEX_AIRPORT_LIST, INDEXED_RESORTS, SEED_TO_INDEX } from '../data/resortIndex';
 import { FALLBACK_RATES } from '../lib/fx';
 import { uid } from '../lib/util';
 import type { AppData, Currency, GearPiece, GearTier } from '../types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export const CURRENT_VERSION = 5;
+export const CURRENT_VERSION = 7;
 
 /** Upgrades persisted data or an imported backup from any earlier version. */
 export function migrate(data: any, version: number): AppData {
@@ -14,6 +15,8 @@ export function migrate(data: any, version: number): AppData {
   if (version < 3) d = v2ToV3(d);
   if (version < 4) d = v3ToV4(d);
   if (version < 5) d = v4ToV5(d);
+  if (version < 6) d = v5ToV6(d);
+  if (version < 7) d = v6ToV7(d);
   return d as AppData;
 }
 
@@ -217,4 +220,33 @@ function v4ToV5(old: any): any {
     })),
   }));
   return { ...old, version: 5, trips };
+}
+
+/**
+ * v6: the resort catalog gains the indexed European resorts (skiresort.com data). Starter
+ * resorts that belong to an indexed ski area are replaced by it, and their trips move along.
+ */
+function v5ToV6(old: any): any {
+  const remap = (id: string) => SEED_TO_INDEX[id] ?? id;
+  const kept = (old.resorts ?? []).filter((r: any) => !SEED_TO_INDEX[r.id]);
+  const resorts = [...kept, ...INDEXED_RESORTS.filter((r) => !kept.some((k: any) => k.id === r.id))];
+  const known = new Set((old.airports ?? []).map((a: any) => a.iata));
+  const airports = [...(old.airports ?? []), ...INDEX_AIRPORT_LIST.filter((a) => !known.has(a.iata))];
+  const trips = (old.trips ?? []).map((t: any) => ({ ...t, resortId: remap(t.resortId) }));
+  return { ...old, version: 6, resorts, airports, trips };
+}
+
+/** v7: hotels get a stay type (dorms / apartment / hotel) and a rating instead of board; lift time can be a drive. */
+function v6ToV7(old: any): any {
+  const trips = (old.trips ?? []).map((t: any) => ({
+    ...t,
+    hotels: (t.hotels ?? []).map(({ board, walkToLiftMin, ...h }: any) => ({
+      ...h,
+      type: h.type ?? (board === 'SC' ? 'apartment' : 'hotel'),
+      rating: h.rating ?? null,
+      walkable: h.walkable ?? true,
+      liftMin: h.liftMin ?? walkToLiftMin ?? 0,
+    })),
+  }));
+  return { ...old, version: 7, trips };
 }

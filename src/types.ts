@@ -108,6 +108,7 @@ export interface ResortInfo {
 
 export interface Resort {
   id: string;
+  indexSlug?: string; // key into the bundled skiresort.com index (src/data/resortIndex.ts)
   name: string;
   country: string;
   region: string;
@@ -156,7 +157,7 @@ export interface GasEstimate {
   pricePerLiter: number;
 }
 
-export type Board = 'RO' | 'BB' | 'HB' | 'FB' | 'AI' | 'SC';
+export type StayType = 'dorm' | 'apartment' | 'hotel';
 
 export interface HotelOption {
   id: string;
@@ -166,9 +167,11 @@ export interface HotelOption {
   per: 'night' | 'stay'; // a nightly rate, or the total for the whole stay
   pricing: 'per-room' | 'per-person';
   roomCapacity: number; // used when pricing is per-room
-  board: Board;
+  type: StayType;
+  rating: number | null; // stars, 1–5
   skiInOut: boolean;
-  walkToLiftMin: number;
+  walkable: boolean; // within walking distance of a lift; otherwise you drive (or take the ski bus)
+  liftMin: number; // minutes to the lift: on foot when walkable, by car otherwise
   link: string;
   notes: string;
 }
@@ -282,7 +285,7 @@ export interface Settings {
 }
 
 export interface AppData {
-  version: 5;
+  version: 7;
   settings: Settings;
   friends: Friend[];
   winters: Winter[];

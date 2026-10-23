@@ -1,7 +1,7 @@
 import { Fuel } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { vehiclesNeeded } from '../lib/combinations';
-import { BOARDS, GEAR_PRICE_ROWS, TRANSFER_TYPES } from '../lib/labels';
+import { GEAR_PRICE_ROWS, STAY_TYPES, TRANSFER_TYPES } from '../lib/labels';
 import { nightsOf } from '../lib/dates';
 import { cx, money, uid } from '../lib/util';
 import { useConverter, useStore, type OptionKind } from '../store/useStore';
@@ -21,7 +21,7 @@ export const blankTransfer = (airport: string, currency: Currency): TransferOpti
   id: uid(), airport, type: 'shuttle', provider: '', pricing: 'per-person', currency, price: 0, vehicleCapacity: 8, link: '', notes: '',
 });
 export const blankHotel = (currency: Currency): HotelOption => ({
-  id: uid(), name: '', currency, price: 0, per: 'night', pricing: 'per-room', roomCapacity: 2, board: 'BB', skiInOut: false, walkToLiftMin: 0, link: '', notes: '',
+  id: uid(), name: '', currency, price: 0, per: 'night', pricing: 'per-room', roomCapacity: 2, type: 'hotel', rating: null, skiInOut: false, walkable: true, liftMin: 0, link: '', notes: '',
 });
 export const blankPass = (currency: Currency): SkiPassOption => ({ id: uid(), name: '', basis: 'whole-stay', currency, price: 0, notes: '' });
 export const blankShop = (currency: Currency): RentalShop => ({
@@ -220,17 +220,27 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
               )}
             </div>
             <HotelSummary hotel={h} people={Math.max(1, trip.attendeeIds.length)} nights={nights} />
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Board">
-                <select className="input" value={h.board} onChange={(e) => set({ board: e.target.value as HotelOption['board'] })}>
-                  {BOARDS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
-                </select>
-              </Field>
-              <Field label="Walk to the lift (minutes)">
-                <NumberInput value={h.walkToLiftMin} onChange={(walkToLiftMin) => set({ walkToLiftMin })} min={0} disabled={h.skiInOut} />
-              </Field>
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
+              <div>
+                <span className="label">Type</span>
+                <Segmented value={h.type} onChange={(type) => set({ type })} options={STAY_TYPES} />
+              </div>
+              <div>
+                <span className="label">Rating</span>
+                <RatingInput value={h.rating} onChange={(rating) => set({ rating })} />
+              </div>
             </div>
-            <Toggle checked={h.skiInOut} onChange={(skiInOut) => set({ skiInOut, walkToLiftMin: skiInOut ? 0 : h.walkToLiftMin })} label="Ski-in / ski-out" />
+            <div className="space-y-3 rounded-2xl bg-slate-50/80 p-3">
+              <Toggle checked={h.skiInOut} onChange={(skiInOut) => set({ skiInOut, liftMin: skiInOut ? 0 : h.liftMin, walkable: skiInOut || h.walkable })} label="Ski-in / ski-out" />
+              {!h.skiInOut && (
+                <>
+                  <Toggle checked={h.walkable} onChange={(walkable) => set({ walkable })} label="Is walking distance from a lift?" />
+                  <Field label={h.walkable ? 'Walk to the lift (minutes)' : 'Drive to the lift (minutes)'} hint={h.walkable ? undefined : 'Staying outside the resort: driving or ski-bus time to the nearest lift.'}>
+                    <NumberInput value={h.liftMin} onChange={(liftMin) => set({ liftMin })} min={0} />
+                  </Field>
+                </>
+              )}
+            </div>
           </>
         );
       })()}
@@ -450,6 +460,21 @@ function GasEstimator({ gas, onChange, currency, roundTripKm, vehicles, people }
           {' → '}<b>{m((perCar * vehicles) / people)}</b> each
         </p>
       )}
+    </div>
+  );
+}
+
+/** 1–5 stars; clicking the current rating clears it. */
+function RatingInput({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
+  return (
+    <div className="flex items-center gap-0.5 text-2xl leading-none">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} type="button" title={`${n} star${n > 1 ? 's' : ''}`} onClick={() => onChange(value === n ? null : n)}
+          className={cx('transition hover:scale-110', value && n <= value ? 'text-amber-400' : 'text-slate-200 hover:text-amber-200')}>
+          ★
+        </button>
+      ))}
+      {!value && <span className="ml-1.5 text-xs text-slate-400">not rated</span>}
     </div>
   );
 }

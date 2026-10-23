@@ -70,7 +70,7 @@ export default function Home() {
           <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-glow">
             <Snowflake size={18} />
           </span>
-          SkiPlanner
+          SomeGoodSki
         </div>
         <Link to="/resorts" className="glass flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-white">
           <Mountain size={16} /> Resorts

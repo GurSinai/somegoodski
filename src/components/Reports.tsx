@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import type { ReactNode } from 'react';
 import type { Combo, FriendCost } from '../lib/combinations';
 import { formatRange, nightsOf, skiDaysOf } from '../lib/dates';
-import { boardLabel, gearLabel, transferLabel } from '../lib/labels';
+import { gearLabel, liftLabel, stayLabel, transferLabel } from '../lib/labels';
 import { addRange, money, moneyRange, range } from '../lib/util';
 import type { Airport, FlightOption, Range, Resort, Vacation, WinterFriend } from '../types';
 import { COST_COLORS } from './CostBar';
@@ -23,7 +23,7 @@ function Sheet({ children }: { children: ReactNode }) {
   return (
     <div style={{ width: 794, minHeight: 1123, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }} className="flex flex-col bg-white text-slate-800">
       {children}
-      <div className="mt-auto px-12 pb-7 pt-3 text-[10px] text-slate-400">Generated with SkiPlanner · {format(new Date(), 'd MMM yyyy')}</div>
+      <div className="mt-auto px-12 pb-7 pt-3 text-[10px] text-slate-400">Generated with SomeGoodSki · {format(new Date(), 'd MMM yyyy')}</div>
     </div>
   );
 }
@@ -95,7 +95,7 @@ function planItems(data: ReportData, c: FriendCost | null): PlanItem[] {
     {
       label: 'Stay', color: COST_COLORS.hotel,
       title: combo.hotel?.name || 'Not booked yet',
-      lines: combo.hotel ? [boardLabel(combo.hotel.board), combo.hotel.skiInOut ? 'Ski-in / ski-out' : combo.hotel.walkToLiftMin ? `${combo.hotel.walkToLiftMin} min walk to the lift` : undefined] : [],
+      lines: combo.hotel ? [[stayLabel(combo.hotel.type), combo.hotel.rating && '★'.repeat(combo.hotel.rating)].filter(Boolean).join(' · '), liftLabel(combo.hotel) || undefined] : [],
       price: m(combo.parts.hotel),
     },
   ];

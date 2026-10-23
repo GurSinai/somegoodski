@@ -81,7 +81,7 @@ describe('cost math', () => {
       { id: 't1', airport: 'GVA', type: 'shuttle', provider: '', pricing: 'per-person', currency: 'EUR', price: 100, vehicleCapacity: 1, link: '', notes: '' },
       { id: 't2', airport: 'LYS', type: 'bus', provider: '', pricing: 'per-person', currency: 'EUR', price: 80, vehicleCapacity: 1, link: '', notes: '' },
     ],
-    hotels: [{ id: 'h1', name: 'A', currency: 'EUR', price: 200, per: 'night', pricing: 'per-room', roomCapacity: 2, board: 'BB', skiInOut: true, walkToLiftMin: 0, link: '', notes: '' }],
+    hotels: [{ id: 'h1', name: 'A', currency: 'EUR', price: 200, per: 'night', pricing: 'per-room', roomCapacity: 2, type: 'hotel', rating: 4, skiInOut: true, walkable: true, liftMin: 0, link: '', notes: '' }],
     skiPasses: [
       { id: 'p1', name: 'Local', basis: 'whole-stay', currency: 'EUR', price: 300, notes: '' },
       { id: 'p2', name: 'Full area', basis: 'per-day', currency: 'EUR', price: 70, notes: '' },
@@ -213,7 +213,7 @@ describe('migration', () => {
       ['f-o', 'outbound', 150, 'Sat 06:10', 'USD'],
       ['f-r', 'return', 150, 'Sat 18:00', 'USD'],
     ]);
-    expect(t.hotels[0]).toMatchObject({ walkToLiftMin: 5, currency: 'USD', per: 'night' });
+    expect(t.hotels[0]).toMatchObject({ liftMin: 5, walkable: true, type: 'hotel', rating: null, currency: 'USD', per: 'night' });
     expect(t.skiPasses).toMatchObject([{ basis: 'whole-stay', price: 350, currency: 'USD' }]);
     expect(t.selectedComboId).toBe('f-o|f-r|x|h');
     // existing prices keep their currency; the app now shows everything in ILS
@@ -230,5 +230,41 @@ describe('migration', () => {
     expect(d.trips[0].shops[0].prices).toEqual({ 'equipment:intermediate': 22, 'equipment:offpiste': 40, boots: 9, helmet: 4 });
     expect(d.trips[0].shops[0].lessons).toMatchObject([{ type: 'group', pricePerPerson: 65, dates: [], friendIds: [] }]);
     expect(d.trips[0].shops[0]).not.toHaveProperty('groupLessonPerDay');
+  });
+});
+
+describe('resort index', () => {
+  it('replaces starter resorts that belong to an indexed area and moves their trips', async () => {
+    const { migrate } = await import('../store/migrate');
+    const d = migrate({
+      version: 5, settings: { currency: 'ILS' }, friends: [], winters: [], vacations: [],
+      airports: [{ iata: 'GVA', name: 'Geneva Airport', city: 'Geneva', country: 'Switzerland' }],
+      resorts: [
+        { id: 'val-thorens', name: 'Val Thorens', country: 'France', region: '', info: {}, airports: [] },
+        { id: 'chamonix', name: 'Chamonix', country: 'France', region: '', info: {}, airports: [] },
+      ],
+      trips: [{ id: 't', resortId: 'val-thorens', flights: [], transfers: [], hotels: [], skiPasses: [], shops: [], expenses: [] }],
+    }, 5);
+    const ids = d.resorts.map((r) => r.id);
+    expect(ids).toContain('chamonix');
+    expect(ids).not.toContain('val-thorens');
+    expect(ids).toContain('les-3-vallees-val-thorens-les-menuires-meribel-courchevel');
+    expect(d.resorts.filter((r) => r.indexSlug).length).toBe(39);
+    expect(d.trips[0].resortId).toBe('les-3-vallees-val-thorens-les-menuires-meribel-courchevel');
+    expect(d.airports.filter((a) => a.iata === 'GVA')).toHaveLength(1); // no duplicates
+    expect(d.airports.some((a) => a.iata === 'BZO')).toBe(true); // airports new from the index
+  });
+
+  it('indexes 3★+ resorts over 140 km with maps and airports', async () => {
+    const { RESORT_INDEX, indexAirports } = await import('../data/resortIndex');
+    const all = Object.values(RESORT_INDEX);
+    expect(all.length).toBeGreaterThan(30);
+    for (const r of all) {
+      expect(r.rating ?? 0).toBeGreaterThanOrEqual(3);
+      expect(r.km.total ?? 0).toBeGreaterThan(140);
+      expect(r.map).not.toBeNull();
+      expect(indexAirports(r).length).toBeGreaterThan(0);
+      expect(r.research?.arrival).toBeDefined();
+    }
   });
 });

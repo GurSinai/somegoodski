@@ -97,7 +97,7 @@ function Shell() {
             <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-glow">
               <Snowflake size={18} />
             </span>
-            <span className="hidden lg:inline">SkiPlanner</span>
+            <span className="hidden lg:inline">SomeGoodSki</span>
           </NavLink>
           <WinterSwitcher />
           <nav className="flex flex-1 gap-1 overflow-x-auto [scrollbar-width:none]">

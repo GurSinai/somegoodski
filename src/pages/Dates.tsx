@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { ArrowRight, Check, Eraser, Flame, PaintBucket, Pencil, Plus, Users } from 'lucide-react';
+import { ArrowRight, Check, Eraser, Flame, PaintBucket, Pencil, Plus, Users, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SeasonCalendar, { isWeekend } from '../components/SeasonCalendar';
@@ -32,11 +32,17 @@ export default function Dates() {
   const [previewRange, setPreviewRange] = useState<DateRange | null>(null);
   const [fillFrom, setFillFrom] = useState('');
   const [fillTo, setFillTo] = useState('');
+  const [selection, setSelection] = useState<DateRange | null>(null);
 
   // drag-to-paint: everything between the anchor day and the hovered day gets the same value
   const paint = useRef<{ value: boolean; anchor: ISODate } | null>(null);
+  // heatmap drag-to-select: the vacation dates run from this anchor to the hovered day
+  const selectFrom = useRef<ISODate | null>(null);
   useEffect(() => {
-    const up = () => (paint.current = null);
+    const up = () => {
+      paint.current = null;
+      selectFrom.current = null;
+    };
     window.addEventListener('mouseup', up);
     return () => window.removeEventListener('mouseup', up);
   }, []);
@@ -63,6 +69,7 @@ export default function Dates() {
   }
 
   const ringFor = (iso: ISODate): string | null => {
+    if (selection && iso >= selection.start && iso <= selection.end) return '#0f172a';
     if (previewRange && iso >= previewRange.start && iso <= previewRange.end) return '#0ea5e9';
     const i = datedVacations.findIndex((v) => iso >= v.dates!.start && iso <= v.dates!.end);
     return i >= 0 ? VACATION_RINGS[i % VACATION_RINGS.length] : null;
@@ -93,7 +100,12 @@ export default function Dates() {
   };
 
   const onDayDown = (iso: ISODate) => {
-    if (mode !== 'edit' || !editFriend) return;
+    if (mode === 'heatmap') {
+      selectFrom.current = iso;
+      setSelection({ start: iso, end: iso });
+      return;
+    }
+    if (!editFriend) return;
     const value = !editSet.has(iso);
     paint.current = { value, anchor: iso };
     setAvailability(winter.id, editFriend.id, [iso], value);
@@ -101,6 +113,8 @@ export default function Dates() {
 
   const onDayEnter = (iso: ISODate, e: React.MouseEvent) => {
     if (mode === 'edit' && paint.current && editFriend) setAvailability(winter.id, editFriend.id, daysBetween(paint.current.anchor, iso), paint.current.value);
+    const from = selectFrom.current;
+    if (mode === 'heatmap' && from) setSelection(from <= iso ? { start: from, end: iso } : { start: iso, end: from });
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     setHoverDay({ iso, x: rect.left + rect.width / 2, y: rect.bottom });
   };
@@ -187,8 +201,11 @@ export default function Dates() {
                 </div>
                 <span>More riders free</span>
               </div>
-              <span className="text-xs text-slate-400">Hover a day to see who’s in.</span>
+              <span className="text-xs text-slate-400">Hover a day to see who’s in. Drag across days to pick vacation dates.</span>
             </div>
+          )}
+          {mode === 'heatmap' && selection && (
+            <SelectionBar range={selection} friends={friends} onCreate={() => startVacation(selection)} onClear={() => setSelection(null)} />
           )}
 
           <SeasonCalendar start={winter.start} end={winter.end} renderDay={renderDay} onDayDown={onDayDown} onDayEnter={onDayEnter} onLeave={() => setHoverDay(null)} />
@@ -240,6 +257,28 @@ export default function Dates() {
       </div>
 
       {hoverDay && mode === 'heatmap' && <DayTooltip {...hoverDay} friends={friends} />}
+    </div>
+  );
+}
+
+/** The dates dragged out on the heatmap: who can make all of them, and a button to plan it. */
+function SelectionBar({ range, friends, onCreate, onClear }: { range: DateRange; friends: WinterFriend[]; onCreate: () => void; onClear: () => void }) {
+  const days = daysBetween(range.start, range.end);
+  const nights = nightsOf(range);
+  const free = friends.filter((f) => days.every((d) => f.availability.includes(d)));
+  return (
+    <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-900/10 bg-slate-50 p-3">
+      <div>
+        <div className="text-sm font-bold">{formatRange(range)}</div>
+        <div className="text-xs text-slate-500">{nights} night{nights === 1 ? '' : 's'} · {free.length}/{friends.length} free every day</div>
+      </div>
+      <div className="flex -space-x-1.5">
+        {free.map((f) => <Avatar key={f.id} name={f.name} color={f.color} size={24} ring />)}
+      </div>
+      <div className="ml-auto flex gap-2">
+        <Button size="sm" variant="ghost" onClick={onClear}><X size={14} /> Clear</Button>
+        <Button size="sm" variant="primary" disabled={nights < 1} onClick={onCreate}>Create vacation <ArrowRight size={13} /></Button>
+      </div>
     </div>
   );
 }
