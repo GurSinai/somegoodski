@@ -1,7 +1,9 @@
 import { CalendarDays, ChevronDown, Download, Mountain, Plus, Snowflake, Upload, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { startSync } from './collab/engine';
 import CurrencyMenu, { useFxAutoRefresh } from './components/CurrencyMenu';
+import SyncPill from './components/SyncPill';
 import { upcomingWinterYear } from './data/seed';
 import { exportData, readImportFile } from './lib/io';
 import { cx } from './lib/util';
@@ -19,6 +21,7 @@ import type { AppData } from './types';
 
 export default function App() {
   useFxAutoRefresh();
+  useEffect(() => startSync(), []);
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -119,6 +122,7 @@ function Shell() {
             ))}
           </nav>
           <div className="flex items-center gap-1">
+            <SyncPill />
             <CurrencyMenu />
             <button onClick={onExport} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800" title="Export backup (JSON)">
               <Download size={18} />

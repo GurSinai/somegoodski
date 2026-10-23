@@ -1,4 +1,7 @@
 import { ArrowRight, Check, ChevronRight, ClipboardList, FileText, MapPin, Pencil, Plane, Plus, Search, Star, Trash2, Trophy, Users } from 'lucide-react';
+import { stopSharing } from '../collab/engine';
+import { useCollab } from '../collab/useCollab';
+import ShareControl from '../components/ShareControl';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PdfButton, PdfStatus, usePdfExport, useReportData } from '../components/PdfExport';
@@ -58,7 +61,8 @@ export default function VacationPage() {
             )}
             <div className="mt-2 text-white/90">{formatRange(vacation.dates)}{vacation.dates && ` · ${nightsOf(vacation.dates)} nights`} · {vacation.attendeeIds.length} riders</div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <ShareControl vacationId={vacation.id} />
             <div className="rounded-full bg-white/20 p-1 backdrop-blur">
               {STATUSES.map((s) => (
                 <button
@@ -73,7 +77,19 @@ export default function VacationPage() {
             <button
               className="rounded-full p-2 text-white/70 hover:bg-white/20 hover:text-white"
               title="Delete vacation"
-              onClick={() => { if (confirm(`Delete "${vacation.name}" and its resorts?`)) { removeVacation(vacation.id); navigate(`/w/${winter.id}`); } }}
+              onClick={async () => {
+                if (!confirm(`Delete "${vacation.name}" and its resorts?`)) return;
+                if (useCollab.getState().shared[vacation.id]) {
+                  const both = confirm('This vacation is shared. Delete it for your partner too?\n\nOK: remove it from GitHub for both of you.\nCancel: only remove your copy (your partner keeps theirs).');
+                  try {
+                    await stopSharing(vacation.id, both);
+                  } catch (e) {
+                    return alert(`Could not delete it from GitHub: ${(e as Error).message}`);
+                  }
+                }
+                removeVacation(vacation.id);
+                navigate(`/w/${winter.id}`);
+              }}
             >
               <Trash2 size={16} />
             </button>

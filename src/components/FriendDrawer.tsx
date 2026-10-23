@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { unlinkFriendEverywhere, useSharedFriendIds } from '../collab/engine';
 import { GEAR_PIECES, GEAR_TIERS, SKILLS, SPORTS } from '../lib/labels';
 import { FRIEND_COLORS, cx } from '../lib/util';
 import { newFriend, useStore } from '../store/useStore';
@@ -22,6 +23,7 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   const removeFriend = useStore((s) => s.removeFriend);
   const setInWinter = useStore((s) => s.setInWinter);
   const updateParticipant = useStore((s) => s.updateParticipant);
+  const sharedIds = useSharedFriendIds();
   const [draft, setDraft] = useState<Friend>(() => friend ?? newFriend(friendCount));
   const [budget, setBudget] = useState(0);
   const [budgetCurrency, setBudgetCurrency] = useState<Currency>(displayCurrency);
@@ -63,6 +65,21 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
               <Button variant="ghost" size="sm" onClick={() => { setInWinter(winter.id, friend.id, false); onClose(); }}>
                 Not this winter
               </Button>
+              {sharedIds.has(friend.id) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  title="Split this friend from your partner's: the shared one stays in the shared vacation, a copy replaces it everywhere else"
+                  onClick={() => {
+                    if (confirm(`Unlink ${friend.name}? The shared ${friend.name} stays in the shared vacation; your other plans get a separate copy.`)) {
+                      unlinkFriendEverywhere(friend.id);
+                      onClose();
+                    }
+                  }}
+                >
+                  Unlink
+                </Button>
+              )}
               <Button
                 variant="danger"
                 size="sm"
