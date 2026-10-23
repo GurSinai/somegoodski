@@ -7,7 +7,7 @@ import { ExpensesTab, FlightsTab, HotelsTab, PassesTab, RentalTab, TransfersTab 
 import { Badge, Button, Mountains } from '../components/ui';
 import { formatRange, nightsOf } from '../lib/dates';
 import { cx } from '../lib/util';
-import { pricedTrip, useActiveWinter, useResort, useStore, useTrip, useVacation, useWinterFriends } from '../store/useStore';
+import { pricedTrip, useActiveWinter, useConverter, useResort, useStore, useTrip, useVacation, useWinterFriends } from '../store/useStore';
 import { driveTime } from './Resorts';
 
 type Tab = OptionKind | 'compare';
@@ -19,6 +19,7 @@ export default function TripPage() {
   const trip = useTrip(tripId);
   const resort = useResort(trip?.resortId);
   const winterFriends = useWinterFriends(winter);
+  const cv = useConverter();
   const airports = useStore((s) => s.airports);
   const updateVacation = useStore((s) => s.updateVacation);
   const removeTrip = useStore((s) => s.removeTrip);
@@ -29,18 +30,21 @@ export default function TripPage() {
   if (!trip || !vacation || trip.vacationId !== vacation.id) {
     return <div className="text-slate-500">Resort not found. <Link to={`/w/${winter.id}`} className="text-sky-600">Back to Winter {winter.year}</Link></div>;
   }
-  const pt = pricedTrip(trip, vacation);
+  const pt = pricedTrip(trip, vacation, cv);
   const going = winterFriends.filter((f) => vacation.attendeeIds.includes(f.id));
   const chosen = vacation.selectedTripId === trip.id;
   const vacationUrl = `/w/${winter.id}/v/${vacation.id}`;
-  const tabProps = { trip: pt, friends: going, edit: (kind: OptionKind, option: AnyOption, isNew: boolean) => setEditing({ kind, option, isNew }) };
+  // tabs show converted prices; editing must start from the option as entered
+  const edit = (kind: OptionKind, option: AnyOption, isNew: boolean) =>
+    setEditing({ kind, isNew, option: isNew ? option : (trip[kind] as AnyOption[]).find((o) => o.id === option.id) ?? option });
+  const tabProps = { trip: pt, friends: going, edit };
 
   const tabs: { value: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
     { value: 'flights', label: 'Flights', icon: <Plane size={15} />, count: trip.flights.length },
     { value: 'transfers', label: 'Transfers', icon: <Bus size={15} />, count: trip.transfers.length },
     { value: 'hotels', label: 'Hotels', icon: <BedDouble size={15} />, count: trip.hotels.length },
     { value: 'skiPasses', label: 'Ski passes', icon: <Ticket size={15} />, count: trip.skiPasses.length },
-    { value: 'shops', label: 'Rental & lessons', icon: <Shirt size={15} />, count: trip.shops.length },
+    { value: 'shops', label: 'Ski stores', icon: <Shirt size={15} />, count: trip.shops.length },
     { value: 'expenses', label: 'Expenses', icon: <Receipt size={15} />, count: trip.expenses.length },
     { value: 'compare', label: 'Trip comparison', icon: <Scale size={15} /> },
   ];

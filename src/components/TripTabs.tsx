@@ -1,12 +1,14 @@
-import { Check, ExternalLink, Pencil, Plus, RotateCcw } from 'lucide-react';
+import { Check, ExternalLink, GraduationCap, Pencil, Plus, RotateCcw } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { expenseShare, gearKeys, hotelPerPerson, passFor, passPrice, quoteFor, shopQuote, transferPerPerson, vacationDaysOf } from '../lib/combinations';
+import { expenseShare, gearKeys, lessonRiders, lessonShare, hotelPerPerson, passFor, passPrice, quoteFor, shopQuote, transferPerPerson, vacationDaysOf } from '../lib/combinations';
 import { nightsOf, skiDaysOf } from '../lib/dates';
 import { boardLabel, gearLabel, transferLabel } from '../lib/labels';
 import { cx, money, moneyRange } from '../lib/util';
 import { useResort, useStore } from '../store/useStore';
-import type { Expense, Leg, PricedTrip, WinterFriend } from '../types';
+import { symbolOf } from '../lib/fx';
+import type { Currency, Expense, Leg, PricedTrip, WinterFriend } from '../types';
 import { blankExpense, blankFlight, blankHotel, blankPass, blankShop, blankTransfer, type AnyOption, type OptionKind } from './OptionForms';
+import { lessonDaysLabel, lessonTitle } from './LessonEditor';
 import { Avatar, Badge } from './ui';
 
 export type EditFn = (kind: OptionKind, option: AnyOption, isNew: boolean) => void;
@@ -23,6 +25,7 @@ const driveTime = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}h${min %
 export function FlightsTab({ trip, friends, edit }: TabProps) {
   const resort = useResort(trip.resortId);
   const currency = useStore((s) => s.settings.currency);
+  const ec = useStore((s) => s.settings.entryCurrency);
   const airports = useStore((s) => s.airports);
   const setFlightChoice = useStore((s) => s.setFlightChoice);
   const m = (n: number) => money(n, currency);
@@ -45,14 +48,14 @@ export function FlightsTab({ trip, friends, edit }: TabProps) {
               </div>
               <div className="space-y-2">
                 {list.filter((f) => f.airport === ra.iata).map((f) => (
-                  <OptionCard key={f.id} onClick={() => edit('flights', f, false)} link={f.link} notes={f.notes}
+                  <OptionCard key={f.id} origin={f.currency} onClick={() => edit('flights', f, false)} link={f.link} notes={f.notes}
                     title={`${f.airline || 'Flight'}${f.homeCity ? (leg === 'outbound' ? ` from ${f.homeCity}` : ` to ${f.homeCity}`) : ''}`}
                     detail={f.when}
                     price={m(f.pricePerPerson)}
                     priceSub={`🎒 one way${f.trolleyPrice ? ` · 🧳 +${m(f.trolleyPrice)}` : ''}${f.checkedPrice ? ` · 🛄 +${m(f.checkedPrice)}` : ''}`}
                   />
                 ))}
-                <AddTile compact onClick={() => edit('flights', blankFlight(ra.iata, leg), true)} label={`Add ${leg === 'outbound' ? 'departure' : 'return'} via ${ra.iata}`} />
+                <AddTile compact onClick={() => edit('flights', blankFlight(ra.iata, leg, ec), true)} label={`Add ${leg === 'outbound' ? 'departure' : 'return'} via ${ra.iata}`} />
               </div>
             </div>
           ))}
@@ -118,6 +121,7 @@ export function TransfersTab({ trip, edit }: TabProps) {
   const resort = useResort(trip.resortId);
   const airports = useStore((s) => s.airports);
   const currency = useStore((s) => s.settings.currency);
+  const ec = useStore((s) => s.settings.entryCurrency);
   const m = (n: number) => money(n, currency);
   const people = Math.max(1, trip.attendeeIds.length);
   return (
@@ -131,14 +135,14 @@ export function TransfersTab({ trip, edit }: TabProps) {
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {trip.transfers.filter((t) => t.airport === ra.iata).map((t) => (
-              <OptionCard key={t.id} onClick={() => edit('transfers', t, false)} link={t.link} notes={t.notes}
+              <OptionCard key={t.id} origin={t.currency} onClick={() => edit('transfers', t, false)} link={t.link} notes={t.notes}
                 title={transferLabel(t.type)}
                 tags={t.provider && <Badge>{t.provider}</Badge>}
                 price={m(transferPerPerson(t, people))}
                 priceSub={t.pricing === 'per-vehicle' ? `${m(t.price)} per vehicle (${t.vehicleCapacity} seats) ÷ ${people}` : 'per person, round trip'}
               />
             ))}
-            <AddTile onClick={() => edit('transfers', blankTransfer(ra.iata), true)} label={`Add transfer via ${ra.iata}`} />
+            <AddTile onClick={() => edit('transfers', blankTransfer(ra.iata, ec), true)} label={`Add transfer via ${ra.iata}`} />
           </div>
         </div>
       ))}
@@ -148,23 +152,25 @@ export function TransfersTab({ trip, edit }: TabProps) {
 
 export function HotelsTab({ trip, edit }: TabProps) {
   const currency = useStore((s) => s.settings.currency);
+  const ec = useStore((s) => s.settings.entryCurrency);
   const m = (n: number) => money(n, currency);
   const people = Math.max(1, trip.attendeeIds.length);
   const nights = nightsOf(trip.dates);
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {trip.hotels.map((h) => (
-        <OptionCard key={h.id} onClick={() => edit('hotels', h, false)} link={h.link} notes={h.notes}
+        <OptionCard key={h.id} origin={h.currency} onClick={() => edit('hotels', h, false)} link={h.link} notes={h.notes}
           title={h.name || 'Unnamed hotel'}
           tags={<>
             <Badge color="violet">{boardLabel(h.board)}</Badge>
             {h.skiInOut ? <Badge color="green">Ski-in/out</Badge> : h.walkToLiftMin ? <Badge>🚶 {h.walkToLiftMin} min to lift</Badge> : null}
           </>}
           price={m(hotelPerPerson(h, people, nights))}
-          priceSub={`${m(h.pricePerNight)}/night ${h.pricing === 'per-room' ? `per room (${h.roomCapacity} ppl)` : 'pp'} · ${nights}n`}
+          unit="total per person"
+          priceSub={`${m(h.price)} ${h.per === 'stay' ? 'for the stay' : 'per night'} ${h.pricing === 'per-room' ? `per room (${h.roomCapacity} ppl)` : 'per person'}${h.per === 'night' ? ` × ${nights} nights` : ''}`}
         />
       ))}
-      <AddTile onClick={() => edit('hotels', blankHotel(), true)} label="Add hotel" />
+      <AddTile onClick={() => edit('hotels', blankHotel(ec), true)} label="Add hotel" />
     </div>
   );
 }
@@ -173,6 +179,7 @@ export function HotelsTab({ trip, edit }: TabProps) {
 
 export function PassesTab({ trip, friends, edit }: TabProps) {
   const currency = useStore((s) => s.settings.currency);
+  const ec = useStore((s) => s.settings.entryCurrency);
   const setPassChoice = useStore((s) => s.setPassChoice);
   const m = (n: number) => money(n, currency);
   const days = skiDaysOf(trip.dates);
@@ -182,14 +189,14 @@ export function PassesTab({ trip, friends, edit }: TabProps) {
     <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {trip.skiPasses.map((p) => (
-          <OptionCard key={p.id} onClick={() => edit('skiPasses', p, false)} notes={p.notes}
+          <OptionCard key={p.id} origin={p.currency} onClick={() => edit('skiPasses', p, false)} notes={p.notes}
             title={p.name}
             tags={<>{p.id === cheapest?.id && <Badge color="green">cheapest</Badge>}<Badge>{trip.skiPasses.length > 1 ? `${friends.filter((f) => passFor(trip, f.id)?.id === p.id).length} riders` : 'everyone'}</Badge></>}
             price={m(passPrice(p, days))}
             priceSub={p.basis === 'per-day' ? `${m(p.price)} × ${days} ski days` : 'per person, whole stay'}
           />
         ))}
-        <AddTile onClick={() => edit('skiPasses', blankPass(), true)} label="Add ski pass option" />
+        <AddTile onClick={() => edit('skiPasses', blankPass(ec), true)} label="Add ski pass option" />
       </div>
 
       {trip.skiPasses.length > 0 && (
@@ -221,41 +228,41 @@ export function PassesTab({ trip, friends, edit }: TabProps) {
   );
 }
 
-/* ───────────────────────── Rental & lessons ───────────────────────── */
+/* ───────────────────────── Ski stores: rental & lessons ───────────────────────── */
 
 export function RentalTab({ trip, friends, edit }: TabProps) {
   const currency = useStore((s) => s.settings.currency);
+  const ec = useStore((s) => s.settings.entryCurrency);
   const setShopChoice = useStore((s) => s.setShopChoice);
   const m = (n: number) => money(n, currency);
   const days = skiDaysOf(trip.dates);
-  const needy = friends.filter((f) => gearKeys(f).length > 0 || f.lessons.wanted);
-  const setAll = (shopId: string | null) => needy.forEach((f) => setShopChoice(trip.id, f.id, shopId));
+  const renters = friends.filter((f) => gearKeys(f).length > 0);
+  const setAll = (shopId: string | null) => renters.forEach((f) => setShopChoice(trip.id, f.id, shopId));
 
   return (
     <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {trip.shops.map((s) => (
-          <OptionCard key={s.id} onClick={() => edit('shops', s, false)} link={s.link} notes={s.notes}
+          <OptionCard key={s.id} origin={s.currency} onClick={() => edit('shops', s, false)} link={s.link} notes={s.notes}
             title={s.name}
             tags={<>
-              <Badge>{Object.keys(s.prices).length} items</Badge>
-              {s.groupLessonPerDay > 0 && <Badge color="amber">group {m(s.groupLessonPerDay)}/d</Badge>}
-              {s.privateLessonPerDay > 0 && <Badge color="amber">private {m(s.privateLessonPerDay)}/d</Badge>}
+              <Badge>{Object.keys(s.prices).length} rental items</Badge>
+              {s.lessons.length > 0 && <Badge color="amber"><GraduationCap size={11} /> {s.lessons.length} lesson{s.lessons.length > 1 ? 's' : ''}</Badge>}
             </>}
             price={s.basis === 'per-day' ? 'Per day' : 'Whole rental'}
-            priceSub="pricing basis"
+            priceSub="rental pricing"
           />
         ))}
-        <AddTile onClick={() => edit('shops', blankShop(), true)} label="Add rental shop" />
+        <AddTile onClick={() => edit('shops', blankShop(ec), true)} label="Add ski store" />
       </div>
 
-      {trip.shops.length > 0 && needy.length > 0 && (
+      {trip.shops.length > 0 && renters.length > 0 && (
         <section className="card overflow-hidden">
           <div className="flex flex-wrap items-end justify-between gap-3 p-6 pb-3">
             <div>
-              <h3 className="text-lg font-bold">Shop comparison</h3>
+              <h3 className="text-lg font-bold">Rental comparison</h3>
               <p className="text-sm text-slate-500">
-                Rental for {days} ski days + lessons, per rider. Each rider defaults to the cheapest shop with everything they need. Click a cell to choose.
+                Gear rental for {days} ski days, per rider. Each rider defaults to the cheapest store with everything they need. Click a cell to choose.
               </p>
             </div>
             <button onClick={() => setAll(null)} className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-900"><RotateCcw size={12} /> Reset to cheapest</button>
@@ -269,20 +276,17 @@ export function RentalTab({ trip, friends, edit }: TabProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {needy.map((f) => {
+                {renters.map((f) => {
                   const quotes = trip.shops.map((s) => shopQuote(s, f, days));
-                  const best = Math.min(...quotes.filter((q) => !q.missing.length).map((q) => q.rental + q.lessons));
+                  const best = Math.min(...quotes.filter((q) => !q.missing.length).map((q) => q.rental));
                   const chosen = quoteFor(trip, f)?.shop.id;
                   return (
                     <tr key={f.id}>
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-2 font-semibold"><Avatar name={f.name} color={f.color} size={24} /> {f.name}</div>
-                        <div className="mt-0.5 text-xs text-slate-400">
-                          {[...gearKeys(f).map(gearLabel), f.lessons.wanted ? `${Math.min(f.lessons.days, days)}d ${f.lessons.type} lessons` : null].filter(Boolean).join(' · ')}
-                        </div>
+                        <div className="mt-0.5 text-xs text-slate-400">{gearKeys(f).map(gearLabel).join(' · ')}</div>
                       </td>
                       {quotes.map((q) => {
-                        const total = q.rental + q.lessons;
                         const isChosen = q.shop.id === chosen;
                         return (
                           <td key={q.shop.id} className="px-2 py-2 text-right">
@@ -290,11 +294,10 @@ export function RentalTab({ trip, friends, edit }: TabProps) {
                               onClick={() => setShopChoice(trip.id, f.id, q.shop.id)}
                               className={cx('w-full rounded-xl px-3 py-2 text-right transition', isChosen ? 'bg-sky-50 ring-2 ring-sky-300' : 'hover:bg-slate-50')}
                             >
-                              <div className={cx('font-bold', total === best && !q.missing.length && 'text-emerald-600')}>
-                                {isChosen && <Check size={13} className="mr-1 inline text-sky-600" />}{m(total)}
+                              <div className={cx('font-bold', q.rental === best && !q.missing.length && 'text-emerald-600')}>
+                                {isChosen && <Check size={13} className="mr-1 inline text-sky-600" />}{m(q.rental)}
                               </div>
                               {q.missing.length > 0 && <div className="text-[10px] text-amber-600">no {q.missing.map(gearLabel).join(', ')}</div>}
-                              {q.lessons > 0 && <div className="text-[10px] text-slate-400">incl. {m(q.lessons)} lessons</div>}
                             </button>
                           </td>
                         );
@@ -305,12 +308,12 @@ export function RentalTab({ trip, friends, edit }: TabProps) {
               </tbody>
               <tfoot className="border-t border-slate-200 bg-slate-50/50">
                 <tr>
-                  <td className="px-6 py-3 text-xs font-semibold text-slate-500">Everyone at one shop</td>
+                  <td className="px-6 py-3 text-xs font-semibold text-slate-500">Everyone at one store</td>
                   {trip.shops.map((s) => {
-                    const total = needy.reduce((sum, f) => { const q = shopQuote(s, f, days); return sum + q.rental + q.lessons; }, 0);
+                    const total = renters.reduce((sum, f) => sum + shopQuote(s, f, days).rental, 0);
                     return (
                       <td key={s.id} className="px-3 py-3 text-right">
-                        <button onClick={() => setAll(s.id)} className="rounded-full px-2 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" title="Send everyone to this shop">
+                        <button onClick={() => setAll(s.id)} className="rounded-full px-2 py-1 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm" title="Send everyone to this store">
                           {m(total)} →
                         </button>
                       </td>
@@ -322,8 +325,89 @@ export function RentalTab({ trip, friends, edit }: TabProps) {
           </div>
         </section>
       )}
-      {needy.length === 0 && <p className="text-sm text-slate-500">Nobody going needs rental gear or lessons. Set gear needs on each rider’s profile (People page).</p>}
+
+      {trip.shops.length > 0 && <LessonsSection trip={trip} friends={friends} edit={edit} />}
+      {trip.shops.length === 0 && <p className="text-sm text-slate-500">Add the ski stores near this resort to compare rental prices and set up lessons.</p>}
     </div>
+  );
+}
+
+/** Every lesson offered by the trip's stores, with rider assignment. */
+function LessonsSection({ trip, friends, edit }: TabProps) {
+  const currency = useStore((s) => s.settings.currency);
+  const saveOption = useStore((s) => s.saveOption);
+  const m = (n: number) => money(n, currency);
+  const lessons = trip.shops.flatMap((shop) => shop.lessons.map((lesson) => ({ shop, lesson })));
+  const assigned = new Set(lessons.flatMap(({ lesson }) => lessonRiders(lesson, trip.attendeeIds)));
+  const waiting = friends.filter((f) => f.lessons.wanted && !assigned.has(f.id));
+
+  // assignments are saved on the store as entered (the tab shows converted copies)
+  const toggleRider = (shopId: string, lessonId: string, friendId: string) => {
+    // read the latest store state so quick successive taps don't overwrite each other
+    const shop = useStore.getState().trips.find((t) => t.id === trip.id)?.shops.find((s) => s.id === shopId);
+    if (!shop) return;
+    const next = shop.lessons.map((l) =>
+      l.id !== lessonId ? l : { ...l, friendIds: l.friendIds.includes(friendId) ? l.friendIds.filter((x) => x !== friendId) : [...l.friendIds, friendId] },
+    );
+    saveOption(trip.id, 'shops', { ...shop, lessons: next });
+  };
+
+  return (
+    <section className="card p-6">
+      <div className="mb-1 flex flex-wrap items-end justify-between gap-3">
+        <h3 className="text-lg font-bold">Lessons</h3>
+        {waiting.length > 0 && (
+          <span className="text-xs text-amber-600">Want lessons but not assigned: {waiting.map((f) => `${f.name} (${f.lessons.type})`).join(', ')}</span>
+        )}
+      </div>
+      <p className="mb-4 text-sm text-slate-500">Tap riders to assign them. A private lesson’s full price is split between the riders sharing it.</p>
+      {lessons.length === 0 ? (
+        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+          No lessons yet. Open a store and use <b>Add lesson</b>.
+          {trip.shops.length === 1 && <button className="ml-2 font-semibold text-sky-600" onClick={() => edit('shops', trip.shops[0], false)}>Open {trip.shops[0].name} →</button>}
+        </div>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {lessons.map(({ shop, lesson }) => {
+            const riders = lessonRiders(lesson, trip.attendeeIds);
+            const each = lessonShare(lesson, riders.length || (lesson.type === 'private' ? lesson.people : 1));
+            return (
+              <div key={lesson.id} className="rounded-2xl border border-slate-100 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-1.5 font-bold"><GraduationCap size={15} className="text-amber-500" /> {lessonTitle(lesson)}</div>
+                    <div className="text-xs text-slate-500">{shop.name} · {lessonDaysLabel(lesson)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-extrabold">{m(each)}</div>
+                    <div className="text-[10px] text-slate-400">per rider{!riders.length && lesson.type === 'private' ? ` if ${lesson.people} share` : ''}</div>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {friends.map((f) => {
+                    const on = lesson.friendIds.includes(f.id);
+                    return (
+                      <button key={f.id} onClick={() => toggleRider(shop.id, lesson.id, f.id)}
+                        className={cx('flex items-center gap-1 rounded-full border py-0.5 pl-0.5 pr-2 text-xs font-semibold transition', on ? 'border-sky-300 bg-sky-50 text-sky-800' : 'border-slate-200 text-slate-400 hover:text-slate-600')}>
+                        <Avatar name={f.name} color={f.color} size={18} /> {f.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                {lesson.type === 'private' && riders.length > 0 && riders.length !== lesson.people && (
+                  <div className="mt-2 text-xs text-amber-600">
+                    {riders.length < lesson.people
+                      ? `Priced for ${lesson.people}: the ${riders.length} assigned split the full price.`
+                      : `Priced for ${lesson.people}, ${riders.length} assigned: each pays the per-person price.`}
+                  </div>
+                )}
+                {lesson.notes && <div className="mt-2 text-xs text-slate-400">{lesson.notes}</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -331,6 +415,7 @@ export function RentalTab({ trip, friends, edit }: TabProps) {
 
 export function ExpensesTab({ trip, friends, edit }: TabProps) {
   const currency = useStore((s) => s.settings.currency);
+  const ec = useStore((s) => s.settings.entryCurrency);
   const days = vacationDaysOf(trip);
   const describe = (e: Expense) => {
     const who = e.friendIds ? `${e.friendIds.filter((id) => trip.attendeeIds.includes(id)).length} people` : 'everyone';
@@ -344,7 +429,7 @@ export function ExpensesTab({ trip, friends, edit }: TabProps) {
           const shares = friends.map((f) => expenseShare(e, f.id, trip.attendeeIds, days)).filter((r) => r.max > 0);
           const perPerson = shares[0];
           return (
-            <OptionCard key={e.id} onClick={() => edit('expenses', e, false)} notes={e.notes}
+            <OptionCard key={e.id} origin={e.currency} onClick={() => edit('expenses', e, false)} notes={e.notes}
               title={e.name}
               tags={<><Badge color={e.split === 'shared' ? 'sky' : 'violet'}>{e.split}</Badge>{e.amount.max !== e.amount.min && <Badge color="amber">estimate</Badge>}</>}
               detail={describe(e)}
@@ -353,7 +438,7 @@ export function ExpensesTab({ trip, friends, edit }: TabProps) {
             />
           );
         })}
-        <AddTile onClick={() => edit('expenses', blankExpense(), true)} label="Add expense" />
+        <AddTile onClick={() => edit('expenses', blankExpense(ec), true)} label="Add expense" />
       </div>
     </div>
   );
@@ -369,21 +454,30 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
   );
 }
 
-export function OptionCard({ title, tags, detail, price, priceSub, link, notes, onClick }: {
-  title: string; tags?: ReactNode; detail?: string; price: string; priceSub: string; link?: string; notes?: string; onClick: () => void;
+export function OptionCard({ title, tags, detail, price, unit, priceSub, link, notes, origin, onClick }: {
+  title: string; tags?: ReactNode; detail?: string; price: string; unit?: string; priceSub: string; link?: string; notes?: string;
+  origin?: Currency; // currency the prices were entered in; flagged when it differs from the display currency
+  onClick: () => void;
 }) {
+  const display = useStore((s) => s.settings.currency);
   return (
     <button onClick={onClick} className="card group flex w-full flex-col p-5 text-left transition hover:-translate-y-0.5 hover:shadow-lift">
       <div className="flex items-start justify-between gap-2">
         <div className="text-base font-bold">{title}</div>
-        <Pencil size={14} className="shrink-0 text-slate-200 group-hover:text-slate-500" />
+        <span className="flex shrink-0 items-center gap-1.5">
+          {origin && origin !== display && <span className="rounded-full bg-slate-100 px-1.5 text-[10px] font-bold text-slate-500" title={`Entered in ${origin}, shown converted`}>{symbolOf(origin)} {origin}</span>}
+          <Pencil size={14} className="text-slate-200 group-hover:text-slate-500" />
+        </span>
       </div>
       {tags && <div className="mt-1.5 flex flex-wrap gap-1.5">{tags}</div>}
       {detail && <div className="mt-2 text-xs text-slate-500">{detail}</div>}
       {notes && <div className="mt-1 line-clamp-2 text-xs text-slate-400">{notes}</div>}
       <div className="mt-auto flex items-end justify-between pt-4">
         <div>
-          <div className="text-xl font-extrabold">{price}</div>
+          <div className="text-xl font-extrabold">
+            {price}
+            {unit && <span className="ml-1.5 text-xs font-semibold text-slate-400">{unit}</span>}
+          </div>
           <div className="text-xs text-slate-400">{priceSub}</div>
         </div>
         {link && (

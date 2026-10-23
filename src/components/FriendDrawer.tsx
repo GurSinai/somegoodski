@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { BOARD_TIERS, GEAR_PIECES, SKI_TIERS, SKILLS, SPORTS } from '../lib/labels';
+import { GEAR_PIECES, GEAR_TIERS, SKILLS, SPORTS } from '../lib/labels';
 import { FRIEND_COLORS, cx } from '../lib/util';
 import { newFriend, useStore } from '../store/useStore';
-import type { Friend, GearNeeds, Sport, Winter } from '../types';
+import type { Currency, Friend, GearNeeds, Winter } from '../types';
+import CurrencyPicker from './CurrencyPicker';
 import { Button, Drawer, Field, NumberInput, Segmented, Toggle } from './ui';
 
 interface Props {
@@ -15,7 +16,7 @@ interface Props {
 /** Edits a friend's shared profile plus their budget for this winter. */
 export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   const friendCount = useStore((s) => s.friends.length);
-  const currency = useStore((s) => s.settings.currency);
+  const displayCurrency = useStore((s) => s.settings.currency);
   const addFriend = useStore((s) => s.addFriend);
   const updateFriend = useStore((s) => s.updateFriend);
   const removeFriend = useStore((s) => s.removeFriend);
@@ -23,11 +24,14 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   const updateParticipant = useStore((s) => s.updateParticipant);
   const [draft, setDraft] = useState<Friend>(() => friend ?? newFriend(friendCount));
   const [budget, setBudget] = useState(0);
+  const [budgetCurrency, setBudgetCurrency] = useState<Currency>(displayCurrency);
 
   useEffect(() => {
     if (!open) return;
-    setDraft(friend ?? newFriend(friendCount));
-    setBudget(friend ? winter.participants.find((p) => p.friendId === friend.id)?.budget ?? friend.defaultBudget : 0);
+    setDraft(friend ?? newFriend(friendCount, { defaultBudgetCurrency: displayCurrency }));
+    const p = friend && winter.participants.find((x) => x.friendId === friend.id);
+    setBudget(p ? p.budget : friend?.defaultBudget ?? 0);
+    setBudgetCurrency(p ? p.budgetCurrency : friend?.defaultBudgetCurrency ?? displayCurrency);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, friend]);
 
@@ -37,10 +41,10 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   const save = () => {
     if (!draft.name.trim()) return;
     // this winter's budget also becomes the default for future winters
-    const profile = { ...draft, defaultBudget: budget };
+    const profile = { ...draft, defaultBudget: budget, defaultBudgetCurrency: budgetCurrency };
     if (friend) {
       updateFriend(friend.id, profile);
-      updateParticipant(winter.id, friend.id, { budget });
+      updateParticipant(winter.id, friend.id, { budget, budgetCurrency });
     } else {
       addFriend(profile, winter.id);
     }
@@ -81,7 +85,7 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
       }
     >
       <Field label="Name">
-        <input className="input" autoFocus value={draft.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Noa" />
+        <input className="input" autoFocus value={draft.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Gur the number 1 skier" />
       </Field>
 
       <div>
@@ -124,30 +128,31 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
         </div>
       </div>
 
-      <Field label={`Budget per vacation, Winter ${winter.year} (${currency})`} hint="Everything: flights, transfer, hotel, pass, lessons, rental. Leave empty for no limit.">
+      <div>
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="label mb-0">Budget per vacation, Winter {winter.year}</span>
+          <CurrencyPicker value={budgetCurrency} onChange={setBudgetCurrency} />
+        </div>
         <NumberInput value={budget} onChange={setBudget} min={0} />
-      </Field>
+        <span className="mt-1 block text-xs text-slate-400">Everything: flights, transfer, hotel, pass, lessons, rental. Leave empty for no limit.</span>
+      </div>
 
-      <GearPicker gear={draft.gear} sport={draft.sport} onChange={(gear) => set({ gear })} />
+      <GearPicker gear={draft.gear} onChange={(gear) => set({ gear })} />
 
       <div className="rounded-2xl bg-slate-50/80 p-4">
         <Toggle checked={draft.lessons.wanted} onChange={(wanted) => setLessons({ wanted })} label="Wants lessons" />
         {draft.lessons.wanted && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 flex flex-wrap items-end gap-3">
             <Segmented
               size="sm"
               value={draft.lessons.type}
               onChange={(type) => setLessons({ type })}
               options={[{ value: 'group', label: 'Group lessons' }, { value: 'private', label: 'Private lessons' }]}
             />
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Days of lessons">
-                <NumberInput value={draft.lessons.days} onChange={(days) => setLessons({ days })} min={0} />
-              </Field>
-              <Field label={`Cost per day (${currency})`}>
-                <NumberInput value={draft.lessons.budgetPerDay} onChange={(budgetPerDay) => setLessons({ budgetPerDay })} min={0} />
-              </Field>
-            </div>
+            <Field label="Days of lessons" className="w-36">
+              <NumberInput value={draft.lessons.days} onChange={(days) => setLessons({ days })} min={0} />
+            </Field>
+            <p className="w-full text-xs text-slate-400">Lessons and their prices are set up per ski store on each resort.</p>
           </div>
         )}
       </div>
@@ -159,50 +164,31 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   );
 }
 
-/** What a rider rents: a ski / board tier (or their own) plus individual pieces. */
-function GearPicker({ gear, sport, onChange }: { gear: GearNeeds; sport: Sport; onChange: (g: GearNeeds) => void }) {
-  const tierRow = <T extends string>(label: string, value: T | null, tiers: { value: T; label: string; hint: string }[], set: (v: T | null) => void) => (
-    <div>
-      <div className="mb-1.5 text-xs font-semibold text-slate-600">{label}</div>
-      <div className="flex flex-wrap gap-1.5">
-        {[{ value: null, label: 'Own', hint: 'brings their own' }, ...tiers].map((t) => (
-          <button
-            key={t.value ?? 'own'}
-            type="button"
-            title={t.hint}
-            onClick={() => set(t.value as T | null)}
-            className={cx(
-              'rounded-full border px-3 py-1 text-xs font-semibold transition',
-              value === t.value ? 'border-sky-400 bg-sky-50 text-sky-800' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300',
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+/** What a rider rents: a ski / snowboard level (or their own) plus individual pieces. */
+function GearPicker({ gear, onChange }: { gear: GearNeeds; onChange: (g: GearNeeds) => void }) {
+  const chip = (active: boolean) =>
+    cx('rounded-full border px-3 py-1 text-xs font-semibold transition', active ? 'border-sky-400 bg-sky-50 text-sky-800' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300');
   const togglePiece = (p: GearNeeds['pieces'][number]) =>
     onChange({ ...gear, pieces: gear.pieces.includes(p) ? gear.pieces.filter((x) => x !== p) : [...gear.pieces, p] });
 
   return (
     <div className="space-y-3 rounded-2xl bg-slate-50/80 p-4">
       <span className="label mb-0">Rental gear</span>
-      {sport !== 'snowboard' && tierRow('Skis', gear.skis, SKI_TIERS, (skis) => onChange({ ...gear, skis }))}
-      {sport !== 'ski' && tierRow('Snowboard', gear.snowboard, BOARD_TIERS, (snowboard) => onChange({ ...gear, snowboard }))}
+      <div>
+        <div className="mb-1.5 text-xs font-semibold text-slate-600">Ski / Snowboard</div>
+        <div className="flex flex-wrap gap-1.5">
+          {[{ value: null, label: 'Own', hint: 'brings their own' }, ...GEAR_TIERS].map((t) => (
+            <button key={t.value ?? 'own'} type="button" title={t.hint} onClick={() => onChange({ ...gear, equipment: t.value })} className={chip(gear.equipment === t.value)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div>
         <div className="mb-1.5 text-xs font-semibold text-slate-600">Pieces</div>
         <div className="flex flex-wrap gap-1.5">
-          {GEAR_PIECES.filter((p) => !(p.value === 'skiBoots' && sport === 'snowboard') && !(p.value === 'boardBoots' && sport === 'ski')).map((p) => (
-            <button
-              key={p.value}
-              type="button"
-              onClick={() => togglePiece(p.value)}
-              className={cx(
-                'rounded-full border px-3 py-1 text-xs font-semibold transition',
-                gear.pieces.includes(p.value) ? 'border-sky-400 bg-sky-50 text-sky-800' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300',
-              )}
-            >
+          {GEAR_PIECES.map((p) => (
+            <button key={p.value} type="button" onClick={() => togglePiece(p.value)} className={chip(gear.pieces.includes(p.value))}>
               {p.emoji} {p.label}
             </button>
           ))}

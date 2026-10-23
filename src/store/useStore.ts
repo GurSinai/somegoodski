@@ -7,6 +7,7 @@ import type {
 } from '../types';
 import { createInitialData, defaultSeason } from '../data/seed';
 import { freeForRange } from '../lib/availability';
+import { convertTrip, makeConverter, type Converter } from '../lib/fx';
 import { FRIEND_COLORS, uid } from '../lib/util';
 import { CURRENT_VERSION, migrate } from './migrate';
 
@@ -61,9 +62,10 @@ export const newFriend = (existingCount: number, patch: Partial<Friend> = {}): F
   color: FRIEND_COLORS[existingCount % FRIEND_COLORS.length],
   skillLevel: 'intermediate',
   sport: 'ski',
-  gear: { skis: null, snowboard: null, pieces: [] },
-  lessons: { wanted: false, type: 'group', days: 0, budgetPerDay: 0 },
+  gear: { equipment: null, pieces: [] },
+  lessons: { wanted: false, type: 'group', days: 0 },
   defaultBudget: 0,
+  defaultBudgetCurrency: 'ILS',
   notes: '',
   ...patch,
 });
@@ -94,7 +96,7 @@ export const useStore = create<Store>()(
           winters: joinWinterId
             ? mapById(s.winters, joinWinterId, (w) => ({
                 ...w,
-                participants: [...w.participants, { friendId: f.id, availability: [], budget: f.defaultBudget }],
+                participants: [...w.participants, { friendId: f.id, availability: [], budget: f.defaultBudget, budgetCurrency: f.defaultBudgetCurrency }],
               }))
             : s.winters,
         }));
@@ -122,11 +124,10 @@ export const useStore = create<Store>()(
           id: uid(),
           year,
           ...defaultSeason(year),
-          participants: ids.map((friendId) => ({
-            friendId,
-            availability: [],
-            budget: friends.find((f) => f.id === friendId)?.defaultBudget ?? 0,
-          })),
+          participants: ids.map((friendId) => {
+            const f = friends.find((x) => x.id === friendId);
+            return { friendId, availability: [], budget: f?.defaultBudget ?? 0, budgetCurrency: f?.defaultBudgetCurrency ?? get().settings.currency };
+          }),
           createdAt: new Date().toISOString(),
         };
         set((s) => ({ winters: [...s.winters, winter], settings: { ...s.settings, activeWinterId: winter.id } }));
@@ -149,8 +150,9 @@ export const useStore = create<Store>()(
           winters: mapById(s.winters, winterId, (w) => {
             const has = w.participants.some((p) => p.friendId === friendId);
             if (inWinter && !has) {
-              const budget = s.friends.find((f) => f.id === friendId)?.defaultBudget ?? 0;
-              return { ...w, participants: [...w.participants, { friendId, availability: [], budget }] };
+              const f = s.friends.find((x) => x.id === friendId);
+              const p = { friendId, availability: [], budget: f?.defaultBudget ?? 0, budgetCurrency: f?.defaultBudgetCurrency ?? s.settings.currency };
+              return { ...w, participants: [...w.participants, p] };
             }
             if (!inWinter && has) return { ...w, participants: w.participants.filter((p) => p.friendId !== friendId) };
             return w;
@@ -175,7 +177,7 @@ export const useStore = create<Store>()(
       createVacation: (winterId, dates = null) => {
         const s = get();
         const winter = s.winters.find((w) => w.id === winterId);
-        const people = winter ? winterFriends(s.friends, winter) : [];
+        const people = winter ? winterFriends(s.friends, winter, (a) => a) : []; // budgets aren't needed here
         const count = s.vacations.filter((v) => v.winterId === winterId).length;
         const vacation: Vacation = {
           id: uid(),
@@ -283,16 +285,17 @@ export const useStore = create<Store>()(
   ),
 );
 
-/** Profiles of the friends in a winter, merged with that winter's availability and budget. */
-export function winterFriends(friends: Friend[], winter: Winter): WinterFriend[] {
+/** Profiles of the friends in a winter, merged with that winter's availability and budget (converted). */
+export function winterFriends(friends: Friend[], winter: Winter, cv: Converter): WinterFriend[] {
   return winter.participants.flatMap((p) => {
     const f = friends.find((x) => x.id === p.friendId);
-    return f ? [{ ...f, availability: p.availability, budget: p.budget }] : [];
+    return f ? [{ ...f, availability: p.availability, budget: cv(p.budget, p.budgetCurrency) }] : [];
   });
 }
 
-export const pricedTrip = (trip: Trip, vacation: Vacation | undefined): PricedTrip => ({
-  ...trip,
+/** The trip with its vacation's details and all prices in the display currency. */
+export const pricedTrip = (trip: Trip, vacation: Vacation | undefined, cv: Converter): PricedTrip => ({
+  ...convertTrip(trip, cv),
   dates: vacation?.dates ?? null,
   attendeeIds: vacation?.attendeeIds ?? [],
   luggage: vacation?.luggage ?? [],
@@ -304,9 +307,17 @@ export const useResort = (id: string | undefined) => useStore((s) => s.resorts.f
 export const useTrip = (id: string | undefined) => useStore((s) => s.trips.find((t) => t.id === id));
 export const useActiveWinter = () => useStore((s) => s.winters.find((w) => w.id === s.settings.activeWinterId));
 
+/** Converts an amount in any currency to the display currency, at the latest rates. */
+export function useConverter(): Converter {
+  const currency = useStore((s) => s.settings.currency);
+  const fx = useStore((s) => s.settings.fx);
+  return useMemo(() => makeConverter(fx, currency), [fx, currency]);
+}
+
 export function useWinterFriends(winter: Winter | undefined): WinterFriend[] {
   const friends = useStore((s) => s.friends);
-  return useMemo(() => (winter ? winterFriends(friends, winter) : []), [friends, winter]);
+  const cv = useConverter();
+  return useMemo(() => (winter ? winterFriends(friends, winter, cv) : []), [friends, winter, cv]);
 }
 
 export function useVacationsOf(winterId: string | undefined): Vacation[] {

@@ -5,7 +5,7 @@ import { formatRange, nightsOf } from '../lib/dates';
 import { statusOf } from '../lib/labels';
 import { cheapestCombo, vacationPlan } from '../lib/plan';
 import { cx, money, moneyRange } from '../lib/util';
-import { useActiveWinter, useStore, useVacationsOf, useWinterFriends } from '../store/useStore';
+import { useActiveWinter, useConverter, useStore, useVacationsOf, useWinterFriends } from '../store/useStore';
 import type { Vacation, Winter } from '../types';
 
 export default function WinterHome() {
@@ -137,11 +137,12 @@ function VacationCard({ winter, vacation: v }: { winter: Winter; vacation: Vacat
   const resorts = useStore((s) => s.resorts);
   const currency = useStore((s) => s.settings.currency);
   const friends = useWinterFriends(winter);
+  const cv = useConverter();
   const trips = allTrips.filter((t) => t.vacationId === v.id);
-  const plan = vacationPlan(v, trips, friends);
+  const plan = vacationPlan(v, trips, friends, cv);
   const st = statusOf(v.status);
   const cheapest = trips
-    .map((t) => cheapestCombo(t, v, friends)?.perPerson.min)
+    .map((t) => cheapestCombo(t, v, friends, cv)?.perPerson.min)
     .filter((n): n is number => n !== undefined)
     .sort((a, b) => a - b)[0];
 

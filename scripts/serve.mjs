@@ -1,11 +1,11 @@
 // Serves the built app (dist/) locally, opens the browser, and shuts itself down
 // after IDLE_MINUTES without any request. While the app is open, the page pings
 // /__heartbeat every minute (see src/main.tsx), so closing the tab starts the countdown.
-import { exec } from 'node:child_process';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { openBrowser } from './open-browser.mjs';
 
 const PORT = Number(process.env.PORT ?? 4173);
 const IDLE_MINUTES = Number(process.env.IDLE_MINUTES ?? 10);
@@ -31,11 +31,6 @@ const TYPES = {
   '.woff2': 'font/woff2',
 };
 
-function openBrowser(url) {
-  if (process.env.NO_OPEN) return;
-  const cmd = process.platform === 'win32' ? `start "" "${url}"` : process.platform === 'darwin' ? `open "${url}"` : `xdg-open "${url}"`;
-  exec(cmd);
-}
 
 if (!existsSync(join(DIST, 'index.html'))) {
   console.error('No build found. Run "npm run build" first (or use "npm run release").');

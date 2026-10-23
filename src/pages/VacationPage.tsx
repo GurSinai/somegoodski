@@ -9,7 +9,7 @@ import { skill, sport, STATUSES } from '../lib/labels';
 import { downloadPdf, fileSafe } from '../lib/pdf';
 import { cheapestCombo, selectedCombo, vacationPlan } from '../lib/plan';
 import { cx, money, moneyRange, uid } from '../lib/util';
-import { useActiveWinter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
+import { useActiveWinter, useConverter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
 import type { LuggageItem, Trip, Vacation, Winter, WinterFriend } from '../types';
 
 export default function VacationPage() {
@@ -101,13 +101,14 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
   const createTrip = useStore((s) => s.createTrip);
   const updateVacation = useStore((s) => s.updateVacation);
   const friends = useWinterFriends(winter);
+  const cv = useConverter();
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
   const [q, setQ] = useState('');
 
   const rows = trips.map((t) => {
-    const sel = selectedCombo(t, vacation, friends);
-    const best = sel ?? cheapestCombo(t, vacation, friends);
+    const sel = selectedCombo(t, vacation, friends, cv);
+    const best = sel ?? cheapestCombo(t, vacation, friends, cv);
     return { trip: t, resort: resorts.find((r) => r.id === t.resortId), sel, price: best?.perPerson ?? null };
   });
   const maxPrice = Math.max(1, ...rows.map((r) => r.price?.max ?? 0));
@@ -268,7 +269,8 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
   const airports = useStore((s) => s.airports);
   const currency = useStore((s) => s.settings.currency);
   const [busy, setBusy] = useState<string | null>(null);
-  const plan = vacationPlan(vacation, trips, friends);
+  const cv = useConverter();
+  const plan = vacationPlan(vacation, trips, friends, cv);
 
   const data: ReportData | null = useMemo(() => {
     if (!plan) return null;
@@ -344,7 +346,9 @@ function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFri
   const setLuggage = useStore((s) => s.setLuggage);
   const going = friends.filter((f) => vacation.attendeeIds.includes(f.id));
   const bags = vacation.luggage;
-  const save = (next: LuggageItem[]) => setLuggage(vacation.id, next);
+  // updates read the latest luggage so quick successive taps build on each other
+  const update = (fn: (current: LuggageItem[]) => LuggageItem[]) =>
+    setLuggage(vacation.id, fn(useStore.getState().vacations.find((v) => v.id === vacation.id)?.luggage ?? []));
   const personal = (friendId: string, type: LuggageItem['type']) => bags.filter((b) => !b.shared && b.type === type && b.friendIds[0] === friendId);
   const shared = bags.filter((b) => b.shared);
   const inShared = (friendId: string) => shared.some((b) => b.friendIds.includes(friendId));
@@ -354,10 +358,10 @@ function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFri
     return (
       <div className="flex items-center gap-1 rounded-full bg-slate-100/80 p-0.5">
         <button className="h-6 w-6 rounded-full text-sm font-bold text-slate-500 hover:bg-white disabled:opacity-30" disabled={!n}
-          onClick={() => { const last = personal(f.id, type).slice(-1)[0]; if (last) save(bags.filter((b) => b.id !== last.id)); }}>−</button>
+          onClick={() => { const last = personal(f.id, type).slice(-1)[0]; if (last) update((cur) => cur.filter((b) => b.id !== last.id)); }}>−</button>
         <span className={cx('w-5 text-center text-sm font-bold', n ? 'text-slate-900' : 'text-slate-300')}>{n}</span>
         <button className="h-6 w-6 rounded-full text-sm font-bold text-slate-500 hover:bg-white"
-          onClick={() => save([...bags, { id: uid(), type, friendIds: [f.id] }])}>+</button>
+          onClick={() => update((cur) => [...cur, { id: uid(), type, friendIds: [f.id] }])}>+</button>
       </div>
     );
   };
@@ -391,7 +395,7 @@ function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFri
               <span className="label mb-0">Shared bags</span>
               <div className="flex gap-2">
                 {(['trolley', 'checked'] as const).map((type) => (
-                  <Button key={type} size="sm" onClick={() => save([...bags, { id: uid(), type, friendIds: [], shared: true }])}>
+                  <Button key={type} size="sm" onClick={() => update((cur) => [...cur, { id: uid(), type, friendIds: [], shared: true }])}>
                     <Plus size={13} /> Shared {type === 'trolley' ? 'trolley' : 'checked bag'}
                   </Button>
                 ))}
@@ -407,7 +411,7 @@ function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFri
                       const on = bag.friendIds.includes(f.id);
                       return (
                         <button key={f.id}
-                          onClick={() => save(bags.map((b) => (b.id === bag.id ? { ...b, friendIds: on ? b.friendIds.filter((x) => x !== f.id) : [...b.friendIds, f.id] } : b)))}
+                          onClick={() => update((cur) => cur.map((b) => (b.id === bag.id ? { ...b, friendIds: b.friendIds.includes(f.id) ? b.friendIds.filter((x) => x !== f.id) : [...b.friendIds, f.id] } : b)))}
                           className={cx('flex items-center gap-1 rounded-full border py-0.5 pl-0.5 pr-2 text-xs font-semibold transition', on ? 'border-sky-300 bg-white text-sky-800' : 'border-transparent text-slate-400 hover:text-slate-600')}>
                           <Avatar name={f.name} color={f.color} size={18} /> {f.name}
                         </button>
@@ -415,7 +419,7 @@ function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFri
                     })}
                   </div>
                   <span className="text-xs text-slate-400">{bag.friendIds.length ? `split ${bag.friendIds.length} ways` : 'pick who shares'}</span>
-                  <button className="rounded-full p-1 text-slate-300 hover:bg-rose-50 hover:text-rose-500" onClick={() => save(bags.filter((b) => b.id !== bag.id))}><Trash2 size={14} /></button>
+                  <button className="rounded-full p-1 text-slate-300 hover:bg-rose-50 hover:text-rose-500" onClick={() => update((cur) => cur.filter((b) => b.id !== bag.id))}><Trash2 size={14} /></button>
                 </div>
               ))}
             </div>

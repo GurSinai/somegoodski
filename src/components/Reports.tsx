@@ -6,6 +6,7 @@ import { boardLabel, gearLabel, transferLabel } from '../lib/labels';
 import { addRange, money, moneyRange, range } from '../lib/util';
 import type { Airport, FlightOption, Range, Resort, Vacation, WinterFriend } from '../types';
 import { COST_COLORS } from './CostBar';
+import { lessonDaysLabel, lessonTitle } from './LessonEditor';
 
 export interface ReportData {
   vacation: Vacation;
@@ -99,9 +100,12 @@ function planItems(data: ReportData, c: FriendCost | null): PlanItem[] {
     },
   ];
   if (c?.pass) items.push({ label: 'Ski pass', color: COST_COLORS.liftPass, title: c.pass.name, lines: [c.pass.basis === 'per-day' ? `${skiDaysOf(data.vacation.dates)} ski days` : 'Whole stay'], price: m(c.skiPass) });
-  if (c?.quote && c.rental + c.lessons > 0) {
+  if (c?.quote && c.rental > 0) {
     const f = data.friends.find((x) => x.id === c.friendId)!;
-    items.push({ label: 'Rental & lessons', color: COST_COLORS.extras, title: c.quote.shop.name, lines: [f.gear && `${[f.gear.skis && 'skis', f.gear.snowboard && 'snowboard', ...f.gear.pieces.map((p) => gearLabel(p).toLowerCase())].filter(Boolean).join(', ')}`, c.lessons > 0 && `${f.lessons.type} lessons`], price: m(c.rental + c.lessons) });
+    items.push({ label: 'Rental', color: COST_COLORS.extras, title: c.quote.shop.name, lines: [[f.gear.equipment && (f.sport === 'snowboard' ? 'snowboard' : 'skis'), ...f.gear.pieces.map((p) => gearLabel(p).toLowerCase())].filter(Boolean).join(', ')], price: m(c.rental) });
+  }
+  for (const l of c?.lessonLines ?? []) {
+    items.push({ label: 'Lesson', color: COST_COLORS.extras, title: `${lessonTitle(l.lesson)} · ${l.shop.name}`, lines: [lessonDaysLabel(l.lesson), l.lesson.notes], price: m(l.amount) });
   }
   return items;
 }

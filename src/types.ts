@@ -4,23 +4,22 @@ export type ISODate = string;
 export type SkillLevel = 'never' | 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type Sport = 'ski' | 'snowboard' | 'both';
 export type LessonType = 'group' | 'private';
+export type Currency = 'ILS' | 'USD' | 'EUR';
 
+/** What a rider would like; actual lessons are assigned per ski store on each resort. */
 export interface Lessons {
   wanted: boolean;
   type: LessonType;
   days: number;
-  budgetPerDay: number;
 }
 
-export type SkiTier = 'basic' | 'sport' | 'performance' | 'premium';
-export type BoardTier = 'basic' | 'sport' | 'performance';
+export type GearTier = 'basic' | 'intermediate' | 'advanced' | 'offpiste';
 /** Rentable items that have no tiers. */
-export type GearPiece = 'skiBoots' | 'boardBoots' | 'helmet' | 'gloves' | 'jacket' | 'pants' | 'goggles';
+export type GearPiece = 'boots' | 'helmet' | 'gloves' | 'jacket' | 'pants' | 'goggles';
 
-/** What a friend needs to rent. `null` tier = brings their own. */
+/** What a friend needs to rent. `equipment: null` = brings their own skis / snowboard. */
 export interface GearNeeds {
-  skis: SkiTier | null;
-  snowboard: BoardTier | null;
+  equipment: GearTier | null; // skis or snowboard, whichever they ride
   pieces: GearPiece[];
 }
 
@@ -32,8 +31,9 @@ export interface Friend {
   skillLevel: SkillLevel;
   sport: Sport;
   gear: GearNeeds;
-  lessons: Lessons; // budgetPerDay is the fallback when no shop lists lesson prices
+  lessons: Lessons;
   defaultBudget: number; // pre-fills the budget when the friend joins a new winter
+  defaultBudgetCurrency: Currency;
   notes: string;
 }
 
@@ -46,7 +46,8 @@ export interface DateRange {
 export interface WinterParticipant {
   friendId: string;
   availability: ISODate[];
-  budget: number; // total per-vacation budget, in settings.currency
+  budget: number; // total per-vacation budget
+  budgetCurrency: Currency;
 }
 
 export interface Winter {
@@ -124,6 +125,7 @@ export interface FlightOption {
   airline: string;
   homeCity: string; // the other end, e.g. "TLV"
   when: string; // free text, e.g. "Sat 9 Jan 06:10 → 09:45"
+  currency: Currency; // of every price on this option (same for all options below)
   pricePerPerson: number; // with a backpack only
   trolleyPrice: number; // per trolley
   checkedPrice: number; // per checked bag
@@ -139,6 +141,7 @@ export interface TransferOption {
   type: TransferType;
   provider: string;
   pricing: 'per-person' | 'per-vehicle';
+  currency: Currency;
   price: number; // round trip
   vehicleCapacity: number; // used when pricing is per-vehicle
   link: string;
@@ -150,7 +153,9 @@ export type Board = 'RO' | 'BB' | 'HB' | 'FB' | 'AI' | 'SC';
 export interface HotelOption {
   id: string;
   name: string;
-  pricePerNight: number;
+  currency: Currency;
+  price: number;
+  per: 'night' | 'stay'; // a nightly rate, or the total for the whole stay
   pricing: 'per-room' | 'per-person';
   roomCapacity: number; // used when pricing is per-room
   board: Board;
@@ -167,20 +172,38 @@ export interface SkiPassOption {
   id: string;
   name: string;
   basis: PriceBasis;
+  currency: Currency;
   price: number; // per person
   notes: string;
 }
 
-/** Price keys a shop can list: "skis:sport", "snowboard:basic", "helmet", … */
-export type GearPriceKey = `skis:${SkiTier}` | `snowboard:${BoardTier}` | GearPiece;
+/** Price keys a shop can list: "equipment:intermediate", "boots", "helmet", … */
+export type GearPriceKey = `equipment:${GearTier}` | GearPiece;
 
+/**
+ * A lesson a ski store offers. Group lessons cost each rider the per-person price.
+ * A private lesson is priced for `people` riders; its full cost is split between
+ * whoever is assigned, so friends can share one.
+ */
+export interface LessonOffer {
+  id: string;
+  type: LessonType;
+  dates: ISODate[]; // lesson days
+  people: number; // private only: how many riders the price is for
+  pricePerPerson: number; // per lesson day, in the store's currency
+  level: SkillLevel | null;
+  friendIds: string[]; // riders attending
+  notes: string;
+}
+
+/** A ski store: gear rental prices plus the lessons it offers. */
 export interface RentalShop {
   id: string;
   name: string;
   basis: PriceBasis;
+  currency: Currency;
   prices: Partial<Record<GearPriceKey, number>>; // missing = not offered
-  groupLessonPerDay: number; // 0 = not offered
-  privateLessonPerDay: number;
+  lessons: LessonOffer[];
   link: string;
   notes: string;
 }
@@ -195,6 +218,7 @@ export interface Expense {
   id: string;
   name: string;
   split: 'shared' | 'individual'; // shared = total split between people; individual = each pays the amount
+  currency: Currency;
   amount: Range;
   per: 'trip' | 'day'; // day = × vacation days (nights + 1)
   friendIds: string[] | null; // null = everyone going
@@ -226,19 +250,31 @@ export interface Trip {
   createdAt: string;
 }
 
-/** A friend as seen in a winter: profile + that winter's availability and budget. */
+/** A friend as seen in a winter: profile + that winter's availability and budget (in the display currency). */
 export type WinterFriend = Friend & { availability: ISODate[]; budget: number };
 
-/** A trip with its vacation's dates, attendees and luggage resolved, ready for pricing. */
+/**
+ * A trip with its vacation's dates, attendees and luggage resolved and every price
+ * converted to the display currency, ready for pricing.
+ */
 export type PricedTrip = Trip & { dates: DateRange | null; attendeeIds: string[]; luggage: LuggageItem[] };
 
+/** Units of each currency per 1 EUR. */
+export interface FxRates {
+  rates: Record<Currency, number>;
+  date: string; // as published by the rate source
+  fetchedAt: string | null; // null = built-in fallback rates
+}
+
 export interface Settings {
-  currency: string;
+  currency: Currency; // everything is shown converted to this
+  entryCurrency: Currency; // default for newly entered prices (the last one used)
+  fx: FxRates;
   activeWinterId: string | null;
 }
 
 export interface AppData {
-  version: 3;
+  version: 5;
   settings: Settings;
   friends: Friend[];
   winters: Winter[];

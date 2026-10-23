@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "release": "npm run build && node scripts/serve.mjs",
+    "release": "node scripts/release.mjs",
     "serve": "node scripts/serve.mjs"
   },
   "dependencies": {

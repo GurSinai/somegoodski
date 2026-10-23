@@ -1,29 +1,32 @@
 import { useEffect, useState } from 'react';
 import { BOARDS, GEAR_PRICE_ROWS, TRANSFER_TYPES } from '../lib/labels';
-import { cx, uid } from '../lib/util';
-import { useStore, type OptionKind } from '../store/useStore';
+import { nightsOf } from '../lib/dates';
+import { cx, money, uid } from '../lib/util';
+import { useConverter, useStore, type OptionKind } from '../store/useStore';
 import type {
-  Expense, FlightOption, GearPriceKey, HotelOption, Leg, PricedTrip, RentalShop, SkiPassOption, TransferOption, WinterFriend,
+  Currency, Expense, FlightOption, Range, GearPriceKey, HotelOption, Leg, PricedTrip, RentalShop, SkiPassOption, TransferOption, WinterFriend,
 } from '../types';
+import CurrencyPicker from './CurrencyPicker';
+import LessonEditor from './LessonEditor';
 import { Avatar, Button, Drawer, Field, NumberInput, Segmented, Toggle } from './ui';
 
 export type { OptionKind };
 
-export const blankFlight = (airport: string, direction: Leg): FlightOption => ({
-  id: uid(), direction, airport, airline: '', homeCity: '', when: '', pricePerPerson: 0, trolleyPrice: 0, checkedPrice: 0, link: '', notes: '',
+export const blankFlight = (airport: string, direction: Leg, currency: Currency): FlightOption => ({
+  id: uid(), direction, airport, airline: '', homeCity: '', when: '', currency, pricePerPerson: 0, trolleyPrice: 0, checkedPrice: 0, link: '', notes: '',
 });
-export const blankTransfer = (airport: string): TransferOption => ({
-  id: uid(), airport, type: 'shuttle', provider: '', pricing: 'per-person', price: 0, vehicleCapacity: 8, link: '', notes: '',
+export const blankTransfer = (airport: string, currency: Currency): TransferOption => ({
+  id: uid(), airport, type: 'shuttle', provider: '', pricing: 'per-person', currency, price: 0, vehicleCapacity: 8, link: '', notes: '',
 });
-export const blankHotel = (): HotelOption => ({
-  id: uid(), name: '', pricePerNight: 0, pricing: 'per-room', roomCapacity: 2, board: 'BB', skiInOut: false, walkToLiftMin: 0, link: '', notes: '',
+export const blankHotel = (currency: Currency): HotelOption => ({
+  id: uid(), name: '', currency, price: 0, per: 'night', pricing: 'per-room', roomCapacity: 2, board: 'BB', skiInOut: false, walkToLiftMin: 0, link: '', notes: '',
 });
-export const blankPass = (): SkiPassOption => ({ id: uid(), name: '', basis: 'whole-stay', price: 0, notes: '' });
-export const blankShop = (): RentalShop => ({
-  id: uid(), name: '', basis: 'whole-stay', prices: {}, groupLessonPerDay: 0, privateLessonPerDay: 0, link: '', notes: '',
+export const blankPass = (currency: Currency): SkiPassOption => ({ id: uid(), name: '', basis: 'whole-stay', currency, price: 0, notes: '' });
+export const blankShop = (currency: Currency): RentalShop => ({
+  id: uid(), name: '', basis: 'whole-stay', currency, prices: {}, lessons: [], link: '', notes: '',
 });
-export const blankExpense = (): Expense => ({
-  id: uid(), name: '', split: 'shared', amount: { min: 0, max: 0 }, per: 'trip', friendIds: null, notes: '',
+export const blankExpense = (currency: Currency): Expense => ({
+  id: uid(), name: '', split: 'shared', currency, amount: { min: 0, max: 0 }, per: 'trip', friendIds: null, notes: '',
 });
 
 export type AnyOption = FlightOption | TransferOption | HotelOption | SkiPassOption | RentalShop | Expense;
@@ -38,13 +41,13 @@ interface Props {
 }
 
 const TITLES: Record<OptionKind, string> = {
-  flights: 'flight', transfers: 'transfer', hotels: 'hotel', skiPasses: 'ski pass', shops: 'rental shop', expenses: 'expense',
+  flights: 'flight', transfers: 'transfer', hotels: 'hotel', skiPasses: 'ski pass', shops: 'ski store', expenses: 'expense',
 };
 
 export default function OptionDrawer({ trip, kind, option, isNew, friends, onClose }: Props) {
   const saveOption = useStore((s) => s.saveOption);
   const removeOption = useStore((s) => s.removeOption);
-  const currency = useStore((s) => s.settings.currency);
+  const updateSettings = useStore((s) => s.updateSettings);
   const resort = useStore((s) => s.resorts.find((r) => r.id === trip.resortId));
   const airports = useStore((s) => s.airports);
   const [draft, setDraft] = useState<AnyOption>(option);
@@ -52,6 +55,7 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
   useEffect(() => setDraft(option), [option]);
 
   const set = (patch: Partial<AnyOption>) => setDraft((d) => ({ ...d, ...patch }) as AnyOption);
+  const currency = draft.currency; // prices in this form are entered in the option's own currency
   const needsAirport = kind === 'flights' || kind === 'transfers';
   const needsName = kind === 'skiPasses' || kind === 'shops' || kind === 'expenses';
   const valid = (!needsAirport || !!(draft as FlightOption).airport) && (!needsName || !!(draft as SkiPassOption).name.trim());
@@ -91,12 +95,27 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
             </Button>
           )}
           <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" disabled={!valid} onClick={() => { saveOption(trip.id, kind, draft as never); onClose(); }}>
+          <Button
+            variant="primary"
+            disabled={!valid}
+            onClick={() => {
+              // a range typed high-to-low is still a range
+              const amount = kind === 'expenses' ? (draft as Expense).amount : null;
+              const toSave = amount && amount.max < amount.min ? { ...draft, amount: { min: amount.max, max: amount.min } } : draft;
+              saveOption(trip.id, kind, toSave as never);
+              updateSettings({ entryCurrency: draft.currency }); // next new price starts in the same currency
+              onClose();
+            }}
+          >
             Save
           </Button>
         </>
       }
     >
+      <div className="-mt-2 flex items-center justify-between rounded-2xl bg-sky-50/60 px-3 py-2">
+        <span className="text-xs font-semibold text-slate-500">Prices entered in</span>
+        <CurrencyPicker value={draft.currency} onChange={(c) => set({ currency: c })} />
+      </div>
       {kind === 'flights' && (() => {
         const f = draft as FlightOption;
         const out = f.direction === 'outbound';
@@ -157,21 +176,33 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
 
       {kind === 'hotels' && (() => {
         const h = draft as HotelOption;
+        const nights = nightsOf(trip.dates);
+        const unit = h.pricing === 'per-room' ? 'per room' : 'per person';
         return (
           <>
             <Field label="Name"><input className="input" autoFocus value={h.name} onChange={(e) => set({ name: e.target.value })} placeholder="Hotel / chalet / apartment" /></Field>
-            <div>
-              <span className="label">Pricing</span>
-              <Segmented value={h.pricing} onChange={(pricing) => set({ pricing })} options={[{ value: 'per-room', label: 'Per room / unit' }, { value: 'per-person', label: 'Per person' }]} />
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
+              <div>
+                <span className="label">Priced</span>
+                <Segmented value={h.pricing} onChange={(pricing) => set({ pricing })} options={[{ value: 'per-room', label: 'Per room / unit' }, { value: 'per-person', label: 'Per person' }]} />
+              </div>
+              <div>
+                <span className="label">For</span>
+                <Segmented value={h.per} onChange={(per) => set({ per })} options={[{ value: 'night', label: 'One night' }, { value: 'stay', label: 'The whole stay' }]} />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label={`Per night ${h.pricing === 'per-room' ? 'per room' : 'per person'} (${currency})`}>
-                <NumberInput value={h.pricePerNight} onChange={(pricePerNight) => set({ pricePerNight })} min={0} />
+              <Field
+                label={`${h.per === 'stay' ? 'Total for the stay' : 'Per night'} ${unit} (${currency})`}
+                hint={nights && h.price ? (h.per === 'stay' ? `= ${money(h.price / nights, currency)} per night over ${nights} nights` : `= ${money(h.price * nights, currency)} for ${nights} nights`) : undefined}
+              >
+                <NumberInput value={h.price} onChange={(price) => set({ price })} min={0} />
               </Field>
               {h.pricing === 'per-room' && (
                 <Field label="People per room / unit"><NumberInput value={h.roomCapacity} onChange={(roomCapacity) => set({ roomCapacity })} min={1} /></Field>
               )}
             </div>
+            <HotelSummary hotel={h} people={Math.max(1, trip.attendeeIds.length)} nights={nights} />
             <div className="grid grid-cols-2 gap-3">
               <Field label="Board">
                 <select className="input" value={h.board} onChange={(e) => set({ board: e.target.value as HotelOption['board'] })}>
@@ -213,9 +244,9 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
         };
         return (
           <>
-            <Field label="Shop name"><input className="input" autoFocus value={s.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Intersport Val Thorens" /></Field>
+            <Field label="Store name"><input className="input" autoFocus value={s.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Intersport Val Thorens" /></Field>
             <div>
-              <span className="label">Prices are</span>
+              <span className="label">Rental prices are</span>
               <Segmented value={s.basis} onChange={(basis) => set({ basis })} options={[{ value: 'whole-stay', label: 'For the whole rental' }, { value: 'per-day', label: 'Per day' }]} />
             </div>
             <div className="rounded-2xl bg-slate-50/80 p-4">
@@ -236,17 +267,13 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={`Group lesson / day (${currency})`} hint="0 = not offered"><NumberInput value={s.groupLessonPerDay} onChange={(groupLessonPerDay) => set({ groupLessonPerDay })} min={0} /></Field>
-              <Field label={`Private lesson / day (${currency})`} hint="0 = not offered"><NumberInput value={s.privateLessonPerDay} onChange={(privateLessonPerDay) => set({ privateLessonPerDay })} min={0} /></Field>
-            </div>
+            <LessonEditor lessons={s.lessons} onChange={(lessons) => set({ lessons })} currency={currency} trip={trip} friends={friends} />
           </>
         );
       })()}
 
       {kind === 'expenses' && (() => {
         const e = draft as Expense;
-        const ranged = e.amount.max !== e.amount.min;
         const going = friends.filter((f) => trip.attendeeIds.includes(f.id));
         const who = e.friendIds ?? going.map((f) => f.id);
         const toggleWho = (id: string) => {
@@ -262,15 +289,16 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
             </div>
             <div>
               <span className="label">Amount</span>
-              <div className="mb-2"><Toggle checked={ranged} onChange={(v) => set({ amount: v ? { min: e.amount.min, max: e.amount.min * 1.5 || 0 } : { min: e.amount.min, max: e.amount.min } })} label="Price range (estimate)" /></div>
-              <div className="flex items-center gap-2">
-                <NumberInput value={e.amount.min} onChange={(min) => set({ amount: { min, max: ranged ? Math.max(min, e.amount.max) : min } })} min={0} />
-                {ranged && <><span className="text-slate-300">–</span><NumberInput value={e.amount.max} onChange={(max) => set({ amount: { ...e.amount, max } })} min={e.amount.min} /></>}
-                <select className="input w-auto" value={e.per} onChange={(ev) => set({ per: ev.target.value as Expense['per'] })}>
-                  <option value="trip">{currency} total</option>
-                  <option value="day">{currency} per day</option>
-                </select>
-              </div>
+              <AmountInput
+                value={e.amount}
+                onChange={(amount) => set({ amount })}
+                unit={
+                  <select className="input w-auto" value={e.per} onChange={(ev) => set({ per: ev.target.value as Expense['per'] })}>
+                    <option value="trip">{currency} total</option>
+                    <option value="day">{currency} per day</option>
+                  </select>
+                }
+              />
               <p className="mt-1.5 text-xs text-slate-400">
                 {e.split === 'shared' ? 'The total is split between the people below.' : 'Each person below pays this amount.'}
                 {e.per === 'day' && ' Per day = every day of the vacation, arrival and departure included.'}
@@ -294,5 +322,63 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
       {'link' in draft && <Field label="Link"><input className="input" value={draft.link} onChange={(e) => set({ link: e.target.value } as Partial<FlightOption>)} placeholder="https://…" /></Field>}
       <Field label="Notes"><textarea className="input min-h-20" value={draft.notes} onChange={(e) => set({ notes: e.target.value })} /></Field>
     </Drawer>
+  );
+}
+
+/** What a hotel works out to for this group: nightly room rate, rooms needed, totals. */
+function HotelSummary({ hotel: h, people, nights }: { hotel: HotelOption; people: number; nights: number }) {
+  const display = useStore((s) => s.settings.currency);
+  const cv = useConverter();
+  if (!h.price) return null;
+  if (!nights) return <p className="rounded-2xl bg-slate-50 p-3 text-xs text-slate-500">Set the vacation dates to see the totals.</p>;
+
+  const perNight = h.per === 'stay' ? h.price / nights : h.price; // per room or per person
+  const perRoom = h.pricing === 'per-room';
+  const rooms = perRoom ? Math.ceil(people / Math.max(1, h.roomCapacity)) : 0;
+  const total = perRoom ? rooms * perNight * nights : perNight * nights * people;
+  // amounts in the hotel's own currency, with the display currency alongside when they differ
+  const show = (n: number) => (h.currency === display ? money(n, h.currency) : `${money(n, h.currency)} · ${money(cv(n, h.currency), display)}`);
+
+  const rows: [string, string][] = [
+    [perRoom ? 'Per room per night' : 'Per person per night', show(perNight)],
+    ...(perRoom ? [['Rooms needed', `${rooms} × ${h.roomCapacity}-person room${rooms > 1 ? 's' : ''} for ${people} riders`] as [string, string]] : []),
+    [`Total payment, ${nights} nights`, show(total)],
+    ['Total per person', show(total / people)],
+  ];
+  return (
+    <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
+      <span className="label">For this group</span>
+      <dl className="space-y-1.5 text-sm">
+        {rows.map(([k, v], i) => (
+          <div key={k} className={cx('flex justify-between gap-3', i === rows.length - 1 && 'border-t border-sky-100 pt-1.5 font-bold')}>
+            <dt className="text-slate-500">{k}</dt>
+            <dd className="text-right font-semibold text-slate-800">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+/** A fixed amount, or a min–max estimate. The range switch is its own state, so typing never flips it. */
+function AmountInput({ value, onChange, unit }: { value: Range; onChange: (r: Range) => void; unit: React.ReactNode }) {
+  const [ranged, setRanged] = useState(value.max !== value.min);
+  return (
+    <>
+      <div className="mb-2">
+        <Toggle checked={ranged} onChange={(on) => { setRanged(on); if (!on) onChange({ min: value.min, max: value.min }); }} label="Price range (estimate)" />
+      </div>
+      <div className="flex items-center gap-2">
+        <NumberInput value={value.min} onChange={(min) => onChange({ min, max: ranged ? value.max : min })} min={0} placeholder={ranged ? 'From' : '0'} />
+        {ranged && (
+          <>
+            <span className="text-slate-300">–</span>
+            <NumberInput value={value.max} onChange={(max) => onChange({ ...value, max })} min={0} placeholder="To" />
+          </>
+        )}
+        {unit}
+      </div>
+      {ranged && value.max > 0 && value.max < value.min && <p className="mt-1 text-xs text-amber-600">The “to” amount is lower than “from”; they’ll be swapped when you save.</p>}
+    </>
   );
 }

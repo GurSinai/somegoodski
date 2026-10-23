@@ -1,3 +1,4 @@
+import { FALLBACK_RATES } from '../lib/fx';
 import type { Airport, AppData, Resort } from '../types';
 
 export const SEED_AIRPORTS: Airport[] = [
@@ -183,8 +184,8 @@ export const upcomingWinterYear = (today = new Date()) => (today.getMonth() >= 5
 
 export function createInitialData(): AppData {
   return {
-    version: 3,
-    settings: { currency: 'EUR', activeWinterId: null },
+    version: 5,
+    settings: { currency: 'ILS', entryCurrency: 'ILS', fx: FALLBACK_RATES, activeWinterId: null },
     friends: [],
     winters: [],
     vacations: [],

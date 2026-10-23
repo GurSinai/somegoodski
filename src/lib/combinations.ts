@@ -1,5 +1,5 @@
 import type {
-  Expense, FlightOption, GearPriceKey, HotelOption, Leg, PricedTrip, Range, RentalShop, SkiPassOption, TransferOption, WinterFriend,
+  Expense, FlightOption, GearPriceKey, HotelOption, Leg, LessonOffer, PricedTrip, Range, RentalShop, SkiPassOption, TransferOption, WinterFriend,
 } from '../types';
 import { nightsOf, skiDaysOf } from './dates';
 import { addRange, range, scaleRange } from './util';
@@ -7,8 +7,7 @@ import { addRange, range, scaleRange } from './util';
 export interface ShopQuote {
   shop: RentalShop;
   rental: number;
-  lessons: number;
-  missing: GearPriceKey[]; // needed items this shop doesn't list
+  missing: GearPriceKey[]; // needed items this store doesn't rent
 }
 
 export interface FriendCost {
@@ -21,8 +20,9 @@ export interface FriendCost {
   hotel: number;
   pass: SkiPassOption | null;
   skiPass: number;
-  quote: ShopQuote | null; // null = no shops entered yet
+  quote: ShopQuote | null; // null = no stores entered yet
   rental: number;
+  lessonLines: LessonLine[];
   lessons: number;
   expenseLines: { expense: Expense; amount: Range }[];
   expenses: Range;
@@ -58,9 +58,10 @@ export function transferPerPerson(t: TransferOption, people: number): number {
 }
 
 export function hotelPerPerson(h: HotelOption, people: number, nights: number): number {
-  if (h.pricing === 'per-person') return h.pricePerNight * nights;
+  const stay = h.per === 'stay' ? h.price : h.price * nights; // per room or per person, for the whole stay
+  if (h.pricing === 'per-person') return stay;
   const rooms = Math.ceil(people / Math.max(1, h.roomCapacity));
-  return (rooms * h.pricePerNight * nights) / people;
+  return (rooms * stay) / people;
 }
 
 /** Vacation days for per-day expenses: arrival and departure days both count. */
@@ -80,14 +81,10 @@ export function passFor(trip: PricedTrip, friendId: string): SkiPassOption | nul
 
 /** Price keys of everything a friend needs to rent. */
 export function gearKeys(f: WinterFriend): GearPriceKey[] {
-  const keys: GearPriceKey[] = [];
-  if (f.gear.skis) keys.push(`skis:${f.gear.skis}`);
-  if (f.gear.snowboard) keys.push(`snowboard:${f.gear.snowboard}`);
-  return [...keys, ...f.gear.pieces];
+  return [...(f.gear.equipment ? [`equipment:${f.gear.equipment}` as GearPriceKey] : []), ...f.gear.pieces];
 }
 
-const lessonDays = (f: WinterFriend, skiDays: number) => (f.lessons.wanted ? Math.min(f.lessons.days, skiDays) : 0);
-
+/** Gear rental at one store. */
 export function shopQuote(shop: RentalShop, f: WinterFriend, skiDays: number): ShopQuote {
   const mult = shop.basis === 'per-day' ? skiDays : 1;
   const missing: GearPriceKey[] = [];
@@ -97,21 +94,50 @@ export function shopQuote(shop: RentalShop, f: WinterFriend, skiDays: number): S
     if (p === undefined || p === null) missing.push(key);
     else rental += p * mult;
   }
-  const rate = f.lessons.type === 'group' ? shop.groupLessonPerDay : shop.privateLessonPerDay;
-  // shops without that kind of lesson fall back to the friend's own lesson budget
-  const lessons = lessonDays(f, skiDays) * (rate || f.lessons.budgetPerDay);
-  return { shop, rental, lessons, missing };
+  return { shop, rental, missing };
 }
 
-/** The friend's chosen shop; by default the cheapest one that has everything they need. */
+/** The friend's chosen store for rental; by default the cheapest one that has everything they need. */
 export function quoteFor(trip: PricedTrip, f: WinterFriend): ShopQuote | null {
   const days = skiDaysOf(trip.dates);
   const quotes = trip.shops.map((s) => shopQuote(s, f, days));
   const chosen = quotes.find((q) => q.shop.id === trip.shopChoice[f.id]);
   if (chosen) return chosen;
-  const cost = (q: ShopQuote) => q.rental + q.lessons;
   const complete = quotes.filter((q) => q.missing.length === 0);
-  return [...(complete.length ? complete : quotes)].sort((a, b) => cost(a) - cost(b))[0] ?? null;
+  return [...(complete.length ? complete : quotes)].sort((a, b) => a.rental - b.rental)[0] ?? null;
+}
+
+/** Riders who attend a lesson (assigned and going on the vacation). */
+export const lessonRiders = (l: LessonOffer, attendeeIds: string[]) => l.friendIds.filter((id) => attendeeIds.includes(id));
+
+/**
+ * What each attending rider pays for a lesson. Group: the per-person price per day.
+ * Private: the lesson is priced for `people` riders and its full cost is split between
+ * whoever attends (more riders than planned each pay the per-person price).
+ */
+export function lessonShare(l: LessonOffer, riders: number): number {
+  if (!riders) return 0;
+  const perDay = l.type === 'group' ? l.pricePerPerson : (l.pricePerPerson * Math.max(l.people, riders)) / riders;
+  return perDay * l.dates.length;
+}
+
+export interface LessonLine {
+  lesson: LessonOffer;
+  shop: RentalShop;
+  amount: number;
+}
+
+/** Every rider's lessons across all of the trip's stores. */
+export function lessonLines(trip: PricedTrip): Map<string, LessonLine[]> {
+  const lines = new Map<string, LessonLine[]>();
+  for (const shop of trip.shops) {
+    for (const lesson of shop.lessons) {
+      const riders = lessonRiders(lesson, trip.attendeeIds);
+      const amount = lessonShare(lesson, riders.length);
+      for (const id of riders) lines.set(id, [...(lines.get(id) ?? []), { lesson, shop, amount }]);
+    }
+  }
+  return lines;
 }
 
 /** What one friend pays for an expense (zero if they're not part of it). */
@@ -165,10 +191,12 @@ export function buildCombos(trip: PricedTrip, friends: WinterFriend[]): Combo[] 
   if (!outs.length && !rets.length) return [];
 
   // per-friend costs that don't depend on the combination
+  const lessonsByFriend = lessonLines(trip);
   const fixed = new Map(
     going.map((f) => {
       const pass = passFor(trip, f.id);
       const quote = quoteFor(trip, f);
+      const lessons = lessonsByFriend.get(f.id) ?? [];
       const expenseLines = trip.expenses
         .map((expense) => ({ expense, amount: expenseShare(expense, f.id, trip.attendeeIds, days) }))
         .filter((l) => l.amount.max > 0);
@@ -177,7 +205,8 @@ export function buildCombos(trip: PricedTrip, friends: WinterFriend[]): Combo[] 
         skiPass: pass ? passPrice(pass, skiDays) : 0,
         quote,
         rental: quote?.rental ?? 0,
-        lessons: quote ? quote.lessons : lessonDays(f, skiDays) * f.lessons.budgetPerDay,
+        lessonLines: lessons,
+        lessons: lessons.reduce((s, l) => s + l.amount, 0),
         expenseLines,
         expenses: expenseLines.reduce((s, l) => addRange(s, l.amount), range(0)),
       }];
@@ -218,6 +247,7 @@ export function buildCombos(trip: PricedTrip, friends: WinterFriend[]): Combo[] 
               skiPass: x.skiPass,
               quote: x.quote,
               rental: x.rental,
+              lessonLines: x.lessonLines,
               lessons: x.lessons,
               expenseLines: x.expenseLines,
               expenses: x.expenses,

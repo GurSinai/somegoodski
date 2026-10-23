@@ -30,7 +30,7 @@ export default function People() {
       skis: friends.filter((f) => f.sport !== 'snowboard').length,
       boards: friends.filter((f) => f.sport !== 'ski').length,
       lessons: friends.filter((f) => f.lessons.wanted).length,
-      lessonCost: friends.reduce((s, f) => s + (f.lessons.wanted ? f.lessons.days * f.lessons.budgetPerDay : 0), 0),
+      lessonDays: friends.reduce((s, f) => s + (f.lessons.wanted ? f.lessons.days : 0), 0),
       rentals: friends.filter((f) => gearKeys(f).length > 0).length,
       ceiling: budgets.length ? Math.min(...budgets) : 0,
       bySkill: SKILLS.map((s) => ({ ...s, count: friends.filter((f) => f.skillLevel === s.value).length })),
@@ -68,7 +68,7 @@ export default function People() {
         <>
           <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
             <Stat icon={<Users size={16} />} label="Riders" value={friends.length} sub={`⛷️ ${stats.skis} · 🏂 ${stats.boards}`} />
-            <Stat icon={<GraduationCap size={16} />} label="Want lessons" value={stats.lessons} sub={stats.lessonCost ? `${money(stats.lessonCost, currency)} total` : '—'} />
+            <Stat icon={<GraduationCap size={16} />} label="Want lessons" value={stats.lessons} sub={stats.lessonDays ? `${stats.lessonDays} lesson days in total` : '—'} />
             <Stat icon={<Package size={16} />} label="Need rental" value={stats.rentals} />
             <Stat icon={<Wallet size={16} />} label="Budget ceiling" value={stats.ceiling ? money(stats.ceiling, currency) : '—'} sub="lowest personal budget" />
           </div>
@@ -105,7 +105,6 @@ export default function People() {
                       {f.lessons.wanted && (
                         <Badge color="amber">
                           <GraduationCap size={12} /> {f.lessons.days}d {f.lessons.type}
-                          {f.lessons.budgetPerDay ? ` · ${money(f.lessons.budgetPerDay, currency)}/d` : ''}
                         </Badge>
                       )}
                       {gearKeys(f).length > 0 && <Badge><Package size={12} /> Rents {gearKeys(f).length} item{gearKeys(f).length > 1 ? 's' : ''}</Badge>}

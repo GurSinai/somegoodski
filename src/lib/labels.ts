@@ -1,4 +1,4 @@
-import type { Board, BoardTier, GearPiece, GearPriceKey, SkillLevel, SkiTier, Sport, TransferType, VacationStatus } from '../types';
+import type { Board, GearPiece, GearPriceKey, GearTier, SkillLevel, Sport, TransferType, VacationStatus } from '../types';
 
 export const SKILLS: { value: SkillLevel; label: string; color: string; dot: string }[] = [
   { value: 'never', label: 'First timer', color: 'slate', dot: '#94a3b8' },
@@ -43,22 +43,15 @@ export const STATUSES: { value: VacationStatus; label: string; color: string }[]
 ];
 export const statusOf = (v: VacationStatus) => STATUSES.find((s) => s.value === v)!;
 
-export const SKI_TIERS: { value: SkiTier; label: string; hint: string }[] = [
+export const GEAR_TIERS: { value: GearTier; label: string; hint: string }[] = [
   { value: 'basic', label: 'Basic', hint: 'first timers, beginners' },
-  { value: 'sport', label: 'Sport', hint: 'intermediate' },
-  { value: 'performance', label: 'Performance', hint: 'advanced' },
-  { value: 'premium', label: 'Premium', hint: 'expert, top models' },
-];
-
-export const BOARD_TIERS: { value: BoardTier; label: string; hint: string }[] = [
-  { value: 'basic', label: 'Basic', hint: 'beginners' },
-  { value: 'sport', label: 'Sport', hint: 'intermediate, all-mountain' },
-  { value: 'performance', label: 'Performance', hint: 'advanced, freeride / park' },
+  { value: 'intermediate', label: 'Intermediate', hint: 'confident on blues and reds' },
+  { value: 'advanced', label: 'Advanced', hint: 'blacks, performance models' },
+  { value: 'offpiste', label: 'Off-piste', hint: 'freeride, powder' },
 ];
 
 export const GEAR_PIECES: { value: GearPiece; label: string; emoji: string }[] = [
-  { value: 'skiBoots', label: 'Ski boots', emoji: '🥾' },
-  { value: 'boardBoots', label: 'Snowboard boots', emoji: '🥾' },
+  { value: 'boots', label: 'Ski / Snowboard boots', emoji: '🥾' },
   { value: 'helmet', label: 'Helmet', emoji: '⛑️' },
   { value: 'goggles', label: 'Goggles', emoji: '🥽' },
   { value: 'gloves', label: 'Gloves', emoji: '🧤' },
@@ -67,9 +60,8 @@ export const GEAR_PIECES: { value: GearPiece; label: string; emoji: string }[] =
 ];
 
 /** Every price a shop can list, in display order. */
-export const GEAR_PRICE_ROWS: { key: GearPriceKey; label: string; group: string }[] = [
-  ...SKI_TIERS.map((t) => ({ key: `skis:${t.value}` as GearPriceKey, label: `Skis · ${t.label}`, group: 'Skis' })),
-  ...BOARD_TIERS.map((t) => ({ key: `snowboard:${t.value}` as GearPriceKey, label: `Snowboard · ${t.label}`, group: 'Snowboard' })),
-  ...GEAR_PIECES.map((p) => ({ key: p.value as GearPriceKey, label: p.label, group: 'Gear' })),
+export const GEAR_PRICE_ROWS: { key: GearPriceKey; label: string }[] = [
+  ...GEAR_TIERS.map((t) => ({ key: `equipment:${t.value}` as GearPriceKey, label: `Ski / Snowboard · ${t.label}` })),
+  ...GEAR_PIECES.map((p) => ({ key: p.value as GearPriceKey, label: p.label })),
 ];
-export const gearLabel = (key: GearPriceKey) => GEAR_PRICE_ROWS.find((r) => r.key === key)?.label ?? key;
+export const gearLabel = (key: GearPriceKey | 'lessons') => (key === 'lessons' ? 'lessons' : GEAR_PRICE_ROWS.find((r) => r.key === key)?.label ?? key);

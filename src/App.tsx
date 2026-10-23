@@ -1,6 +1,7 @@
 import { CalendarDays, ChevronDown, Download, Mountain, Plus, Snowflake, Upload, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import CurrencyMenu, { useFxAutoRefresh } from './components/CurrencyMenu';
 import { upcomingWinterYear } from './data/seed';
 import { exportData, readImportFile } from './lib/io';
 import { cx } from './lib/util';
@@ -16,6 +17,7 @@ import { useActiveWinter, useStore } from './store/useStore';
 import type { AppData } from './types';
 
 export default function App() {
+  useFxAutoRefresh();
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -51,8 +53,6 @@ function WinterScope() {
 function Shell() {
   const fileRef = useRef<HTMLInputElement>(null);
   const importData = useStore((s) => s.importData);
-  const currency = useStore((s) => s.settings.currency);
-  const updateSettings = useStore((s) => s.updateSettings);
   const winter = useActiveWinter();
   const { pathname } = useLocation();
 
@@ -117,14 +117,7 @@ function Shell() {
             ))}
           </nav>
           <div className="flex items-center gap-1">
-            <select
-              className="rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600"
-              value={currency}
-              onChange={(e) => updateSettings({ currency: e.target.value })}
-              title="Currency"
-            >
-              {['EUR', 'USD', 'ILS', 'GBP', 'CHF'].map((c) => <option key={c}>{c}</option>)}
-            </select>
+            <CurrencyMenu />
             <button onClick={onExport} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800" title="Export backup (JSON)">
               <Download size={18} />
             </button>
