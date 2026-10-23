@@ -51,10 +51,16 @@ export interface Combo {
 export const comboId = (o: FlightOption | null, r: FlightOption | null, t: TransferOption | null, h: HotelOption | null) =>
   [o?.id ?? '-', r?.id ?? '-', t?.id ?? '-', h?.id ?? '-'].join('|');
 
+/** Estimated fuel cost for one vehicle. */
+export const gasPerVehicle = (t: TransferOption) => (t.gas ? (t.gas.km * t.gas.litersPer100 * t.gas.pricePerLiter) / 100 : 0);
+
+export const vehiclesNeeded = (t: TransferOption, people: number) => Math.ceil(people / Math.max(1, t.vehicleCapacity));
+
 export function transferPerPerson(t: TransferOption, people: number): number {
-  if (t.pricing === 'per-person') return t.price;
-  const vehicles = Math.ceil(people / Math.max(1, t.vehicleCapacity));
-  return (vehicles * t.price) / people;
+  const vehicles = vehiclesNeeded(t, people);
+  const gas = (vehicles * gasPerVehicle(t)) / people; // every car's fuel, split between everyone
+  if (t.pricing === 'per-person') return t.price + gas;
+  return (vehicles * t.price) / people + gas;
 }
 
 export function hotelPerPerson(h: HotelOption, people: number, nights: number): number {

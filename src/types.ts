@@ -143,9 +143,17 @@ export interface TransferOption {
   pricing: 'per-person' | 'per-vehicle';
   currency: Currency;
   price: number; // round trip
-  vehicleCapacity: number; // used when pricing is per-vehicle
+  vehicleCapacity: number; // seats per vehicle: splits per-vehicle prices and gas
+  gas?: GasEstimate; // rental cars: fuel on top of the rental price
   link: string;
   notes: string;
+}
+
+/** Fuel for one car: km × litres/100 km × price per litre (in the transfer's currency). */
+export interface GasEstimate {
+  km: number; // total driving, e.g. airport ↔ resort round trip
+  litersPer100: number;
+  pricePerLiter: number;
 }
 
 export type Board = 'RO' | 'BB' | 'HB' | 'FB' | 'AI' | 'SC';

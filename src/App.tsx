@@ -12,6 +12,7 @@ import ResortDetail from './pages/ResortDetail';
 import Resorts from './pages/Resorts';
 import TripPage from './pages/TripPage';
 import VacationPage from './pages/VacationPage';
+import VacationSummary from './pages/VacationSummary';
 import WinterHome from './pages/WinterHome';
 import { useActiveWinter, useStore } from './store/useStore';
 import type { AppData } from './types';
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="dates" element={<Dates />} />
           <Route path="v/:vacationId" element={<VacationPage />} />
           <Route path="v/:vacationId/t/:tripId" element={<TripPage />} />
+          <Route path="v/:vacationId/summary" element={<VacationSummary />} />
         </Route>
         <Route path="/resorts" element={<Resorts />} />
         <Route path="/resorts/:id" element={<ResortDetail />} />

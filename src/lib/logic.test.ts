@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { newFriend } from '../store/useStore';
 import type { PricedTrip, WinterFriend } from '../types';
 import { bestWindows, freeForRange } from './availability';
-import { buildCombos, hotelPerPerson, lessonShare, shopQuote, transferPerPerson } from './combinations';
+import { buildCombos, gasPerVehicle, hotelPerPerson, lessonShare, shopQuote, transferPerPerson } from './combinations';
 import { daysBetween } from './dates';
 import { convertTrip, makeConverter } from './fx';
 
@@ -37,6 +37,15 @@ describe('cost math', () => {
     const t = { pricing: 'per-vehicle', price: 400, vehicleCapacity: 4 } as never;
     expect(transferPerPerson(t, 4)).toBe(100);
     expect(transferPerPerson(t, 5)).toBe(160); // 2 vehicles
+  });
+
+  it('adds every rental car’s gas, split between the riders', () => {
+    // 300 km × 7 L/100 km × 2 per litre = 42 per car
+    const car = { pricing: 'per-vehicle', price: 400, vehicleCapacity: 5, gas: { km: 300, litersPer100: 7, pricePerLiter: 2 } } as never;
+    expect(gasPerVehicle(car)).toBe(42);
+    expect(transferPerPerson(car, 5)).toBeCloseTo((400 + 42) / 5); // one car
+    expect(transferPerPerson(car, 6)).toBeCloseTo((2 * 400 + 2 * 42) / 6); // two cars
+    expect(gasPerVehicle({ pricing: 'per-person', price: 50, vehicleCapacity: 1 } as never)).toBe(0);
   });
 
   it('prices per-room hotels by occupancy and nights', () => {

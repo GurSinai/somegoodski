@@ -1,5 +1,6 @@
-import { AlertTriangle, ArrowDownUp, Check, ExternalLink, LayoutGrid, Pin, PinOff, Rows3, Trophy, X } from 'lucide-react';
+import { AlertTriangle, ArrowDownUp, Check, ClipboardList, ExternalLink, LayoutGrid, Pin, PinOff, Rows3, Trophy, X } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { buildCombos, withinEveryonesBudget, type Combo } from '../lib/combinations';
 import { nightsOf } from '../lib/dates';
 import { BOARDS, boardLabel, transferLabel } from '../lib/labels';
@@ -271,9 +272,16 @@ export default function TripComparison({ trip, vacation, friends }: { trip: Pric
               </div>
             </div>
             {trip.selectedComboId === focus.id ? (
-              <Button onClick={() => updateTrip(trip.id, { selectedComboId: null })}>
-                <Check size={16} className="text-emerald-600" /> Selected plan (click to unselect)
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => updateTrip(trip.id, { selectedComboId: null })}>
+                  <Check size={16} className="text-emerald-600" /> Selected plan (click to unselect)
+                </Button>
+                {vacation.selectedTripId === trip.id && (
+                  <Link to={`/w/${vacation.winterId}/v/${vacation.id}/summary`}>
+                    <Button variant="accent"><ClipboardList size={16} /> Vacation summary →</Button>
+                  </Link>
+                )}
+              </div>
             ) : (
               <Button variant="accent" onClick={() => {
                 updateTrip(trip.id, { selectedComboId: focus.id });

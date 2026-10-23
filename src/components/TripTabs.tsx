@@ -1,6 +1,6 @@
 import { Check, ExternalLink, GraduationCap, Pencil, Plus, RotateCcw } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { expenseShare, gearKeys, lessonRiders, lessonShare, hotelPerPerson, passFor, passPrice, quoteFor, shopQuote, transferPerPerson, vacationDaysOf } from '../lib/combinations';
+import { expenseShare, gasPerVehicle, gearKeys, lessonRiders, lessonShare, hotelPerPerson, passFor, passPrice, quoteFor, shopQuote, transferPerPerson, vacationDaysOf, vehiclesNeeded } from '../lib/combinations';
 import { nightsOf, skiDaysOf } from '../lib/dates';
 import { boardLabel, gearLabel, transferLabel } from '../lib/labels';
 import { cx, money, moneyRange } from '../lib/util';
@@ -137,9 +137,13 @@ export function TransfersTab({ trip, edit }: TabProps) {
             {trip.transfers.filter((t) => t.airport === ra.iata).map((t) => (
               <OptionCard key={t.id} origin={t.currency} onClick={() => edit('transfers', t, false)} link={t.link} notes={t.notes}
                 title={transferLabel(t.type)}
-                tags={t.provider && <Badge>{t.provider}</Badge>}
+                tags={<>
+                  {t.provider && <Badge>{t.provider}</Badge>}
+                  {gasPerVehicle(t) > 0 && <Badge color="amber">⛽ {m(gasPerVehicle(t))} gas / car</Badge>}
+                </>}
                 price={m(transferPerPerson(t, people))}
-                priceSub={t.pricing === 'per-vehicle' ? `${m(t.price)} per vehicle (${t.vehicleCapacity} seats) ÷ ${people}` : 'per person, round trip'}
+                unit={gasPerVehicle(t) > 0 ? 'per person incl. gas' : 'per person'}
+                priceSub={`${t.pricing === 'per-vehicle' ? `${m(t.price)} per vehicle` : `${m(t.price)} per person`}${t.pricing === 'per-vehicle' || gasPerVehicle(t) > 0 ? ` · ${vehiclesNeeded(t, people)} × ${t.vehicleCapacity}-seat for ${people}` : ', round trip'}`}
               />
             ))}
             <AddTile onClick={() => edit('transfers', blankTransfer(ra.iata, ec), true)} label={`Add transfer via ${ra.iata}`} />

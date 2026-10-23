@@ -29,7 +29,11 @@ export function convertTrip(trip: Trip, cv: Converter): Trip {
       trolleyPrice: cv(f.trolleyPrice, f.currency),
       checkedPrice: cv(f.checkedPrice, f.currency),
     })),
-    transfers: trip.transfers.map((t) => ({ ...t, price: cv(t.price, t.currency) })),
+    transfers: trip.transfers.map((t) => ({
+      ...t,
+      price: cv(t.price, t.currency),
+      gas: t.gas && { ...t.gas, pricePerLiter: cv(t.gas.pricePerLiter, t.currency) },
+    })),
     hotels: trip.hotels.map((h) => ({ ...h, price: cv(h.price, h.currency) })),
     skiPasses: trip.skiPasses.map((p) => ({ ...p, price: cv(p.price, p.currency) })),
     shops: trip.shops.map((s) => ({

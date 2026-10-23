@@ -9,7 +9,7 @@ import { openBrowser } from './open-browser.mjs';
 
 const PORT = Number(process.env.PORT ?? 4173);
 const IDLE_MINUTES = Number(process.env.IDLE_MINUTES ?? 10);
-const DIST = resolve(fileURLToPath(new URL('.', import.meta.url)), '..', 'dist');
+const DIST = process.env.DIST_DIR ? resolve(process.env.DIST_DIR) : resolve(fileURLToPath(new URL('.', import.meta.url)), '..', 'dist');
 const URL_ = `http://localhost:${PORT}`;
 
 const TYPES = {
@@ -39,40 +39,88 @@ if (!existsSync(join(DIST, 'index.html'))) {
 
 let lastRequest = Date.now();
 
-const server = createServer((req, res) => {
+/** Streams a file; a read error (e.g. the file is locked or vanished) just ends this response. */
+function send(res, file, options) {
+  const stream = createReadStream(file, options);
+  stream.on('error', () => res.destroy());
+  stream.pipe(res);
+}
+
+function handle(req, res) {
   lastRequest = Date.now();
-  const path = decodeURIComponent((req.url ?? '/').split('?')[0]);
+  let path;
+  try {
+    path = decodeURIComponent((req.url ?? '/').split('?')[0]);
+  } catch {
+    res.writeHead(400);
+    return res.end();
+  }
 
   if (path === '/__heartbeat') {
     res.writeHead(204, { 'Cache-Control': 'no-store' });
     return res.end();
   }
 
-  // stay inside dist/; unknown paths fall back to the app (it uses hash routing anyway)
   let file = normalize(join(DIST, path));
-  if (!file.startsWith(DIST) || !existsSync(file) || statSync(file).isDirectory()) file = join(DIST, 'index.html');
+  const found = file.startsWith(DIST) && existsSync(file) && !statSync(file).isDirectory();
+  if (!found) {
+    // a missing build file is a real error (e.g. a tab still open from an older build); anything else is the app
+    if (path.startsWith('/assets/')) {
+      res.writeHead(404, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' });
+      return res.end('Not found. Reload the page to get the latest version.');
+    }
+    file = join(DIST, 'index.html');
+  }
 
   const type = TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream';
-  const { size } = statSync(file);
+  const { size, mtimeMs } = statSync(file);
   const range = req.headers.range?.match(/bytes=(\d*)-(\d*)/);
+
+  // Browsers re-check every file (cheap: unchanged files get a 304), so a wrong answer can
+  // never get stuck in their cache, as long-lived "immutable" caching once allowed.
+  const etag = `"${size.toString(36)}-${Math.round(mtimeMs).toString(36)}"`;
+  if (!range && req.headers['if-none-match'] === etag) {
+    res.writeHead(304, { ETag: etag, 'Cache-Control': 'no-cache' });
+    return res.end();
+  }
 
   // range requests let background videos stream and loop smoothly
   if (range && type.startsWith('video/')) {
-    const start = range[1] ? Number(range[1]) : 0;
-    const end = range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+    let start = range[1] ? Number(range[1]) : NaN;
+    let end = range[2] ? Number(range[2]) : NaN;
+    if (Number.isNaN(start)) { start = Math.max(0, size - (Number.isNaN(end) ? size : end)); end = size - 1; } // "bytes=-N": last N bytes
+    if (Number.isNaN(end) || end >= size) end = size - 1;
+    if (start >= size || start > end) {
+      res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+      return res.end();
+    }
     res.writeHead(206, { 'Content-Type': type, 'Content-Range': `bytes ${start}-${end}/${size}`, 'Accept-Ranges': 'bytes', 'Content-Length': end - start + 1 });
-    return createReadStream(file, { start, end }).pipe(res);
+    return send(res, file, { start, end });
   }
 
-  const immutable = path.startsWith('/assets/'); // hashed file names
   res.writeHead(200, {
     'Content-Type': type,
     'Content-Length': size,
-    'Cache-Control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
+    'Cache-Control': 'no-cache',
+    ETag: etag,
     ...(type.startsWith('video/') ? { 'Accept-Ranges': 'bytes' } : {}),
   });
-  createReadStream(file).pipe(res);
+  send(res, file);
+}
+
+const server = createServer((req, res) => {
+  try {
+    handle(req, res);
+  } catch (err) {
+    // never let one bad request take the whole app down
+    console.error('Request failed:', req.url, err.message);
+    if (!res.headersSent) res.writeHead(500);
+    res.end();
+  }
 });
+
+// last line of defence: log and keep serving
+process.on('uncaughtException', (err) => console.error('Unexpected error (still running):', err.message));
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {

@@ -1,10 +1,12 @@
+import { Fuel } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { vehiclesNeeded } from '../lib/combinations';
 import { BOARDS, GEAR_PRICE_ROWS, TRANSFER_TYPES } from '../lib/labels';
 import { nightsOf } from '../lib/dates';
 import { cx, money, uid } from '../lib/util';
 import { useConverter, useStore, type OptionKind } from '../store/useStore';
 import type {
-  Currency, Expense, FlightOption, Range, GearPriceKey, HotelOption, Leg, PricedTrip, RentalShop, SkiPassOption, TransferOption, WinterFriend,
+  Currency, Expense, FlightOption, GasEstimate, Range, GearPriceKey, HotelOption, Leg, PricedTrip, RentalShop, SkiPassOption, TransferOption, WinterFriend,
 } from '../types';
 import CurrencyPicker from './CurrencyPicker';
 import LessonEditor from './LessonEditor';
@@ -147,12 +149,17 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
 
       {kind === 'transfers' && (() => {
         const t = draft as TransferOption;
+        const roundTripKm = 2 * (resort?.airports.find((a) => a.iata === t.airport)?.distanceKm ?? 0);
+        const setType = (type: TransferOption['type']) =>
+          set(type === 'rental-car'
+            ? { type, pricing: 'per-vehicle', vehicleCapacity: t.type === 'rental-car' ? t.vehicleCapacity : 5, gas: t.gas ?? defaultGas(roundTripKm, t.currency) }
+            : { type, gas: undefined });
         return (
           <>
             {airportPicker(t.airport)}
             <div className="grid grid-cols-2 gap-3">
               <Field label="Type">
-                <select className="input" value={t.type} onChange={(e) => set({ type: e.target.value as TransferOption['type'] })}>
+                <select className="input" value={t.type} onChange={(e) => setType(e.target.value as TransferOption['type'])}>
                   {TRANSFER_TYPES.map((x) => <option key={x.value} value={x.value}>{x.label}</option>)}
                 </select>
               </Field>
@@ -166,10 +173,20 @@ export default function OptionDrawer({ trip, kind, option, isNew, friends, onClo
               <Field label={`Round trip ${t.pricing === 'per-person' ? 'per person' : 'per vehicle'} (${currency})`}>
                 <NumberInput value={t.price} onChange={(price) => set({ price })} min={0} />
               </Field>
-              {t.pricing === 'per-vehicle' && (
+              {(t.pricing === 'per-vehicle' || t.type === 'rental-car') && (
                 <Field label="Seats per vehicle"><NumberInput value={t.vehicleCapacity} onChange={(vehicleCapacity) => set({ vehicleCapacity })} min={1} /></Field>
               )}
             </div>
+            {t.type === 'rental-car' && (
+              <GasEstimator
+                gas={t.gas}
+                onChange={(gas) => set({ gas })}
+                currency={currency}
+                roundTripKm={roundTripKm}
+                vehicles={vehiclesNeeded(t, Math.max(1, trip.attendeeIds.length))}
+                people={Math.max(1, trip.attendeeIds.length)}
+              />
+            )}
           </>
         );
       })()}
@@ -380,5 +397,59 @@ function AmountInput({ value, onChange, unit }: { value: Range; onChange: (r: Ra
       </div>
       {ranged && value.max > 0 && value.max < value.min && <p className="mt-1 text-xs text-amber-600">The “to” amount is lower than “from”; they’ll be swapped when you save.</p>}
     </>
+  );
+}
+
+/** Rough pump prices per litre, as a starting point for the estimate. */
+const FUEL_PRICE: Record<Currency, number> = { EUR: 1.85, USD: 2.0, ILS: 7.3 };
+
+const defaultGas = (km: number, currency: Currency): GasEstimate => ({ km, litersPer100: 7, pricePerLiter: FUEL_PRICE[currency] });
+
+/** Fuel estimate for a rental car: distance × consumption × price, per car, split over everyone. */
+function GasEstimator({ gas, onChange, currency, roundTripKm, vehicles, people }: {
+  gas: GasEstimate | undefined;
+  onChange: (g: GasEstimate | undefined) => void;
+  currency: Currency;
+  roundTripKm: number;
+  vehicles: number;
+  people: number;
+}) {
+  if (!gas) {
+    return (
+      <Button size="sm" onClick={() => onChange(defaultGas(roundTripKm, currency))}>
+        <Fuel size={14} /> Add gas estimate
+      </Button>
+    );
+  }
+  const set = (patch: Partial<GasEstimate>) => onChange({ ...gas, ...patch });
+  const liters = (gas.km * gas.litersPer100) / 100;
+  const perCar = liters * gas.pricePerLiter;
+  const m = (n: number) => money(n, currency);
+
+  return (
+    <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="label mb-0 flex items-center gap-1.5"><Fuel size={12} /> Gas estimate, per vehicle</span>
+        <button type="button" className="text-xs font-semibold text-slate-400 hover:text-rose-500" onClick={() => onChange(undefined)}>Remove</button>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <Field label="Driving (km)" hint={roundTripKm && gas.km !== roundTripKm ? `Airport round trip: ${roundTripKm} km` : 'Include drives to other resorts'}>
+          <NumberInput value={gas.km} onChange={(km) => set({ km })} min={0} />
+        </Field>
+        <Field label="Litres / 100 km">
+          <NumberInput value={gas.litersPer100} onChange={(litersPer100) => set({ litersPer100 })} min={0} step={0.1} />
+        </Field>
+        <Field label={`Fuel / litre (${currency})`}>
+          <NumberInput value={gas.pricePerLiter} onChange={(pricePerLiter) => set({ pricePerLiter })} min={0} step={0.01} />
+        </Field>
+      </div>
+      {perCar > 0 && (
+        <p className="mt-3 text-sm text-slate-600">
+          ≈ {Math.round(liters)} L = <b>{m(perCar)}</b> per car
+          {' · '}{vehicles} car{vehicles > 1 ? 's' : ''} for {people} rider{people > 1 ? 's' : ''}
+          {' → '}<b>{m((perCar * vehicles) / people)}</b> each
+        </p>
+      )}
+    </div>
   );
 }

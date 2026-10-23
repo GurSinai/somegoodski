@@ -1,4 +1,4 @@
-import { BedDouble, Bus, ChevronRight, ExternalLink, Plane, Receipt, Scale, Shirt, Star, Ticket, Trash2, Trophy } from 'lucide-react';
+import { BedDouble, Bus, ChevronRight, ClipboardList, ExternalLink, Plane, Receipt, Scale, Shirt, Star, Ticket, Trash2, Trophy } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import OptionDrawer, { type AnyOption, type OptionKind } from '../components/OptionForms';
@@ -108,6 +108,11 @@ export default function TripPage() {
             </button>
           ))}
         </div>
+        {chosen && trip.selectedComboId && (
+          <Link to={`${vacationUrl}/summary`}>
+            <Button variant="accent" size="sm"><ClipboardList size={14} /> Vacation summary →</Button>
+          </Link>
+        )}
         {!vacation.dates && <Badge color="amber">Set dates on the vacation to price per-night and per-day items</Badge>}
       </div>
 

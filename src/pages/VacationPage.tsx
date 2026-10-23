@@ -1,12 +1,13 @@
-import { ArrowRight, Check, ChevronRight, FileDown, FileText, Loader2, MapPin, Pencil, Plane, Plus, Search, Star, Trash2, Trophy, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowRight, Check, ChevronRight, ClipboardList, FileText, MapPin, Pencil, Plane, Plus, Search, Star, Trash2, Trophy, Users } from 'lucide-react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { FriendReport, GroupReport, type ReportData } from '../components/Reports';
+import { PdfButton, PdfStatus, usePdfExport, useReportData } from '../components/PdfExport';
+import { FriendReport, GroupReport } from '../components/Reports';
 import { Avatar, Badge, Button, Drawer, Field, Mountains } from '../components/ui';
 import { freeForRange } from '../lib/availability';
 import { formatRange, nightsOf, skiDaysOf } from '../lib/dates';
 import { skill, sport, STATUSES } from '../lib/labels';
-import { downloadPdf, fileSafe } from '../lib/pdf';
+import { fileSafe } from '../lib/pdf';
 import { cheapestCombo, selectedCombo, vacationPlan } from '../lib/plan';
 import { cx, money, moneyRange, uid } from '../lib/util';
 import { useActiveWinter, useConverter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
@@ -87,7 +88,7 @@ export default function VacationPage() {
           <Luggage vacation={vacation} friends={friends} />
         </div>
         <aside className="space-y-6">
-          <ExportPanel vacation={vacation} trips={trips} friends={friends} />
+          <ExportPanel winter={winter} vacation={vacation} trips={trips} friends={friends} />
         </aside>
       </div>
     </div>
@@ -264,41 +265,20 @@ function Crew({ winter, vacation, friends }: { winter: Winter; vacation: Vacatio
   );
 }
 
-function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: Trip[]; friends: WinterFriend[] }) {
-  const resorts = useStore((s) => s.resorts);
-  const airports = useStore((s) => s.airports);
+function ExportPanel({ winter, vacation, trips, friends }: { winter: Winter; vacation: Vacation; trips: Trip[]; friends: WinterFriend[] }) {
   const currency = useStore((s) => s.settings.currency);
-  const [busy, setBusy] = useState<string | null>(null);
   const cv = useConverter();
   const plan = vacationPlan(vacation, trips, friends, cv);
-
-  const data: ReportData | null = useMemo(() => {
-    if (!plan) return null;
-    return {
-      vacation,
-      resort: resorts.find((r) => r.id === plan.trip.resortId),
-      airport: airports.find((a) => a.iata === plan.combo.airport),
-      combo: plan.combo,
-      costs: plan.combo.costs,
-      friends,
-      currency,
-    };
-  }, [plan, vacation, resorts, airports, friends, currency]);
-
-  const run = async (key: string, fn: () => Promise<void>) => {
-    setBusy(key);
-    try { await fn(); } catch (e) { alert(`PDF export failed: ${(e as Error).message}`); }
-    setBusy(null);
-  };
+  const data = useReportData(vacation, plan, friends);
+  const exporter = usePdfExport();
   const base = fileSafe(`${vacation.name}-${data?.resort?.name ?? ''}`);
-  const spin = (key: string, icon: React.ReactNode) => (busy === key ? <Loader2 size={15} className="animate-spin" /> : icon);
 
   return (
     <div className="card sticky top-24 p-6">
       <div className="mb-1 flex items-center gap-2 text-lg font-extrabold"><FileText size={18} className="text-sky-500" /> Share the plan</div>
       {!data ? (
         <div className="mt-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
-          To export PDFs, <b>choose a resort</b> and <b>select a combination</b> in its Trip comparison.
+          To see the summary and export PDFs, <b>choose a resort</b> and <b>select a combination</b> in its Trip comparison.
           {vacation.selectedTripId && <div className="mt-2 text-xs">The chosen resort doesn’t have a selected combination yet.</div>}
         </div>
       ) : (
@@ -306,13 +286,19 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
           <p className="mb-5 text-sm text-slate-500">
             {data.resort?.name} · {moneyRange(data.combo.perPerson, currency)} average per person
           </p>
-          <Button variant="accent" className="w-full" disabled={!!busy} onClick={() => run('group', () => downloadPdf([<GroupReport data={data} />], `${base}-group-summary.pdf`))}>
-            {spin('group', <FileDown size={16} />)} Group price summary
-          </Button>
-          <Button className="mt-2 w-full" disabled={!!busy || !data.costs.length}
-            onClick={() => run('all', () => downloadPdf(data.costs.map((c) => <FriendReport key={c.friendId} data={data} friendId={c.friendId} />), `${base}-all-riders.pdf`))}>
-            {spin('all', <FileDown size={16} />)} All riders, one page each
-          </Button>
+          <Link to={`/w/${winter.id}/v/${vacation.id}/summary`}>
+            <Button variant="accent" className="w-full"><ClipboardList size={16} /> Vacation summary</Button>
+          </Link>
+          <div className="mt-2 space-y-2">
+            <PdfButton id="group" exporter={exporter} className="w-full" onClick={() => exporter.run('group', [<GroupReport data={data} />], `${base}-group-summary.pdf`)}>
+              Group price summary PDF
+            </PdfButton>
+            <PdfButton id="all" exporter={exporter} className="w-full"
+              onClick={() => exporter.run('all', data.costs.map((c) => <FriendReport key={c.friendId} data={data} friendId={c.friendId} />), `${base}-all-riders.pdf`)}>
+              All riders, one page each
+            </PdfButton>
+            <PdfStatus exporter={exporter} />
+          </div>
 
           <div className="label mt-6">Personal PDFs</div>
           <div className="space-y-1.5">
@@ -325,9 +311,9 @@ function ExportPanel({ vacation, trips, friends }: { vacation: Vacation; trips: 
                     <div className="truncate text-sm font-semibold">{f.name}</div>
                     <div className={cx('text-xs', c.overBy ? 'text-rose-500' : 'text-slate-400')}>{moneyRange(c.total, currency)}{c.overBy ? ` · ${money(c.overBy, currency)} over` : ''}</div>
                   </div>
-                  <Button size="sm" disabled={!!busy} onClick={() => run(c.friendId, () => downloadPdf([<FriendReport data={data} friendId={c.friendId} />], `${base}-${fileSafe(f.name)}.pdf`))}>
-                    {spin(c.friendId, <FileDown size={13} />)} PDF
-                  </Button>
+                  <PdfButton id={c.friendId} exporter={exporter} size="sm" onClick={() => exporter.run(c.friendId, [<FriendReport data={data} friendId={c.friendId} />], `${base}-${fileSafe(f.name)}.pdf`)}>
+                    PDF
+                  </PdfButton>
                 </div>
               );
             })}
