@@ -3,12 +3,13 @@ import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import App from './App';
 import { preloadPdfLibs } from './lib/pdf';
+import { isLocalServer } from './lib/util';
 import './index.css';
 
 // The local release server (scripts/serve.mjs) shuts down after 10 idle minutes;
 // this keeps it alive while the app is open. Browsers pause background tabs, so also
 // ping as soon as the tab is visible again.
-if (import.meta.env.PROD) {
+if (import.meta.env.PROD && isLocalServer) {
   const ping = () => fetch('/__heartbeat', { cache: 'no-store' }).catch(() => {});
   setInterval(ping, 60_000);
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && ping());

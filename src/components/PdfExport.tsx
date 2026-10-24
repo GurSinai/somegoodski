@@ -2,6 +2,7 @@ import { AlertTriangle, Check, ExternalLink, FileDown, Loader2 } from 'lucide-re
 import { useState, type ReactElement } from 'react';
 import { downloadPdf, type SavedPdf } from '../lib/pdf';
 import type { Combo } from '../lib/combinations';
+import { isLocalServer } from '../lib/util';
 import { useStore } from '../store/useStore';
 import type { Trip, Vacation, WinterFriend } from '../types';
 import type { ReportData } from './Reports';
@@ -40,7 +41,9 @@ export function usePdfExport() {
       const msg = (e as Error).message || 'Unknown error';
       // the release server stops after 10 idle minutes; the page can't load code it hasn't fetched yet
       setError(/dynamically imported module|Failed to fetch|Importing a module script failed/i.test(msg)
-        ? 'SomeGoodSki’s local server has stopped (it shuts down after 10 minutes without use). Double-click the SomeGoodSki shortcut to restart it, reload this page and try again.'
+        ? !isLocalServer
+          ? 'Couldn’t load the PDF tools. Check your connection, reload the page and try again.'
+          : 'SomeGoodSki’s local server has stopped (it shuts down after 10 minutes without use). Double-click the SomeGoodSki shortcut to restart it, reload this page and try again.'
         : msg);
     }
     setBusy(null);
