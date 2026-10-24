@@ -229,6 +229,25 @@ describe('sync engine', () => {
     setBackend(null);
   });
 
+  it('pauses instead of saving over and over when copies keep disagreeing', async () => {
+    const be = fakeBackend();
+    setBackend(be);
+    await shareVacation('v1');
+    // another copy keeps saving a different name, and ours keeps saving it back
+    let n = 0;
+    const realGet = be.get;
+    be.get = async (id) => {
+      const r = (await realGet(id))!;
+      const flipped = { ...r.file, updatedBy: 'Other', data: { ...r.file.data, trips: r.file.data.trips.map((t) => ({ ...t, name: `Other ${n++}` })) } };
+      useStore.getState().updateTrip('t1', { name: `Mine ${n}` }); // local copy disagrees again
+      return { file: flipped, version: r.version + 1 };
+    };
+    for (let i = 0; i < 12; i++) await syncNow('v1');
+    expect(be.calls.filter((c) => c === 'save').length).toBeLessThanOrEqual(8);
+    expect(useCollab.getState().shared.v1.paused).toMatch(/paused/);
+    setBackend(null);
+  });
+
   it('keeps offline edits waiting and saves them once back online', async () => {
     const be = fakeBackend();
     setBackend(be);

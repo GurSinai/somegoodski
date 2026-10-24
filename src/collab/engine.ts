@@ -13,6 +13,12 @@ import { deepEqual, merge3, type Conflict } from './merge';
 import { currentMe, useCollab } from './useCollab';
 
 const PUSH_DELAY_MS = 2000;
+// safety brake: this many saves within a minute, with no edit by you, means two copies keep
+// disagreeing; stop instead of burning through the database's daily write allowance
+const MAX_UNPROMPTED_SAVES = 8;
+const SAVE_WINDOW_MS = 60_000;
+const recentSaves = new Map<string, number[]>();
+const lastLocalEdit = new Map<string, number>();
 
 /** A save was based on an old version: someone saved first. */
 export class ConflictError extends Error {
@@ -175,6 +181,15 @@ async function cycle(vacationId: string, attempt = 0): Promise<void> {
     collab.patchShared(vacationId, { base: final.data, version: got.version, lastSyncAt: new Date().toISOString() });
     return;
   }
+  const now = Date.now();
+  const saves = (recentSaves.get(vacationId) ?? []).filter((t) => now - t < SAVE_WINDOW_MS);
+  if (saves.length >= MAX_UNPROMPTED_SAVES && now - (lastLocalEdit.get(vacationId) ?? 0) > SAVE_WINDOW_MS) {
+    console.warn('[sync] brake: repeated saves', vacationId, { remote, final });
+    collab.patchShared(vacationId, { paused: 'Syncing paused: this vacation kept re-saving on its own. Reload the page to resume.' });
+    collab.addNotice(vacationId, `Syncing “${final.data.vacation.name}” paused: it kept re-saving on its own. Reload the page to resume.`);
+    return;
+  }
+  recentSaves.set(vacationId, [...saves, now]);
   try {
     const version = await backend.save(vacationId, makeFile(final.winter, final.data, currentMe().name), got.version);
     collab.patchShared(vacationId, { base: final.data, version, lastSyncAt: new Date().toISOString() });
@@ -226,11 +241,14 @@ let started = false;
 export function startSync() {
   if (started) return;
   started = true;
+  // a reload resumes vacations that were paused (newer app loaded, or the save-loop brake)
+  for (const [id, e] of Object.entries(useCollab.getState().shared)) if (e.paused) useCollab.getState().patchShared(id, { paused: undefined });
   useStore.subscribe(() => {
     if (applying) return;
     for (const [id, entry] of Object.entries(useCollab.getState().shared)) {
       const l = localShared(id);
       if (!l || deepEqual(l.data, entry.base)) continue;
+      lastLocalEdit.set(id, Date.now());
       clearTimeout(timers.get(id));
       timers.set(id, setTimeout(() => void syncNow(id), PUSH_DELAY_MS));
     }
@@ -251,6 +269,7 @@ export async function shareVacation(vacationId: string): Promise<void> {
   const local = localShared(vacationId);
   if (!local) throw new Error('Vacation not found');
   await backend.create(vacationId, makeFile(local.winter, local.data, currentMe().name));
+  recentSaves.delete(vacationId);
   useCollab.getState().setShared(vacationId, { version: 1, base: local.data, lastSyncAt: new Date().toISOString() });
 }
 
@@ -261,6 +280,7 @@ export async function openShared(vacationId: string): Promise<{ vacationId: stri
   if (!got) throw new Error('That vacation no longer exists.');
   if (got.file.appVersion > CURRENT_VERSION) throw new Error(`${got.file.updatedBy} is on a newer SomeGoodSki. Reload the page to update first.`);
   applyLocal(got.file.winter, canonical(upgrade(got.file)));
+  recentSaves.delete(vacationId);
   const final = localShared(vacationId)!;
   useCollab.getState().setShared(vacationId, { version: got.version, base: final.data, lastSyncAt: new Date().toISOString() });
   return { vacationId, winterId: useStore.getState().vacations.find((v) => v.id === vacationId)!.winterId };
