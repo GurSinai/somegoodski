@@ -29,8 +29,8 @@ export function loadFirebase(): Promise<Sdk> {
     const app = initializeApp(firebaseConfig);
     // App Check first: every Firestore and Auth request then carries proof it came from this site
     if (appCheckSiteKey) {
-      const { initializeAppCheck, ReCaptchaV3Provider } = await import('firebase/app-check');
-      initializeAppCheck(app, { provider: new ReCaptchaV3Provider(appCheckSiteKey), isTokenAutoRefreshEnabled: true });
+      const { initializeAppCheck, ReCaptchaEnterpriseProvider } = await import('firebase/app-check');
+      initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey), isTokenAutoRefreshEnabled: true });
     }
     const auth = fa.getAuth(app);
     const db = fs.getFirestore(app);

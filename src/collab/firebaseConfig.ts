@@ -13,8 +13,9 @@ export const firebaseConfig = {
 };
 
 /**
- * reCAPTCHA v3 site key for Firebase App Check (public). With it, Firebase only accepts requests
- * from this website, not from scripts that copy the config above. Empty = App Check off.
+ * reCAPTCHA Enterprise key ID for Firebase App Check (public; Google Cloud → Security → reCAPTCHA).
+ * With it, Firebase only accepts requests from this website, not from scripts that copy the config
+ * above. Empty = App Check off.
  */
 export const appCheckSiteKey = '6Lfed_4tAAAAAO_QBc6XxO8Bug4Wb9ptv8iGS1zL';
 
