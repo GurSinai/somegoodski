@@ -37,7 +37,12 @@ const keyOf = (item: Json): string | null => {
 };
 const isRecordList = (...lists: Json[][]) => lists.every((l) => l.every((x) => keyOf(x) !== null)) && lists.some((l) => l.length);
 const isStringList = (...lists: Json[][]) => lists.every((l) => l.every((x) => typeof x === 'string'));
-const labelOf = (item: Json, fallback: string) => (isObj(item) && typeof item.name === 'string' && item.name ? item.name : fallback);
+/** A readable name for a record in conflict notices: its name, or its profile's (people). */
+const labelOf = (item: Json, fallback: string) => {
+  if (!isObj(item)) return fallback;
+  const name = typeof item.name === 'string' ? item.name : isObj(item.profile) && typeof item.profile.name === 'string' ? item.profile.name : '';
+  return name || fallback;
+};
 
 export function merge3<T>(base: T, local: T, remote: T, conflicts: Conflict[] = [], path: string[] = []): T {
   if (deepEqual(local, remote)) return local;

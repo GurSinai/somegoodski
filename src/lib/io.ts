@@ -1,14 +1,19 @@
 import { CURRENT_VERSION, migrate } from '../store/migrate';
 import type { AppData } from '../types';
 
-export function exportData(data: AppData) {
+/** Saves a value as a pretty-printed JSON file download. */
+export function downloadJson(filename: string, data: unknown) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `ski-planner-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+export function exportData(data: AppData) {
+  downloadJson(`ski-planner-${new Date().toISOString().slice(0, 10)}.json`, data);
 }
 
 export async function readImportFile(file: File): Promise<AppData> {

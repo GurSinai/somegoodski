@@ -69,6 +69,20 @@ export interface LuggageItem {
   shared?: boolean; // created as a shared bag (kept in the shared list even with one owner)
 }
 
+/**
+ * Someone a collaborator added to a shared vacation. They live only in that vacation: never in
+ * your roster or the general Dates page. Either collaborator can edit them.
+ */
+export interface VacationGuest {
+  id: string; // the friend id on the collaborator's side
+  profile: Omit<Friend, 'id'>;
+  availability: ISODate[];
+  budget: number;
+  budgetCurrency: Currency;
+  addedBy: string; // the collaborator's planner id
+  addedByName: string;
+}
+
 /** A concrete getaway within a winter: dates + people, comparing candidate resorts (trips). */
 export interface Vacation {
   id: string;
@@ -79,6 +93,7 @@ export interface Vacation {
   status: VacationStatus;
   selectedTripId: string | null;
   luggage: LuggageItem[]; // anyone without an item travels with a backpack only
+  guests: VacationGuest[]; // people a collaborator added (also listed in attendeeIds)
   createdAt: string;
 }
 
@@ -264,6 +279,9 @@ export interface Trip {
 /** A friend as seen in a winter: profile + that winter's availability and budget (in the display currency). */
 export type WinterFriend = Friend & { availability: ISODate[]; budget: number };
 
+/** Someone going on a vacation: one of your friends, or a collaborator's guest (`guest` set). */
+export type VacationPerson = WinterFriend & { guest?: { addedBy: string; addedByName: string } };
+
 /**
  * A trip with its vacation's dates, attendees and luggage resolved and every price
  * converted to the display currency, ready for pricing.
@@ -285,7 +303,7 @@ export interface Settings {
 }
 
 export interface AppData {
-  version: 7;
+  version: 8;
   settings: Settings;
   friends: Friend[];
   winters: Winter[];

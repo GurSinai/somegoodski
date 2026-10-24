@@ -1,4 +1,4 @@
-import { ArrowRight, Check, ChevronRight, ClipboardList, FileText, MapPin, Pencil, Plane, Plus, Search, Star, Trash2, Trophy, Users } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, ClipboardList, FileText, MapPin, Pencil, Plane, Plus, Search, Star, Trash2, Trophy, Users, X } from 'lucide-react';
 import { stopSharing } from '../collab/engine';
 import { useCollab } from '../collab/useCollab';
 import ShareControl from '../components/ShareControl';
@@ -13,14 +13,16 @@ import { skill, sport, STATUSES } from '../lib/labels';
 import { fileSafe } from '../lib/pdf';
 import { cheapestCombo, selectedCombo, vacationPlan } from '../lib/plan';
 import { cx, money, moneyRange, uid } from '../lib/util';
-import { useActiveWinter, useConverter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
-import type { LuggageItem, Trip, Vacation, Winter, WinterFriend } from '../types';
+import { useActiveWinter, useConverter, useStore, useTripsOf, useVacation, useVacationPeople, useWinterFriends } from '../store/useStore';
+import FriendDrawer from '../components/FriendDrawer';
+import VacationTabs from '../components/VacationTabs';
+import type { LuggageItem, Trip, Vacation, VacationPerson, Winter, WinterFriend } from '../types';
 
 export default function VacationPage() {
   const { vacationId } = useParams();
   const winter = useActiveWinter()!;
   const vacation = useVacation(vacationId);
-  const friends = useWinterFriends(winter);
+  const friends = useVacationPeople(vacation);
   const trips = useTripsOf(vacationId);
   const updateVacation = useStore((s) => s.updateVacation);
   const removeVacation = useStore((s) => s.removeVacation);
@@ -97,10 +99,12 @@ export default function VacationPage() {
         </div>
       </div>
 
+      <VacationTabs winterId={winter.id} vacationId={vacation.id} active="plan" />
+
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
           <Resorts winter={winter} vacation={vacation} trips={trips} />
-          <Crew winter={winter} vacation={vacation} friends={friends} />
+          <Crew winter={winter} vacation={vacation} people={friends} />
           <Luggage vacation={vacation} friends={friends} />
         </div>
         <aside className="space-y-6">
@@ -117,7 +121,7 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
   const currency = useStore((s) => s.settings.currency);
   const createTrip = useStore((s) => s.createTrip);
   const updateVacation = useStore((s) => s.updateVacation);
-  const friends = useWinterFriends(winter);
+  const friends = useVacationPeople(vacation);
   const cv = useConverter();
   const navigate = useNavigate();
   const [picking, setPicking] = useState(false);
@@ -225,11 +229,27 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
   );
 }
 
-function Crew({ winter, vacation, friends }: { winter: Winter; vacation: Vacation; friends: WinterFriend[] }) {
+function Crew({ winter, vacation, people }: { winter: Winter; vacation: Vacation; people: VacationPerson[] }) {
   const updateVacation = useStore((s) => s.updateVacation);
-  const free = vacation.dates ? freeForRange(friends, vacation.dates) : friends.map((f) => f.id);
-  const toggle = (id: string) =>
-    updateVacation(vacation.id, { attendeeIds: vacation.attendeeIds.includes(id) ? vacation.attendeeIds.filter((x) => x !== id) : [...vacation.attendeeIds, id] });
+  const addToVacation = useStore((s) => s.addToVacation);
+  const removeFromVacation = useStore((s) => s.removeFromVacation);
+  const roster = useWinterFriends(winter);
+  const [editing, setEditing] = useState<VacationPerson | null>(null);
+  const free = new Set(vacation.dates ? freeForRange(people, vacation.dates) : people.map((f) => f.id));
+  const notGoing = roster.filter((f) => !vacation.attendeeIds.includes(f.id));
+  const freeToAdd = vacation.dates ? freeForRange(notGoing, vacation.dates) : [];
+
+  // "Added by you" first, then one group per collaborator
+  const groups = new Map<string, { name: string; people: VacationPerson[] }>([['me', { name: 'you', people: [] }]]);
+  for (const p of people) {
+    const key = p.guest?.addedBy ?? 'me';
+    if (!groups.has(key)) groups.set(key, { name: p.guest!.addedByName, people: [] });
+    groups.get(key)!.people.push(p);
+  }
+  const first = (n: string) => n.trim().toLowerCase().split(/\s+/)[0];
+  const ownerOf = (p: VacationPerson) => p.guest?.addedBy ?? 'me';
+  const clash = (p: VacationPerson) => people.find((o) => o.id !== p.id && first(o.name) === first(p.name) && ownerOf(o) !== ownerOf(p));
+  const guestRecord = editing?.guest ? vacation.guests.find((g) => g.id === editing.id) : undefined;
 
   return (
     <section className="card p-6">
@@ -250,33 +270,74 @@ function Crew({ winter, vacation, friends }: { winter: Winter; vacation: Vacatio
       </div>
 
       <div className="mb-3 flex items-center justify-between">
-        <span className="label mb-0"><Users size={12} className="mr-1 inline" /> Going ({vacation.attendeeIds.length}/{friends.length})</span>
-        {vacation.dates && <Button size="sm" variant="ghost" onClick={() => updateVacation(vacation.id, { attendeeIds: free })}>Reset to everyone free</Button>}
+        <span className="label mb-0"><Users size={12} className="mr-1 inline" /> Going ({people.length})</span>
+        <Link to={`/w/${winter.id}/v/${vacation.id}/dates`} className="text-xs font-semibold text-sky-600 hover:underline">Availability heatmap →</Link>
       </div>
-      {friends.length === 0 ? (
-        <p className="text-sm text-slate-500">No riders this winter yet. <Link to={`/w/${winter.id}/people`} className="text-sky-600">Add people →</Link></p>
-      ) : (
-        <div className="grid gap-2 sm:grid-cols-2">
-          {friends.map((f) => {
-            const going = vacation.attendeeIds.includes(f.id);
-            const isFree = free.includes(f.id);
-            return (
-              <button key={f.id} onClick={() => toggle(f.id)}
-                className={cx('flex items-center gap-3 rounded-2xl border p-3 text-left transition', going ? 'border-sky-200 bg-sky-50/50' : 'border-slate-100 opacity-60 hover:opacity-100')}>
-                <span className={cx('flex h-5 w-5 items-center justify-center rounded-md border', going ? 'border-sky-500 bg-sky-500 text-white' : 'border-slate-300')}>
-                  {going && <Check size={13} />}
-                </span>
-                <Avatar name={f.name} color={f.color} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold">{f.name} <span className="ml-0.5">{sport(f.sport).emoji}</span></div>
-                  <div className="text-xs text-slate-400">{skill(f.skillLevel).label}{f.lessons.wanted ? ' · lessons' : ''}</div>
-                </div>
-                {vacation.dates && (isFree ? <Badge color="green">free</Badge> : <Badge color="rose">busy</Badge>)}
-              </button>
-            );
-          })}
+
+      <div className="space-y-4">
+        {[...groups.entries()].filter(([key, g]) => g.people.length || key === 'me').map(([key, g]) => (
+          <div key={key}>
+            <div className="mb-1.5 text-xs font-semibold text-slate-500">Added by {g.name}</div>
+            {g.people.length === 0 ? (
+              <p className="text-xs text-slate-400">Nobody from your roster yet.</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {g.people.map((f) => {
+                  const other = clash(f);
+                  return (
+                    <div key={f.id} className="group flex items-center gap-3 rounded-2xl border border-slate-100 p-3 transition hover:border-sky-200">
+                      <button onClick={() => setEditing(f)} className="flex min-w-0 flex-1 items-center gap-3 text-left" title="Edit">
+                        <Avatar name={f.name} color={f.color} />
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-semibold">{f.name} <span className="ml-0.5">{sport(f.sport).emoji}</span></div>
+                          <div className="text-xs text-slate-400">
+                            {skill(f.skillLevel).label}{f.lessons.wanted ? ' · lessons' : ''}
+                            {other && <span className="text-amber-600"> · also added by {other.guest?.addedByName ?? 'you'}</span>}
+                          </div>
+                        </div>
+                      </button>
+                      {vacation.dates && (free.has(f.id) ? <Badge color="green">free</Badge> : <Badge color="rose">busy</Badge>)}
+                      <button onClick={() => removeFromVacation(vacation.id, f.id)} className="rounded-full p-1 text-slate-300 opacity-0 transition hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100" title="Remove from this vacation">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-5 rounded-2xl bg-slate-50/80 p-3">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-slate-600">Add from your roster</span>
+          {freeToAdd.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={() => addToVacation(vacation.id, freeToAdd)}>Add everyone free ({freeToAdd.length})</Button>
+          )}
         </div>
-      )}
+        {roster.length === 0 ? (
+          <p className="text-xs text-slate-500">No riders this winter yet. <Link to={`/w/${winter.id}/people`} className="text-sky-600">Add people →</Link></p>
+        ) : notGoing.length === 0 ? (
+          <p className="text-xs text-slate-400">Everyone in your roster is going.</p>
+        ) : (
+          <div className="flex flex-wrap gap-1.5">
+            {notGoing.map((f) => (
+              <button key={f.id} onClick={() => addToVacation(vacation.id, [f.id])} className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white py-0.5 pl-0.5 pr-2.5 text-xs font-semibold text-slate-600 hover:border-sky-300 hover:text-sky-700">
+                <Avatar name={f.name} color={f.color} size={20} /> {f.name} <Plus size={12} />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <FriendDrawer
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+        winter={winter}
+        friend={editing ? (guestRecord ? { ...guestRecord.profile, id: guestRecord.id } : roster.find((f) => f.id === editing.id) ?? null) : null}
+        guestOf={guestRecord ? { vacationId: vacation.id, budget: guestRecord.budget, budgetCurrency: guestRecord.budgetCurrency, addedByName: guestRecord.addedByName } : undefined}
+      />
     </section>
   );
 }

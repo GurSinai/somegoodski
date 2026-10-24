@@ -2,6 +2,7 @@ import { CalendarDays, ChevronDown, Download, Mountain, Plus, Snowflake, Upload,
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { startSync } from './collab/engine';
+import { initCollab } from './collab/firebase';
 import CurrencyMenu, { useFxAutoRefresh } from './components/CurrencyMenu';
 import SyncPill from './components/SyncPill';
 import { upcomingWinterYear } from './data/seed';
@@ -9,10 +10,12 @@ import { exportData, readImportFile } from './lib/io';
 import { cx } from './lib/util';
 import Dates from './pages/Dates';
 import Home from './pages/Home';
+import JoinPage from './pages/JoinPage';
 import People from './pages/People';
 import ResortDetail from './pages/ResortDetail';
 import Resorts from './pages/Resorts';
 import TripPage from './pages/TripPage';
+import VacationDates from './pages/VacationDates';
 import VacationPage from './pages/VacationPage';
 import VacationSummary from './pages/VacationSummary';
 import WinterHome from './pages/WinterHome';
@@ -21,7 +24,10 @@ import type { AppData } from './types';
 
 export default function App() {
   useFxAutoRefresh();
-  useEffect(() => startSync(), []);
+  useEffect(() => {
+    startSync();
+    initCollab();
+  }, []);
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -31,9 +37,11 @@ export default function App() {
           <Route path="people" element={<People />} />
           <Route path="dates" element={<Dates />} />
           <Route path="v/:vacationId" element={<VacationPage />} />
+          <Route path="v/:vacationId/dates" element={<VacationDates />} />
           <Route path="v/:vacationId/t/:tripId" element={<TripPage />} />
           <Route path="v/:vacationId/summary" element={<VacationSummary />} />
         </Route>
+        <Route path="/join/:vacationId/:code" element={<JoinPage />} />
         <Route path="/resorts" element={<Resorts />} />
         <Route path="/resorts/:id" element={<ResortDetail />} />
       </Route>
@@ -52,6 +60,9 @@ function WinterScope() {
     if (exists && winterId !== activeId) setActiveWinter(winterId!);
   }, [exists, winterId, activeId, setActiveWinter]);
   if (!exists) return <Navigate to="/" replace />;
+  // pages read the active winter: wait the one render until it matches the URL
+  // (a winter that arrived with a shared vacation isn't active yet)
+  if (winterId !== activeId) return null;
   return <Outlet />;
 }
 

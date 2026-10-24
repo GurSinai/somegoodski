@@ -7,7 +7,7 @@ import { ExpensesTab, FlightsTab, HotelsTab, PassesTab, RentalTab, TransfersTab 
 import { Badge, Button, Mountains } from '../components/ui';
 import { formatRange, nightsOf } from '../lib/dates';
 import { cx } from '../lib/util';
-import { pricedTrip, useActiveWinter, useConverter, useResort, useStore, useTrip, useVacation, useWinterFriends } from '../store/useStore';
+import { pricedTrip, useActiveWinter, useConverter, useResort, useStore, useTrip, useVacation, useVacationPeople } from '../store/useStore';
 import { driveTime } from './Resorts';
 
 type Tab = OptionKind | 'compare';
@@ -18,7 +18,7 @@ export default function TripPage() {
   const vacation = useVacation(vacationId);
   const trip = useTrip(tripId);
   const resort = useResort(trip?.resortId);
-  const winterFriends = useWinterFriends(winter);
+  const going = useVacationPeople(vacation);
   const cv = useConverter();
   const airports = useStore((s) => s.airports);
   const updateVacation = useStore((s) => s.updateVacation);
@@ -31,7 +31,6 @@ export default function TripPage() {
     return <div className="text-slate-500">Resort not found. <Link to={`/w/${winter.id}`} className="text-sky-600">Back to Winter {winter.year}</Link></div>;
   }
   const pt = pricedTrip(trip, vacation, cv);
-  const going = winterFriends.filter((f) => vacation.attendeeIds.includes(f.id));
   const chosen = vacation.selectedTripId === trip.id;
   const vacationUrl = `/w/${winter.id}/v/${vacation.id}`;
   // tabs show converted prices; editing must start from the option as entered

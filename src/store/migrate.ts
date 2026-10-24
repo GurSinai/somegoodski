@@ -6,7 +6,7 @@ import type { AppData, Currency, GearPiece, GearTier } from '../types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export const CURRENT_VERSION = 7;
+export const CURRENT_VERSION = 8;
 
 /** Upgrades persisted data or an imported backup from any earlier version. */
 export function migrate(data: any, version: number): AppData {
@@ -17,6 +17,7 @@ export function migrate(data: any, version: number): AppData {
   if (version < 5) d = v4ToV5(d);
   if (version < 6) d = v5ToV6(d);
   if (version < 7) d = v6ToV7(d);
+  if (version < 8) d = v7ToV8(d);
   return d as AppData;
 }
 
@@ -249,4 +250,9 @@ function v6ToV7(old: any): any {
     })),
   }));
   return { ...old, version: 7, trips };
+}
+
+/** v8: vacations can hold guests, people a collaborator added to a shared vacation. */
+function v7ToV8(old: any): any {
+  return { ...old, version: 8, vacations: (old.vacations ?? []).map((v: any) => ({ ...v, guests: v.guests ?? [] })) };
 }

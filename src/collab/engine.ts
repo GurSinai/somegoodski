@@ -1,41 +1,56 @@
 /**
- * Keeps shared vacations in sync with the GitHub repo.
+ * Keeps shared vacations in sync with the backend (Firebase in the app, a fake in tests).
  *
- * Pull (cheap conditional GET) on start, focus, every 30 s and before each push; push about
- * 2 s after local edits settle. Each sync is a three-way merge of the last agreed version
- * (base), the local data and the file on GitHub, so both planners' edits are kept.
+ * The backend tells us when a vacation changes; local edits are saved about 2 s after they
+ * settle. Each sync is a three-way merge of the last agreed version (base), the local data and
+ * the stored version, so both planners' edits are kept. A save only succeeds on top of the
+ * latest version; otherwise we fetch, merge again and retry.
  */
-import { useMemo } from 'react';
 import { CURRENT_VERSION, migrate } from '../store/migrate';
 import { useStore } from '../store/useStore';
-import type { AppData } from '../types';
-import { applyShared, extractShared, filePath, makeFile, type SharedData, type SharedVacationFile } from './bundle';
-import { linkFriend, similarFriend, unlinkFriend } from './friends';
-import { deleteFile, getJson, GitHubError, listJson, putJson, type Conn } from './github';
+import { applyShared, extractShared, makeFile, type SharedData, type SharedVacationFile } from './bundle';
 import { deepEqual, merge3, type Conflict } from './merge';
-import { isConnected, useCollab } from './useCollab';
+import { currentMe, useCollab } from './useCollab';
 
 const PUSH_DELAY_MS = 2000;
-const POLL_MS = 30_000;
 
-const conn = (): Conn => {
-  const { repo, token } = useCollab.getState();
-  return { repo: repo.trim(), token: token.trim() };
+/** A save was based on an old version: someone saved first. */
+export class ConflictError extends Error {
+  constructor() {
+    super('Someone saved this vacation first');
+  }
+}
+
+/** Where shared vacations are stored. */
+export interface Backend {
+  get(vacationId: string): Promise<{ file: SharedVacationFile; version: number } | null>;
+  /** Saves on top of `expectedVersion`; resolves with the new version or throws ConflictError. */
+  save(vacationId: string, file: SharedVacationFile, expectedVersion: number): Promise<number>;
+  create(vacationId: string, file: SharedVacationFile): Promise<void>;
+  remove(vacationId: string): Promise<void>;
+  /** Calls back whenever the stored vacation changes (also once right away). */
+  watch(vacationId: string, onChange: () => void): () => void;
+}
+
+let backend: Backend | null = null;
+export const setBackend = (b: Backend | null) => {
+  backend = b;
+  refreshWatches();
 };
-const me = () => useCollab.getState().displayName.trim() || 'A planner';
+export const hasBackend = () => backend !== null;
+
 const vacationName = (id: string) => useStore.getState().vacations.find((v) => v.id === id)?.name ?? 'a vacation';
 
 /** Shared data as stored locally right now, in a canonical order so comparisons ignore list order. */
-function localShared(vacationId: string) {
-  const ex = extractShared(useStore.getState(), vacationId);
+export function localShared(vacationId: string) {
+  const ex = extractShared(useStore.getState(), vacationId, currentMe());
   return ex && { winter: ex.winter, data: canonical(ex.data) };
 }
 const byKey = <T,>(key: (t: T) => string) => (a: T, b: T) => key(a).localeCompare(key(b));
 export function canonical(d: SharedData): SharedData {
   return {
     ...d,
-    friends: [...d.friends].sort(byKey((f) => f.id)),
-    participants: [...d.participants].sort(byKey((p) => p.friendId)),
+    people: [...d.people].sort(byKey((p) => p.id)),
     trips: [...d.trips].sort(byKey((t) => `${t.createdAt}|${t.id}`)),
     resorts: [...d.resorts].sort(byKey((r) => r.id)),
     airports: [...d.airports].sort(byKey((a) => a.iata)),
@@ -43,37 +58,42 @@ export function canonical(d: SharedData): SharedData {
 }
 
 /** Brings a file from an older app version up to this one's data model. */
-function upgrade(file: SharedVacationFile): SharedData {
+export function upgrade(file: SharedVacationFile): SharedData {
   if (file.appVersion >= CURRENT_VERSION) return file.data;
   const d = file.data;
+  // run the regular migrations on a throwaway copy holding just this vacation
   const tmp = {
     version: file.appVersion,
     settings: useStore.getState().settings,
-    friends: d.friends,
-    winters: [{ id: 'shared', ...file.winter, participants: d.participants, createdAt: '' }],
-    vacations: [{ ...d.vacation, winterId: 'shared' }],
+    friends: [],
+    winters: [{ id: 'shared', ...file.winter, participants: [], createdAt: '' }],
+    vacations: [{ ...d.vacation, winterId: 'shared', guests: d.people }],
     trips: d.trips,
     resorts: d.resorts,
     airports: d.airports,
   };
-  return extractShared(migrate(tmp, file.appVersion), d.vacation.id)?.data ?? d;
+  return extractShared(migrate(tmp, file.appVersion), d.vacation.id, currentMe())?.data ?? d;
 }
 
 // ---------------------------------------------------------------- status
 
 let inFlight = 0;
-let lastError: GitHubError | null = null;
+let lastError: { offline: boolean; message: string } | null = null;
 function refreshStatus() {
   const c = useCollab.getState();
-  if (!isConnected(c) || !Object.keys(c.shared).length) return c.setStatus('off', null, 0);
+  if (!backend || !Object.keys(c.shared).length) return c.setStatus('off', null, 0);
   const waiting = Object.entries(c.shared).filter(([id, e]) => {
     const l = localShared(id);
     return l && !deepEqual(l.data, e.base);
   }).length;
   if (inFlight) return c.setStatus('syncing', null, waiting);
-  if (lastError) return c.setStatus(lastError.status === 0 ? 'offline' : 'error', lastError.message, waiting);
+  if (lastError) return c.setStatus(lastError.offline ? 'offline' : 'error', lastError.message, waiting);
   c.setStatus('idle', null, waiting);
 }
+
+const isOffline = (e: unknown) =>
+  (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+  /unavailable|offline|network/i.test(String((e as { code?: string })?.code ?? (e as Error)?.message));
 
 // ---------------------------------------------------------------- the sync cycle
 
@@ -87,7 +107,8 @@ function enqueue(vacationId: string, task: () => Promise<void>): Promise<void> {
       await task();
       lastError = null;
     } catch (e) {
-      lastError = e instanceof GitHubError ? e : new GitHubError((e as Error).message, -1);
+      const offline = isOffline(e);
+      lastError = { offline, message: offline ? 'You’re offline. Changes will sync when you reconnect.' : (e as Error).message };
       console.warn('[sync]', e);
     } finally {
       inFlight--;
@@ -99,6 +120,15 @@ function enqueue(vacationId: string, task: () => Promise<void>): Promise<void> {
 }
 
 let applying = false;
+/** Writes shared data into the local store without it counting as a local edit. */
+export const applyLocal = (winter: SharedVacationFile['winter'], data: SharedData) => {
+  applying = true;
+  try {
+    useStore.setState((s) => applyShared(s, winter, data, currentMe()));
+  } finally {
+    applying = false;
+  }
+};
 
 export function syncNow(vacationId: string): Promise<void> {
   return enqueue(vacationId, () => cycle(vacationId));
@@ -107,129 +137,98 @@ export function syncNow(vacationId: string): Promise<void> {
 async function cycle(vacationId: string, attempt = 0): Promise<void> {
   const collab = useCollab.getState();
   const entry = collab.shared[vacationId];
-  if (!entry || entry.paused || !isConnected(collab)) return;
-  const local = localShared(vacationId);
-  if (!local) return; // vacation removed locally; the UI decides whether to delete the file
+  if (!backend || !entry || entry.paused) return;
+  if (!localShared(vacationId)) return; // vacation removed locally; the UI decides whether to delete it for both
 
-  const path = filePath(vacationId);
-  const got = await getJson<SharedVacationFile>(conn(), path, attempt ? null : entry.etag);
-  if ('missing' in got) {
+  const got = await backend.get(vacationId);
+  if (!got) {
     collab.setShared(vacationId, null);
-    collab.addNotice(vacationId, `“${vacationName(vacationId)}” is no longer shared: its file was removed from GitHub. Your copy stays here.`);
+    collab.addNotice(vacationId, `“${vacationName(vacationId)}” is no longer shared: it was deleted for everyone. Your copy stays here.`);
     return;
   }
-  let remote = entry.base;
-  let sha = entry.sha;
-  let etag = entry.etag;
-  if (!got.notModified) {
-    if (got.content.appVersion > CURRENT_VERSION) {
-      collab.patchShared(vacationId, { paused: `${got.content.updatedBy} is on a newer SomeGoodSki. Update yours to keep syncing.` });
-      return;
-    }
-    remote = canonical(upgrade(got.content));
-    sha = got.sha;
-    etag = got.etag;
+  const changedRemotely = got.version !== entry.version;
+  if (changedRemotely && got.file.appVersion > CURRENT_VERSION) {
+    collab.patchShared(vacationId, { paused: `${got.file.updatedBy} is on a newer SomeGoodSki. Reload the page to update and keep syncing.` });
+    return;
   }
+  const remote = changedRemotely ? canonical(upgrade(got.file)) : entry.base;
 
+  // Read local data only now, after the await: edits made while we waited must be part of the
+  // merge, and nothing below may await before the merge is written back.
+  const local = localShared(vacationId);
+  if (!local) return;
   const conflicts: Conflict[] = [];
   const merged = canonical(merge3(entry.base, local.data, remote, conflicts));
+  const peopleBefore = new Set(local.data.people.map((p) => p.id));
+  if (!deepEqual(merged, local.data)) applyLocal(got.file.winter, merged);
+  const final = localShared(vacationId)!; // the merge as stored locally
 
-  if (!deepEqual(merged, local.data)) applyMerged(vacationId, merged, got.notModified ? null : got.content.updatedBy);
-  const final = localShared(vacationId)!; // what the merge looks like once stored locally
-  if (!got.notModified && !deepEqual(remote, entry.base)) {
-    collab.addNotice(vacationId, `${got.content.updatedBy} updated “${final.data.vacation.name}”.`);
+  if (changedRemotely && !deepEqual(remote, entry.base)) {
+    const who = got.file.updatedBy;
+    const added = final.data.people.filter((p) => !peopleBefore.has(p.id));
+    for (const p of added) collab.addNotice(vacationId, `${who} added ${p.profile.name || 'someone'} to “${final.data.vacation.name}”.`);
+    if (!added.length) collab.addNotice(vacationId, `${who} updated “${final.data.vacation.name}”.`);
   }
-  reportConflicts(vacationId, conflicts, got.notModified ? 'your partner' : got.content.updatedBy);
+  reportConflicts(vacationId, conflicts, changedRemotely ? got.file.updatedBy : 'your partner');
 
   if (deepEqual(final.data, remote)) {
-    collab.patchShared(vacationId, { base: final.data, sha, etag, lastSyncAt: new Date().toISOString() });
+    collab.patchShared(vacationId, { base: final.data, version: got.version, lastSyncAt: new Date().toISOString() });
     return;
   }
   try {
-    const res = await putJson(conn(), path, makeFile(final.winter, final.data, me()), commitMessage(entry.base, final.data), sha);
-    collab.patchShared(vacationId, { base: final.data, sha: res.sha, etag: null, lastSyncAt: new Date().toISOString() });
+    const version = await backend.save(vacationId, makeFile(final.winter, final.data, currentMe().name), got.version);
+    collab.patchShared(vacationId, { base: final.data, version, lastSyncAt: new Date().toISOString() });
   } catch (e) {
-    // someone pushed in between: pull again and merge on top
-    if (e instanceof GitHubError && e.status === 409 && attempt < 3) return cycle(vacationId, attempt + 1);
+    // someone saved in between: fetch again and merge on top
+    if (e instanceof ConflictError && attempt < 3) return cycle(vacationId, attempt + 1);
     throw e;
   }
 }
 
-function applyMerged(vacationId: string, merged: SharedData, from: string | null) {
-  const before = new Set(useStore.getState().friends.map((f) => f.id));
-  const winterInfo = (() => {
-    const s = useStore.getState();
-    const v = s.vacations.find((x) => x.id === vacationId);
-    const w = s.winters.find((x) => x.id === v?.winterId)!;
-    return { year: w.year, start: w.start, end: w.end };
-  })();
-  applying = true;
-  try {
-    useStore.setState((s) => applyShared(s, winterInfo, merged));
-  } finally {
-    applying = false;
-  }
-  queueMatches(vacationId, merged.friends.filter((f) => !before.has(f.id)).map((f) => f.id), from);
-}
-
-/** New friends from the partner: ask "Who's who?" when the name looks like one of yours. */
-function queueMatches(vacationId: string, newIds: string[], from: string | null) {
-  if (!newIds.length) return;
-  const s = useStore.getState();
-  const collab = useCollab.getState();
-  const sharedFriendIds = new Set(Object.values(collab.shared).flatMap((e) => e.base.friends.map((f) => f.id)));
-  const pending = [];
-  for (const id of newIds) {
-    const f = s.friends.find((x) => x.id === id)!;
-    const match = similarFriend(s.friends, f.name, new Set([...sharedFriendIds, ...newIds]));
-    if (match) pending.push({ vacationId, friendId: id, localId: match.id });
-    else collab.addNotice(vacationId, `${from ?? 'Your partner'} added ${f.name || 'a friend'} to “${vacationName(vacationId)}”.`);
-  }
-  if (pending.length) collab.addPending(pending);
-}
-
+const FIELD_LABELS: Record<string, string> = {
+  skillLevel: 'skill', defaultBudget: 'budget', liftMin: 'minutes to the lift', pricePerPerson: 'price per person', availability: 'availability',
+  hotels: 'hotels', flights: 'flights', transfers: 'transfers', skiPasses: 'ski passes', shops: 'ski stores', expenses: 'expenses', vacation: 'vacation',
+};
 const show = (v: unknown) => (v === undefined ? 'nothing' : typeof v === 'object' ? 'their version' : JSON.stringify(v));
 function reportConflicts(vacationId: string, conflicts: Conflict[], partner: string) {
   const collab = useCollab.getState();
   for (const c of conflicts.slice(0, 5)) {
-    const where = c.path.filter((p) => !/^(data|trips|friends|participants)$/.test(p)).join(' › ');
+    const where = c.path.filter((p) => !/^(data|trips|people|profile)$/.test(p)).map((p) => FIELD_LABELS[p] ?? p).join(' › ');
     collab.addNotice(
       vacationId,
       c.kind === 'kept-deleted'
-        ? `${where}: one of you deleted it while the other edited it, so it was kept.`
+        ? `${where}: one of you removed it while the other edited it, so it was kept.`
         : `You and ${partner} both changed ${where}. Kept ${show(c.kept)}, replaced ${show(c.replaced)}.`,
     );
   }
   if (conflicts.length > 5) collab.addNotice(vacationId, `…and ${conflicts.length - 5} more overlapping edits.`);
 }
 
-function commitMessage(base: SharedData, next: SharedData): string {
-  const parts: string[] = [];
-  const count = (a: { id: string }[], b: { id: string }[]) => b.filter((x) => !a.some((y) => y.id === x.id)).length;
-  const newTrips = count(base.trips, next.trips);
-  if (newTrips) parts.push(`${newTrips} new trip${newTrips > 1 ? 's' : ''}`);
-  for (const t of next.trips) {
-    const old = base.trips.find((x) => x.id === t.id);
-    if (old && !deepEqual(old, t)) parts.push(t.name);
-  }
-  if (!deepEqual(base.vacation, next.vacation)) parts.push('vacation details');
-  if (!deepEqual(base.friends, next.friends) || !deepEqual(base.participants, next.participants)) parts.push('friends');
-  return `${me()}: ${next.vacation.name}${parts.length ? ` (${[...new Set(parts)].slice(0, 4).join(', ')})` : ''}`;
-}
-
 // ---------------------------------------------------------------- triggers
 
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
-const syncAll = () => Object.keys(useCollab.getState().shared).forEach((id) => void syncNow(id));
-let started = false;
+const watches = new Map<string, () => void>();
 
+/** One live listener per shared vacation. */
+function refreshWatches() {
+  const ids = backend ? Object.keys(useCollab.getState().shared) : [];
+  for (const [id, stop] of watches) {
+    if (!ids.includes(id)) {
+      stop();
+      watches.delete(id);
+    }
+  }
+  for (const id of ids) if (!watches.has(id)) watches.set(id, backend!.watch(id, () => void syncNow(id)));
+  refreshStatus();
+}
+
+let started = false;
 export function startSync() {
   if (started) return;
   started = true;
   useStore.subscribe(() => {
     if (applying) return;
-    const { shared } = useCollab.getState();
-    for (const [id, entry] of Object.entries(shared)) {
+    for (const [id, entry] of Object.entries(useCollab.getState().shared)) {
       const l = localShared(id);
       if (!l || deepEqual(l.data, entry.base)) continue;
       clearTimeout(timers.get(id));
@@ -238,96 +237,38 @@ export function startSync() {
     refreshStatus();
   });
   useCollab.subscribe((s, prev) => {
-    if (s.repo !== prev.repo || s.token !== prev.token || Object.keys(s.shared).length !== Object.keys(prev.shared).length) refreshStatus();
+    if (Object.keys(s.shared).join() !== Object.keys(prev.shared).join()) refreshWatches();
   });
-  window.addEventListener('focus', syncAll);
-  window.addEventListener('online', syncAll);
-  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && syncAll());
-  setInterval(() => document.visibilityState === 'visible' && syncAll(), POLL_MS);
-  refreshStatus();
-  syncAll();
+  if (typeof window !== 'undefined') window.addEventListener('online', () => Object.keys(useCollab.getState().shared).forEach((id) => void syncNow(id)));
+  refreshWatches();
 }
 
 // ---------------------------------------------------------------- actions for the UI
 
-export interface RemoteVacation {
-  path: string;
-  vacationId: string;
-  name: string;
-  winterYear: number;
-  dates: SharedData['vacation']['dates'];
-  updatedBy: string;
-  updatedAt: string;
-  people: number;
-}
-
-export async function listRemote(): Promise<RemoteVacation[]> {
-  const paths = await listJson(conn(), 'vacations');
-  const out: RemoteVacation[] = [];
-  for (const path of paths) {
-    const got = await getJson<SharedVacationFile>(conn(), path);
-    if (!('content' in got)) continue;
-    const f = got.content;
-    out.push({ path, vacationId: f.data.vacation.id, name: f.data.vacation.name, winterYear: f.winter.year, dates: f.data.vacation.dates, updatedBy: f.updatedBy, updatedAt: f.updatedAt, people: f.data.friends.length });
-  }
-  return out;
-}
-
+/** Starts sharing a local vacation. */
 export async function shareVacation(vacationId: string): Promise<void> {
+  if (!backend) throw new Error('Sign in first');
   const local = localShared(vacationId);
   if (!local) throw new Error('Vacation not found');
-  const res = await putJson(conn(), filePath(vacationId), makeFile(local.winter, local.data, me()), `${me()} shared “${local.data.vacation.name}”`);
-  useCollab.getState().setShared(vacationId, { sha: res.sha, etag: null, base: local.data, lastSyncAt: new Date().toISOString() });
-  refreshStatus();
+  await backend.create(vacationId, makeFile(local.winter, local.data, currentMe().name));
+  useCollab.getState().setShared(vacationId, { version: 1, base: local.data, lastSyncAt: new Date().toISOString() });
 }
 
-/** Imports a vacation the partner shared. Returns its id and winter id. */
-export async function joinVacation(path: string): Promise<{ vacationId: string; winterId: string }> {
-  const got = await getJson<SharedVacationFile>(conn(), path);
-  if (!('content' in got)) throw new Error('That vacation is no longer on GitHub.');
-  if (got.content.appVersion > CURRENT_VERSION) throw new Error(`${got.content.updatedBy} is on a newer SomeGoodSki. Update yours first.`);
-  const data = canonical(upgrade(got.content));
-  const vacationId = data.vacation.id;
-  const before = new Set(useStore.getState().friends.map((f) => f.id));
-  applying = true;
-  try {
-    useStore.setState((s) => applyShared(s, got.content.winter, data));
-  } finally {
-    applying = false;
-  }
+/** Imports a shared vacation you're a member of (after joining, or on another device). */
+export async function openShared(vacationId: string): Promise<{ vacationId: string; winterId: string }> {
+  if (!backend) throw new Error('Sign in first');
+  const got = await backend.get(vacationId);
+  if (!got) throw new Error('That vacation no longer exists.');
+  if (got.file.appVersion > CURRENT_VERSION) throw new Error(`${got.file.updatedBy} is on a newer SomeGoodSki. Reload the page to update first.`);
+  applyLocal(got.file.winter, canonical(upgrade(got.file)));
   const final = localShared(vacationId)!;
-  useCollab.getState().setShared(vacationId, { sha: got.sha, etag: got.etag, base: final.data, lastSyncAt: new Date().toISOString() });
-  queueMatches(vacationId, data.friends.filter((f) => !before.has(f.id)).map((f) => f.id), got.content.updatedBy);
-  refreshStatus();
+  useCollab.getState().setShared(vacationId, { version: got.version, base: final.data, lastSyncAt: new Date().toISOString() });
   return { vacationId, winterId: useStore.getState().vacations.find((v) => v.id === vacationId)!.winterId };
 }
 
-/** Stops syncing a vacation; with `deleteForBoth` its file is removed from GitHub too. */
+/** Stops syncing a vacation; with `deleteForBoth` it is deleted for every collaborator. */
 export async function stopSharing(vacationId: string, deleteForBoth: boolean): Promise<void> {
-  if (deleteForBoth) {
-    const got = await getJson<SharedVacationFile>(conn(), filePath(vacationId));
-    if ('content' in got) await deleteFile(conn(), filePath(vacationId), got.sha, `${me()} deleted “${got.content.data.vacation.name}”`);
-  }
+  if (deleteForBoth && backend) await backend.remove(vacationId);
   clearTimeout(timers.get(vacationId));
   useCollab.getState().setShared(vacationId, null);
-  refreshStatus();
-}
-
-/** "Same person": merge your friend into the shared one, with the chosen profile. */
-export function linkFriends(localId: string, sharedId: string, profile: AppData['friends'][number]) {
-  useStore.setState((s) => linkFriend(s, localId, sharedId, profile));
-  useCollab.getState().resolvePending(sharedId);
-}
-
-/** Splits a shared friend from yours. */
-export function unlinkFriendEverywhere(sharedId: string) {
-  const shared = Object.keys(useCollab.getState().shared);
-  useStore.setState((s) => unlinkFriend(s, sharedId, shared).data);
-}
-
-/** Friend ids that are part of a shared vacation (🔗 on the People page). */
-export function useSharedFriendIds(): Set<string> {
-  const shared = useCollab((c) => c.shared);
-  const vacations = useStore((s) => s.vacations);
-  return useMemo(() => new Set(vacations.filter((v) => shared[v.id]).flatMap((v) => v.attendeeIds)), [shared, vacations]);
 }

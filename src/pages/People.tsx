@@ -1,7 +1,6 @@
-import { ArrowRight, CalendarDays, GraduationCap, Link2, Package, Plus, UserPlus, Users, Wallet } from 'lucide-react';
+import { ArrowRight, CalendarDays, GraduationCap, Package, Plus, UserPlus, Users, Wallet } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSharedFriendIds } from '../collab/engine';
 import FriendDrawer from '../components/FriendDrawer';
 import { Avatar, Badge, Button, Empty, PageHeader, Stat } from '../components/ui';
 import { gearKeys } from '../lib/combinations';
@@ -11,7 +10,6 @@ import { useActiveWinter, useStore, useWinterFriends } from '../store/useStore';
 import type { Friend } from '../types';
 
 export default function People() {
-  const sharedIds = useSharedFriendIds();
   const winter = useActiveWinter()!;
   const friends = useWinterFriends(winter);
   const roster = useStore((s) => s.friends);
@@ -104,7 +102,6 @@ export default function People() {
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                       <Badge color={skill(f.skillLevel).color}>{skill(f.skillLevel).label}</Badge>
-                      {sharedIds.has(f.id) && <Badge color="violet"><Link2 size={12} /> shared</Badge>}
                       {f.lessons.wanted && (
                         <Badge color="amber">
                           <GraduationCap size={12} /> {f.lessons.days}d {f.lessons.type}

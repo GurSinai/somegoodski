@@ -11,7 +11,7 @@ import { gearLabel, liftLabel, stayLabel, statusOf, transferLabel } from '../lib
 import { fileSafe } from '../lib/pdf';
 import { vacationPlan } from '../lib/plan';
 import { addRange, cx, money, moneyRange, range } from '../lib/util';
-import { pricedTrip, useActiveWinter, useConverter, useStore, useTripsOf, useVacation, useWinterFriends } from '../store/useStore';
+import { pricedTrip, useActiveWinter, useConverter, useStore, useTripsOf, useVacation, useVacationPeople } from '../store/useStore';
 import type { FlightOption, PricedTrip, Range, WinterFriend } from '../types';
 
 /** The chosen plan at a glance: everything to book for the planner, and each rider's own view. */
@@ -20,7 +20,7 @@ export default function VacationSummary() {
   const [params, setParams] = useSearchParams();
   const winter = useActiveWinter()!;
   const vacation = useVacation(vacationId);
-  const friends = useWinterFriends(winter);
+  const friends = useVacationPeople(vacation);
   const trips = useTripsOf(vacationId);
   const resorts = useStore((s) => s.resorts);
   const cv = useConverter();
@@ -46,7 +46,7 @@ export default function VacationSummary() {
 
   const pt = pricedTrip(plan.trip, vacation, cv);
   const resort = resorts.find((r) => r.id === plan.trip.resortId);
-  const going = friends.filter((f) => vacation.attendeeIds.includes(f.id));
+  const going = friends;
   const riderId = params.get('rider');
   const rider = going.find((f) => f.id === riderId) ?? null;
   const base = fileSafe(`${vacation.name}-${resort?.name ?? ''}`);

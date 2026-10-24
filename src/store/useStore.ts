@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
-  Airport, AppData, DateRange, Expense, FlightOption, Friend, HotelOption, ISODate, Leg, LegChoice, LuggageItem, PricedTrip,
-  RentalShop, Resort, Settings, SkiPassOption, TransferOption, Trip, Vacation, Winter, WinterFriend, WinterParticipant,
+  Airport, AppData, Currency, DateRange, Expense, FlightOption, Friend, HotelOption, ISODate, Leg, LegChoice, LuggageItem, PricedTrip,
+  RentalShop, Resort, Settings, SkiPassOption, TransferOption, Trip, Vacation, VacationGuest, VacationPerson, Winter, WinterFriend, WinterParticipant,
 } from '../types';
 import { createInitialData, defaultSeason } from '../data/seed';
 import { freeForRange } from '../lib/availability';
@@ -33,6 +33,12 @@ interface Actions {
   updateVacation: (id: string, patch: Partial<Vacation>) => void;
   removeVacation: (id: string) => void;
   setLuggage: (vacationId: string, luggage: LuggageItem[]) => void;
+  // people in a vacation: your friends route to the roster, guests to the vacation
+  addToVacation: (vacationId: string, friendIds: string[]) => void;
+  removeFromVacation: (vacationId: string, personId: string) => void;
+  updateVacationPerson: (vacationId: string, personId: string, patch: Partial<Omit<Friend, 'id'>>) => void;
+  setVacationBudget: (vacationId: string, personId: string, budget: number, budgetCurrency: Currency) => void;
+  setVacationAvailability: (vacationId: string, personId: string, days: ISODate[], available: boolean) => void;
   // trips (candidate resorts)
   createTrip: (vacationId: string, resortId: string) => string;
   updateTrip: (id: string, patch: Partial<Trip>) => void;
@@ -79,6 +85,11 @@ function withKey(rec: Record<string, string>, key: string, value: string | null)
   else next[key] = value;
   return next;
 }
+
+const isGuest = (vacations: Vacation[], vacationId: string, personId: string) =>
+  Boolean(vacations.find((v) => v.id === vacationId)?.guests.some((g) => g.id === personId));
+const mapGuest = (vacations: Vacation[], vacationId: string, guestId: string, fn: (g: VacationGuest) => VacationGuest) =>
+  mapById(vacations, vacationId, (v) => ({ ...v, guests: v.guests.map((g) => (g.id === guestId ? fn(g) : g)) }));
 
 const mapParticipant = (w: Winter, friendId: string, fn: (p: WinterParticipant) => WinterParticipant): Winter => ({
   ...w,
@@ -188,6 +199,7 @@ export const useStore = create<Store>()(
           status: 'planning',
           selectedTripId: null,
           luggage: [],
+          guests: [],
           createdAt: new Date().toISOString(),
         };
         set((st) => ({ vacations: [...st.vacations, vacation] }));
@@ -197,6 +209,39 @@ export const useStore = create<Store>()(
       removeVacation: (id) =>
         set((s) => ({ vacations: s.vacations.filter((v) => v.id !== id), trips: s.trips.filter((t) => t.vacationId !== id) })),
       setLuggage: (vacationId, luggage) => set((s) => ({ vacations: mapById(s.vacations, vacationId, (v) => ({ ...v, luggage })) })),
+
+      addToVacation: (vacationId, friendIds) =>
+        set((s) => ({ vacations: mapById(s.vacations, vacationId, (v) => ({ ...v, attendeeIds: [...new Set([...v.attendeeIds, ...friendIds])] })) })),
+      removeFromVacation: (vacationId, personId) =>
+        set((s) => ({
+          vacations: mapById(s.vacations, vacationId, (v) => ({
+            ...v,
+            attendeeIds: v.attendeeIds.filter((a) => a !== personId),
+            guests: v.guests.filter((g) => g.id !== personId),
+          })),
+        })),
+      updateVacationPerson: (vacationId, personId, patch) => {
+        if (!isGuest(get().vacations, vacationId, personId)) return get().updateFriend(personId, patch);
+        set((s) => ({ vacations: mapGuest(s.vacations, vacationId, personId, (g) => ({ ...g, profile: { ...g.profile, ...patch } })) }));
+      },
+      setVacationBudget: (vacationId, personId, budget, budgetCurrency) => {
+        const v = get().vacations.find((x) => x.id === vacationId);
+        if (!v) return;
+        if (!isGuest(get().vacations, vacationId, personId)) return get().updateParticipant(v.winterId, personId, { budget, budgetCurrency });
+        set((s) => ({ vacations: mapGuest(s.vacations, vacationId, personId, (g) => ({ ...g, budget, budgetCurrency })) }));
+      },
+      setVacationAvailability: (vacationId, personId, days, available) => {
+        const v = get().vacations.find((x) => x.id === vacationId);
+        if (!v) return;
+        if (!isGuest(get().vacations, vacationId, personId)) return get().setAvailability(v.winterId, personId, days, available);
+        set((s) => ({
+          vacations: mapGuest(s.vacations, vacationId, personId, (g) => {
+            const next = new Set(g.availability);
+            days.forEach((d) => (available ? next.add(d) : next.delete(d)));
+            return { ...g, availability: [...next].sort() };
+          }),
+        }));
+      },
 
       createTrip: (vacationId, resortId) => {
         const resort = get().resorts.find((r) => r.id === resortId);
@@ -293,6 +338,24 @@ export function winterFriends(friends: Friend[], winter: Winter, cv: Converter):
   });
 }
 
+/**
+ * Everyone going on a vacation: your friends (profile + that winter's availability and budget)
+ * followed by guests a collaborator added. Budgets are converted to the display currency.
+ */
+export function vacationPeople(friends: Friend[], winter: Winter | undefined, vacation: Vacation, cv: Converter): VacationPerson[] {
+  const going = new Set(vacation.attendeeIds);
+  const guestIds = new Set(vacation.guests.map((g) => g.id));
+  const mine = winter ? winterFriends(friends, winter, cv).filter((f) => going.has(f.id) && !guestIds.has(f.id)) : [];
+  const guests: VacationPerson[] = vacation.guests.map((g) => ({
+    ...g.profile,
+    id: g.id,
+    availability: g.availability,
+    budget: cv(g.budget, g.budgetCurrency),
+    guest: { addedBy: g.addedBy, addedByName: g.addedByName },
+  }));
+  return [...mine, ...guests];
+}
+
 /** The trip with its vacation's details and all prices in the display currency. */
 export const pricedTrip = (trip: Trip, vacation: Vacation | undefined, cv: Converter): PricedTrip => ({
   ...convertTrip(trip, cv),
@@ -318,6 +381,13 @@ export function useWinterFriends(winter: Winter | undefined): WinterFriend[] {
   const friends = useStore((s) => s.friends);
   const cv = useConverter();
   return useMemo(() => (winter ? winterFriends(friends, winter, cv) : []), [friends, winter, cv]);
+}
+
+export function useVacationPeople(vacation: Vacation | undefined): VacationPerson[] {
+  const friends = useStore((s) => s.friends);
+  const winter = useStore((s) => s.winters.find((w) => w.id === vacation?.winterId));
+  const cv = useConverter();
+  return useMemo(() => (vacation ? vacationPeople(friends, winter, vacation, cv) : []), [friends, winter, vacation, cv]);
 }
 
 export function useVacationsOf(winterId: string | undefined): Vacation[] {

@@ -1,12 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { uid } from '../lib/util';
-import type { SharedData, SharedVacationFile } from './bundle';
+import type { SharedData } from './bundle';
 
 /** Sync state of one shared vacation. `base` is the last version both planners agreed on. */
 export interface SharedEntry {
-  sha: string;
-  etag: string | null;
+  version: number;
   base: SharedData;
   lastSyncAt: string;
   paused?: string; // why syncing stopped, e.g. the partner runs a newer app
@@ -19,81 +18,101 @@ export interface Notice {
   text: string;
 }
 
-/** A friend who arrived from the partner and looks like one of yours: "Who's who?" */
-export interface PendingMatch {
-  vacationId: string;
-  friendId: string; // the shared friend
-  localId: string; // your friend with a similar name
+export interface CollabUser {
+  uid: string;
+  name: string;
+  email: string;
+  photo: string | null;
 }
 
 export type SyncStatus = 'off' | 'idle' | 'syncing' | 'offline' | 'error';
 
 interface CollabState {
-  repo: string;
-  token: string;
   displayName: string;
+  plannerId: string; // tags the people you add: your Firebase uid once signed in, a local id before
+  myIds: string[]; // every planner id you've used, so older tags still count as yours
   shared: Record<string, SharedEntry>;
-  pendingMatches: PendingMatch[];
+  fileBases: Record<string, SharedData>; // last vacation file exchanged by hand, for merging the next one
+  signedInBefore: boolean; // load Firebase at startup only for people who use it
   notices: Notice[];
   unread: number;
   // not persisted
+  user: CollabUser | null;
+  authReady: boolean;
   status: SyncStatus;
   error: string | null;
-  waiting: number; // vacations with local changes not yet on GitHub
+  waiting: number; // shared vacations with local changes not yet saved
   drawerOpen: boolean;
 
-  setConnection: (patch: Partial<Pick<CollabState, 'repo' | 'token' | 'displayName'>>) => void;
+  setDisplayName: (name: string) => void;
+  setUser: (user: CollabUser | null) => void;
   setShared: (vacationId: string, entry: SharedEntry | null) => void;
   patchShared: (vacationId: string, patch: Partial<SharedEntry>) => void;
+  setFileBase: (vacationId: string, data: SharedData) => void;
   addNotice: (vacationId: string, text: string) => void;
   markRead: () => void;
-  addPending: (m: PendingMatch[]) => void;
-  resolvePending: (friendId: string) => void;
   setStatus: (status: SyncStatus, error?: string | null, waiting?: number) => void;
   setDrawerOpen: (open: boolean) => void;
 }
 
+const localId = `local-${uid()}`;
+
 export const useCollab = create<CollabState>()(
   persist(
     (set) => ({
-      repo: '',
-      token: '',
       displayName: '',
+      plannerId: localId,
+      myIds: [localId],
       shared: {},
-      pendingMatches: [],
+      fileBases: {},
+      signedInBefore: false,
       notices: [],
       unread: 0,
+      user: null,
+      authReady: false,
       status: 'off',
       error: null,
       waiting: 0,
       drawerOpen: false,
 
-      setConnection: (patch) => set(patch),
+      setDisplayName: (displayName) => set({ displayName }),
+      setUser: (user) =>
+        set((s) => ({
+          user,
+          authReady: true,
+          signedInBefore: Boolean(user),
+          // signing in makes the Firebase uid your planner id; earlier ids stay yours
+          ...(user && user.uid !== s.plannerId ? { plannerId: user.uid, myIds: [...new Set([...s.myIds, user.uid])] } : {}),
+          displayName: s.displayName || user?.name.split(' ')[0] || '',
+        })),
       setShared: (vacationId, entry) =>
         set((s) => {
           const shared = { ...s.shared };
           if (entry) shared[vacationId] = entry;
           else delete shared[vacationId];
-          return { shared, pendingMatches: entry ? s.pendingMatches : s.pendingMatches.filter((m) => m.vacationId !== vacationId) };
+          return { shared };
         }),
       patchShared: (vacationId, patch) =>
         set((s) => (s.shared[vacationId] ? { shared: { ...s.shared, [vacationId]: { ...s.shared[vacationId], ...patch } } } : {})),
+      setFileBase: (vacationId, data) => set((s) => ({ fileBases: { ...s.fileBases, [vacationId]: data } })),
       addNotice: (vacationId, text) =>
         set((s) => ({ notices: [{ id: uid(), at: new Date().toISOString(), vacationId, text }, ...s.notices].slice(0, 40), unread: s.unread + 1 })),
       markRead: () => set({ unread: 0 }),
-      addPending: (m) =>
-        set((s) => ({ pendingMatches: [...s.pendingMatches, ...m.filter((x) => !s.pendingMatches.some((p) => p.friendId === x.friendId))] })),
-      resolvePending: (friendId) => set((s) => ({ pendingMatches: s.pendingMatches.filter((m) => m.friendId !== friendId) })),
       setStatus: (status, error = null, waiting) => set((s) => ({ status, error, waiting: waiting ?? s.waiting })),
       setDrawerOpen: (drawerOpen) => set({ drawerOpen }),
     }),
     {
-      // kept apart from the planner data so exports never contain the token
       name: 'ski-planner-collab',
-      partialize: ({ repo, token, displayName, shared, pendingMatches, notices, unread }) => ({ repo, token, displayName, shared, pendingMatches, notices, unread }),
+      version: 1,
+      // version 0 was the GitHub-based sync: its shared entries can't carry over
+      migrate: (old: any, version) => (version < 1 ? { displayName: old?.displayName ?? '', notices: [], unread: 0, shared: {}, fileBases: {} } : old),
+      partialize: ({ displayName, plannerId, myIds, shared, fileBases, signedInBefore, notices, unread }) => ({ displayName, plannerId, myIds, shared, fileBases, signedInBefore, notices, unread }),
     },
   ),
 );
 
-export const isConnected = (s: Pick<CollabState, 'repo' | 'token'>) => Boolean(s.repo && s.token);
-export type { SharedVacationFile };
+/** Who is syncing, for tagging and recognising the people you add. */
+export const currentMe = () => {
+  const s = useCollab.getState();
+  return { id: s.plannerId, name: s.displayName.trim() || s.user?.name || 'A planner', ids: s.myIds };
+};

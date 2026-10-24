@@ -1,11 +1,12 @@
 import { ArrowRight, CalendarDays, Check, MapPin, Plus, Snowflake, Trash2, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import ImportVacationButton from '../components/ImportVacationButton';
 import { Avatar, Badge, Button, Field, Mountains } from '../components/ui';
 import { formatRange, nightsOf } from '../lib/dates';
 import { statusOf } from '../lib/labels';
 import { cheapestCombo, vacationPlan } from '../lib/plan';
 import { cx, money, moneyRange } from '../lib/util';
-import { useActiveWinter, useConverter, useStore, useVacationsOf, useWinterFriends } from '../store/useStore';
+import { useActiveWinter, useConverter, useStore, useVacationPeople, useVacationsOf, useWinterFriends } from '../store/useStore';
 import type { Vacation, Winter } from '../types';
 
 export default function WinterHome() {
@@ -83,7 +84,8 @@ export default function WinterHome() {
           <h2 className="text-2xl font-extrabold">Vacations</h2>
           <p className="text-sm text-slate-500">Each vacation has its own dates and crew, and shares this winter’s people and availability.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <ImportVacationButton size="md" variant="ghost" />
           <Link to={`/w/${winter.id}/dates`}><Button><CalendarDays size={16} /> Find the best dates</Button></Link>
           <Button variant="primary" onClick={() => navigate(`/w/${winter.id}/v/${createVacation(winter.id)}`)}>
             <Plus size={16} /> New vacation
@@ -136,7 +138,7 @@ function VacationCard({ winter, vacation: v }: { winter: Winter; vacation: Vacat
   const allTrips = useStore((s) => s.trips);
   const resorts = useStore((s) => s.resorts);
   const currency = useStore((s) => s.settings.currency);
-  const friends = useWinterFriends(winter);
+  const friends = useVacationPeople(v);
   const cv = useConverter();
   const trips = allTrips.filter((t) => t.vacationId === v.id);
   const plan = vacationPlan(v, trips, friends, cv);

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { unlinkFriendEverywhere, useSharedFriendIds } from '../collab/engine';
 import { GEAR_PIECES, GEAR_TIERS, SKILLS, SPORTS } from '../lib/labels';
 import { FRIEND_COLORS, cx } from '../lib/util';
 import { newFriend, useStore } from '../store/useStore';
@@ -12,10 +11,12 @@ interface Props {
   winter: Winter;
   open: boolean;
   onClose: () => void;
+  /** Editing a collaborator's guest in a shared vacation: saves go to the vacation, not your roster. */
+  guestOf?: { vacationId: string; budget: number; budgetCurrency: Currency; addedByName: string };
 }
 
-/** Edits a friend's shared profile plus their budget for this winter. */
-export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
+/** Edits a friend's profile plus their budget for this winter (or a guest's, inside one vacation). */
+export default function FriendDrawer({ friend, winter, open, onClose, guestOf }: Props) {
   const friendCount = useStore((s) => s.friends.length);
   const displayCurrency = useStore((s) => s.settings.currency);
   const addFriend = useStore((s) => s.addFriend);
@@ -23,7 +24,9 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   const removeFriend = useStore((s) => s.removeFriend);
   const setInWinter = useStore((s) => s.setInWinter);
   const updateParticipant = useStore((s) => s.updateParticipant);
-  const sharedIds = useSharedFriendIds();
+  const updateVacationPerson = useStore((s) => s.updateVacationPerson);
+  const setVacationBudget = useStore((s) => s.setVacationBudget);
+  const removeFromVacation = useStore((s) => s.removeFromVacation);
   const [draft, setDraft] = useState<Friend>(() => friend ?? newFriend(friendCount));
   const [budget, setBudget] = useState(0);
   const [budgetCurrency, setBudgetCurrency] = useState<Currency>(displayCurrency);
@@ -31,7 +34,7 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     setDraft(friend ?? newFriend(friendCount, { defaultBudgetCurrency: displayCurrency }));
-    const p = friend && winter.participants.find((x) => x.friendId === friend.id);
+    const p = guestOf ?? (friend && winter.participants.find((x) => x.friendId === friend.id));
     setBudget(p ? p.budget : friend?.defaultBudget ?? 0);
     setBudgetCurrency(p ? p.budgetCurrency : friend?.defaultBudgetCurrency ?? displayCurrency);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,7 +47,11 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
     if (!draft.name.trim()) return;
     // this winter's budget also becomes the default for future winters
     const profile = { ...draft, defaultBudget: budget, defaultBudgetCurrency: budgetCurrency };
-    if (friend) {
+    if (friend && guestOf) {
+      const { id: _id, ...rest } = profile;
+      updateVacationPerson(guestOf.vacationId, friend.id, rest);
+      setVacationBudget(guestOf.vacationId, friend.id, budget, budgetCurrency);
+    } else if (friend) {
       updateFriend(friend.id, profile);
       updateParticipant(winter.id, friend.id, { budget, budgetCurrency });
     } else {
@@ -57,29 +64,21 @@ export default function FriendDrawer({ friend, winter, open, onClose }: Props) {
     <Drawer
       open={open}
       onClose={onClose}
-      title={friend ? friend.name : 'Add a rider'}
+      title={friend ? (guestOf ? `${friend.name} · added by ${guestOf.addedByName}` : friend.name) : 'Add a rider'}
       footer={
         <>
-          {friend && (
+          {friend && guestOf && (
+            <div className="mr-auto">
+              <Button variant="ghost" size="sm" onClick={() => { removeFromVacation(guestOf.vacationId, friend.id); onClose(); }}>
+                Remove from vacation
+              </Button>
+            </div>
+          )}
+          {friend && !guestOf && (
             <div className="mr-auto flex gap-1">
               <Button variant="ghost" size="sm" onClick={() => { setInWinter(winter.id, friend.id, false); onClose(); }}>
                 Not this winter
               </Button>
-              {sharedIds.has(friend.id) && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  title="Split this friend from your partner's: the shared one stays in the shared vacation, a copy replaces it everywhere else"
-                  onClick={() => {
-                    if (confirm(`Unlink ${friend.name}? The shared ${friend.name} stays in the shared vacation; your other plans get a separate copy.`)) {
-                      unlinkFriendEverywhere(friend.id);
-                      onClose();
-                    }
-                  }}
-                >
-                  Unlink
-                </Button>
-              )}
               <Button
                 variant="danger"
                 size="sm"

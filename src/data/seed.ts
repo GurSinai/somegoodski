@@ -189,7 +189,7 @@ export const upcomingWinterYear = (today = new Date()) => (today.getMonth() >= 5
 
 export function createInitialData(): AppData {
   return {
-    version: 7,
+    version: 8,
     settings: { currency: 'ILS', entryCurrency: 'ILS', fx: FALLBACK_RATES, activeWinterId: null },
     friends: [],
     winters: [],
