@@ -114,5 +114,6 @@ export const useCollab = create<CollabState>()(
 /** Who is syncing, for tagging and recognising the people you add. */
 export const currentMe = () => {
   const s = useCollab.getState();
-  return { id: s.plannerId, name: s.displayName.trim() || s.user?.name || 'A planner', ids: s.myIds };
+  // the Firestore rules cap display names at 80 characters
+  return { id: s.plannerId, name: (s.displayName.trim() || s.user?.name || 'A planner').slice(0, 60), ids: s.myIds };
 };

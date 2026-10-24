@@ -8,7 +8,7 @@
  */
 import type { SharedVacationFile } from './bundle';
 import { ConflictError, setBackend, type Backend } from './engine';
-import { firebaseConfig, isFirebaseConfigured } from './firebaseConfig';
+import { appCheckSiteKey, firebaseConfig, isFirebaseConfigured } from './firebaseConfig';
 import { currentMe, useCollab } from './useCollab';
 
 type Sdk = {
@@ -27,6 +27,11 @@ export function loadFirebase(): Promise<Sdk> {
   sdk ??= (async () => {
     const [{ initializeApp }, fa, fs] = await Promise.all([import('firebase/app'), import('firebase/auth'), import('firebase/firestore')]);
     const app = initializeApp(firebaseConfig);
+    // App Check first: every Firestore and Auth request then carries proof it came from this site
+    if (appCheckSiteKey) {
+      const { initializeAppCheck, ReCaptchaV3Provider } = await import('firebase/app-check');
+      initializeAppCheck(app, { provider: new ReCaptchaV3Provider(appCheckSiteKey), isTokenAutoRefreshEnabled: true });
+    }
     const auth = fa.getAuth(app);
     const db = fs.getFirestore(app);
     const loaded = { auth, db, fa, fs };
@@ -72,6 +77,14 @@ const uidOrThrow = (s: Sdk) => {
 };
 const isDenied = (e: unknown) => (e as { code?: string }).code === 'permission-denied';
 
+// mirrors the size cap in firestore.rules
+const MAX_JSON = 290_000;
+const serialize = (file: SharedVacationFile) => {
+  const json = JSON.stringify(file);
+  if (json.length > MAX_JSON) throw new Error('This vacation is too big to share (over 290 KB). Remove some notes or links and try again.');
+  return json;
+};
+
 function firestoreBackend(s: Sdk): Backend {
   const { db, fs } = s;
   const ref = (vid: string) => fs.doc(db, 'vacations', vid);
@@ -94,7 +107,7 @@ function firestoreBackend(s: Sdk): Backend {
         if (!snap.exists()) throw new Error('This vacation was deleted for everyone.');
         if (snap.data().version !== expectedVersion) throw new ConflictError();
         tx.update(ref(vid), {
-          json: JSON.stringify(file),
+          json: serialize(file),
           version: expectedVersion + 1,
           updatedBy: file.updatedBy,
           updatedAt: fs.serverTimestamp(),
@@ -105,7 +118,7 @@ function firestoreBackend(s: Sdk): Backend {
     },
     async create(vid, file) {
       const uid = uidOrThrow(s);
-      await fs.setDoc(ref(vid), { json: JSON.stringify(file), version: 1, members: [uid], names: { [uid]: file.updatedBy }, updatedBy: file.updatedBy, updatedAt: fs.serverTimestamp() });
+      await fs.setDoc(ref(vid), { json: serialize(file), version: 1, members: [uid], names: { [uid]: file.updatedBy }, updatedBy: file.updatedBy, updatedAt: fs.serverTimestamp() });
     },
     async remove(vid) {
       await fs.deleteDoc(ref(vid));
