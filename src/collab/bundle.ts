@@ -33,8 +33,12 @@ export interface SharedVacationFile {
 
 type Collections = Pick<AppData, 'friends' | 'winters' | 'vacations' | 'trips' | 'resorts' | 'airports'>;
 
-/** The shared part of a vacation, built from local data (null if the vacation is gone). */
-export function extractShared(d: Collections, vacationId: string, me: Me): { winter: Winter; data: SharedData } | null {
+/**
+ * The shared part of a vacation, built from local data (null if the vacation is gone).
+ * `known` is the last agreed version: people already in it keep their "added by" tag, so two of
+ * your devices with different display names (or ids) don't keep relabelling each other's saves.
+ */
+export function extractShared(d: Collections, vacationId: string, me: Me, known?: SharedData): { winter: Winter; data: SharedData } | null {
   const vacation = d.vacations.find((v) => v.id === vacationId);
   const winter = vacation && d.winters.find((w) => w.id === vacation.winterId);
   if (!vacation || !winter) return null;
@@ -45,7 +49,9 @@ export function extractShared(d: Collections, vacationId: string, me: Me): { win
     const p = winter.participants.find((x) => x.friendId === id);
     if (!f || !p) return [];
     const { id: _id, ...profile } = f;
-    return [{ id, profile, availability: p.availability, budget: p.budget, budgetCurrency: p.budgetCurrency, addedBy: me.id, addedByName: me.name }];
+    const prev = known?.people.find((x) => x.id === id && me.ids.includes(x.addedBy));
+    const tag = prev ? { addedBy: prev.addedBy, addedByName: prev.addedByName } : { addedBy: me.id, addedByName: me.name };
+    return [{ id, profile, availability: p.availability, budget: p.budget, budgetCurrency: p.budgetCurrency, ...tag }];
   });
   const trips = d.trips.filter((t) => t.vacationId === vacationId);
   const resortIds = new Set(trips.map((t) => t.resortId));

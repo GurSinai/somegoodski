@@ -48,8 +48,9 @@ export const hasBackend = () => backend !== null;
 const vacationName = (id: string) => useStore.getState().vacations.find((v) => v.id === id)?.name ?? 'a vacation';
 
 /** Shared data as stored locally right now, in a canonical order so comparisons ignore list order. */
-export function localShared(vacationId: string) {
-  const ex = extractShared(useStore.getState(), vacationId, currentMe());
+export function localShared(vacationId: string, known?: SharedData) {
+  const c = useCollab.getState();
+  const ex = extractShared(useStore.getState(), vacationId, currentMe(), known ?? c.shared[vacationId]?.base ?? c.fileBases[vacationId]);
   return ex && { winter: ex.winter, data: canonical(ex.data) };
 }
 const byKey = <T,>(key: (t: T) => string) => (a: T, b: T) => key(a).localeCompare(key(b));
@@ -167,7 +168,7 @@ async function cycle(vacationId: string, attempt = 0): Promise<void> {
   const merged = canonical(merge3(entry.base, local.data, remote, conflicts));
   const peopleBefore = new Set(local.data.people.map((p) => p.id));
   if (!deepEqual(merged, local.data)) applyLocal(got.file.winter, merged);
-  const final = localShared(vacationId)!; // the merge as stored locally
+  const final = localShared(vacationId, merged)!; // the merge as stored locally
 
   if (changedRemotely && !deepEqual(remote, entry.base)) {
     const who = got.file.updatedBy;
@@ -279,9 +280,10 @@ export async function openShared(vacationId: string): Promise<{ vacationId: stri
   const got = await backend.get(vacationId);
   if (!got) throw new Error('That vacation no longer exists.');
   if (got.file.appVersion > CURRENT_VERSION) throw new Error(`${got.file.updatedBy} is on a newer SomeGoodSki. Reload the page to update first.`);
-  applyLocal(got.file.winter, canonical(upgrade(got.file)));
+  const incoming = canonical(upgrade(got.file));
+  applyLocal(got.file.winter, incoming);
   recentSaves.delete(vacationId);
-  const final = localShared(vacationId)!;
+  const final = localShared(vacationId, incoming)!;
   useCollab.getState().setShared(vacationId, { version: got.version, base: final.data, lastSyncAt: new Date().toISOString() });
   return { vacationId, winterId: useStore.getState().vacations.find((v) => v.id === vacationId)!.winterId };
 }

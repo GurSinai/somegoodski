@@ -56,7 +56,7 @@ export function importVacationFile(f: SharedVacationFile, mode: 'merge' | 'repla
     next = canonical(merge3(base as typeof remote, local.data, remote, conflicts));
   }
   if (!local || !deepEqual(next, local.data)) applyLocal(f.winter, next);
-  const final = localShared(id)!;
+  const final = localShared(id, next)!;
   c.setFileBase(id, final.data);
   c.addNotice(id, `Imported “${final.data.vacation.name}” from ${f.updatedBy}’s file.`);
   return { vacationId: id, winterId: useStore.getState().vacations.find((v) => v.id === id)!.winterId, conflicts };

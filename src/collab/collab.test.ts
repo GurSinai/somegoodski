@@ -6,7 +6,7 @@ import type { AppData, HotelOption, Trip, VacationGuest } from '../types';
 import { applyShared, extractShared, makeFile, type Me, type SharedVacationFile } from './bundle';
 import { canonical, ConflictError, localShared, setBackend, shareVacation, syncNow, type Backend } from './engine';
 import { exportVacationFile, importKind, importVacationFile } from './fileShare';
-import { merge3, type Conflict } from './merge';
+import { deepEqual, merge3, type Conflict } from './merge';
 import { useCollab } from './useCollab';
 
 const GUR: Me = { id: 'gur', name: 'Gur', ids: ['gur'] };
@@ -125,6 +125,38 @@ describe('shared bundle', () => {
     expect(back.friends.find((f) => f.id === 'ben')!.skillLevel).toBe('expert');
     expect(back.winters[0].participants.find((p) => p.friendId === 'ben')!.availability).toEqual(['2027-01-14']);
     expect(back.vacations[0].guests).toEqual([]);
+  });
+
+  it('two of your devices with different display names settle instead of relabelling forever', () => {
+    const laptop: Me = { id: 'gur', name: 'Gur', ids: ['gur'] };
+    const phone: Me = { id: 'gur', name: 'גור', ids: ['gur', 'local-phone'] };
+    const W = { year: 2027, start: '2026-12-01', end: '2027-04-15' };
+    type Device = { me: Me; data: AppData; base: ReturnType<typeof canonical>; version: number };
+    let remote = { data: canonical(extractShared(gurData(), 'v1', laptop)!.data), version: 1 };
+    const open = (me: Me): Device => {
+      const data = applyShared(createInitialData(), W, remote.data, me);
+      return { me, data, base: canonical(extractShared(data, 'v1', me, remote.data)!.data), version: 1 };
+    };
+    // one sync cycle, as engine.cycle runs it
+    const sync = (d: Device) => {
+      const r = remote.version !== d.version ? remote.data : d.base;
+      const local = canonical(extractShared(d.data, 'v1', d.me, d.base)!.data);
+      const merged = canonical(merge3(d.base, local, r));
+      d.data = applyShared(d.data, W, merged, d.me);
+      const final = canonical(extractShared(d.data, 'v1', d.me, merged)!.data);
+      d.base = final;
+      if (deepEqual(final, r)) return void (d.version = remote.version);
+      remote = { data: final, version: remote.version + 1 };
+      d.version = remote.version;
+      saves++;
+    };
+    let saves = 0;
+    const devices = [open(laptop), open(phone)];
+    devices[1].data = { ...devices[1].data, trips: devices[1].data.trips.map((t) => ({ ...t, name: 'Edited on phone' })) };
+    for (let round = 0; round < 10; round++) devices.forEach(sync);
+    expect(saves).toBe(1); // the phone's edit, and nothing after it
+    expect(remote.data.people[0].addedByName).toBe('Gur'); // the existing label stays
+    expect(remote.data.trips[0].name).toBe('Edited on phone');
   });
 
   it('keeps your roster when the partner removes your friend from the vacation', () => {
