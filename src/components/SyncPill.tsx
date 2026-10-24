@@ -34,14 +34,14 @@ export default function SyncPill() {
         {look.icon}
         <span className="hidden sm:inline">{look.label}</span>
         {c.unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">{c.unread}</span>
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">{c.unread > 99 ? '99+' : c.unread}</span>
         )}
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="animate-fade-up absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lift">
+          <div className="animate-fade-up fixed inset-x-3 top-16 z-50 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-lift sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
               <div>
                 <div className="text-sm font-bold">Shared planning</div>

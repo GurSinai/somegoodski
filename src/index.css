@@ -13,6 +13,14 @@
   h1, h2, h3 {
     @apply tracking-tight;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  /* grid items default to min-width: auto and push one-column phone layouts wider than the
+     screen; let them shrink like flex items do */
+  .grid > * {
+    min-width: 0;
+  }
 }
 
 @layer components {

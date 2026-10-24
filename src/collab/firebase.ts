@@ -19,7 +19,9 @@ type Sdk = {
 };
 
 const INVITE_DAYS = 14;
+const REDIRECT_FLAG = 'somegoodski-signin-redirect';
 let sdk: Promise<Sdk> | null = null;
+let ready: Sdk | null = null; // set once loaded, so sign-in can open its popup without waiting
 
 /** Loads Firebase once and starts following the signed-in user. */
 export function loadFirebase(): Promise<Sdk> {
@@ -39,26 +41,48 @@ export function loadFirebase(): Promise<Sdk> {
       useCollab.getState().setUser(u ? { uid: u.uid, name: u.displayName ?? u.email ?? 'Planner', email: u.email ?? '', photo: u.photoURL } : null);
       setBackend(u ? firestoreBackend(loaded) : null);
     });
+    // coming back from a redirect sign-in: collect its result (onAuthStateChanged then fires)
+    if (sessionStorage.getItem(REDIRECT_FLAG)) {
+      fa.getRedirectResult(auth)
+        .catch((e) => console.warn('[firebase] redirect sign-in', e))
+        .finally(() => sessionStorage.removeItem(REDIRECT_FLAG));
+    }
+    ready = loaded;
     return loaded;
   })();
   return sdk;
 }
 
-/** Loads Firebase at startup only if this person has collaborated before. */
+/** Loads Firebase at startup only if this person has collaborated before (or is mid sign-in). */
 export function initCollab() {
   const c = useCollab.getState();
-  if (isFirebaseConfigured && (c.signedInBefore || Object.keys(c.shared).length)) void loadFirebase().catch((e) => console.warn('[firebase]', e));
+  const midSignIn = typeof sessionStorage !== 'undefined' && Boolean(sessionStorage.getItem(REDIRECT_FLAG));
+  if (isFirebaseConfigured && (c.signedInBefore || midSignIn || Object.keys(c.shared).length)) void loadFirebase().catch((e) => console.warn('[firebase]', e));
   else useCollab.setState({ authReady: true });
 }
 
+/** Start loading Firebase where a sign-in button is shown, so tapping it can open the popup at once. */
+export function preloadFirebase() {
+  if (isFirebaseConfigured) void loadFirebase().catch((e) => console.warn('[firebase]', e));
+}
+
+/**
+ * Google sign-in. Phones only allow a popup opened right in the tap, so when Firebase is already
+ * loaded nothing here waits before opening it. If the popup is blocked anyway, fall back to a
+ * full-page redirect (finished by loadFirebase after coming back).
+ */
 export async function signIn(): Promise<void> {
-  const { auth, fa } = await loadFirebase();
+  const { auth, fa } = ready ?? (await loadFirebase());
   const provider = new fa.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
   try {
     await fa.signInWithPopup(auth, provider);
   } catch (e) {
     const code = (e as { code?: string }).code ?? '';
-    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') return fa.signInWithRedirect(auth, provider);
+    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+      sessionStorage.setItem(REDIRECT_FLAG, '1');
+      return fa.signInWithRedirect(auth, provider);
+    }
     if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
     if (code === 'auth/unauthorized-domain') throw new Error(`This site (${location.hostname}) isn’t an authorized domain in Firebase Authentication yet.`);
     throw e;

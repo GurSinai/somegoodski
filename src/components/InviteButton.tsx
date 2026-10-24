@@ -38,7 +38,7 @@ export default function InviteButton({ vacationId, className, light }: { vacatio
         onClick={make}
         disabled={busy}
         className={cx(
-          'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition',
+          'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold transition',
           light ? 'bg-white/20 text-white backdrop-blur hover:bg-white/30' : 'bg-sky-50 text-sky-700 hover:bg-sky-100',
         )}
       >
@@ -47,7 +47,7 @@ export default function InviteButton({ vacationId, className, light }: { vacatio
       {invite && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setInvite(null)} />
-          <div className="animate-fade-up absolute right-0 z-50 mt-2 w-80 rounded-2xl border border-slate-100 bg-white p-4 text-left text-slate-700 shadow-lift">
+          <div className="animate-fade-up fixed inset-x-3 top-24 z-50 rounded-2xl border border-slate-100 bg-white p-4 text-left text-slate-700 shadow-lift sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80">
             <div className="mb-1 flex items-center gap-1.5 text-sm font-bold">
               {copied ? <><Check size={15} className="text-emerald-500" /> Link copied</> : 'Invite link'}
             </div>

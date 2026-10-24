@@ -1,9 +1,9 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { FileDown, Loader2, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { shareVacation, syncNow } from '../collab/engine';
 import { exportVacationFile } from '../collab/fileShare';
-import { signIn } from '../collab/firebase';
+import { preloadFirebase, signIn } from '../collab/firebase';
 import { isFirebaseConfigured } from '../collab/firebaseConfig';
 import { useCollab } from '../collab/useCollab';
 import InviteButton from './InviteButton';
@@ -13,6 +13,11 @@ export default function ShareControl({ vacationId }: { vacationId: string }) {
   const c = useCollab();
   const entry = c.shared[vacationId];
   const [busy, setBusy] = useState(false);
+
+  // ready Firebase before "Share with partner" is tapped (phones block popups opened after a delay)
+  useEffect(() => {
+    if (!entry && !c.user && isFirebaseConfigured) preloadFirebase();
+  }, [entry, c.user]);
 
   // opening a shared vacation pulls the latest right away
   useEffect(() => {
@@ -29,8 +34,8 @@ export default function ShareControl({ vacationId }: { vacationId: string }) {
   if (entry) {
     return (
       <div className="flex items-center gap-1.5">
-        <button onClick={() => c.setDrawerOpen(true)} className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-white/30" title="Shared vacations">
-          <Share2 size={13} /> Shared · {entry.paused ? 'paused' : `synced ${formatDistanceToNow(new Date(entry.lastSyncAt), { addSuffix: true })}`}
+        <button onClick={() => c.setDrawerOpen(true)} className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur hover:bg-white/30" title="Shared vacations">
+          <Share2 size={13} /> <span className="hidden sm:inline">Shared · </span>{entry.paused ? 'paused' : `synced ${formatDistanceToNowStrict(new Date(entry.lastSyncAt), { addSuffix: true })}`}
         </button>
         {c.user && <InviteButton vacationId={vacationId} light />}
         {fileButton}

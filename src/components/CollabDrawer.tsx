@@ -3,7 +3,7 @@ import { Loader2, LogOut, RefreshCw, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { openShared, stopSharing, syncNow } from '../collab/engine';
-import { listInvites, myMemberships, removeMember, revokeInvite, signIn, signOut, type Invite, type Membership } from '../collab/firebase';
+import { listInvites, myMemberships, preloadFirebase, removeMember, revokeInvite, signIn, signOut, type Invite, type Membership } from '../collab/firebase';
 import { isFirebaseConfigured } from '../collab/firebaseConfig';
 import { useCollab } from '../collab/useCollab';
 import { useStore } from '../store/useStore';
@@ -34,6 +34,10 @@ export default function CollabDrawer({ open, onClose }: { open: boolean; onClose
       setMemberships([]);
     }
   };
+  // load Firebase while the drawer is open, so "Sign in with Google" opens its popup right away
+  useEffect(() => {
+    if (open && !c.user) preloadFirebase();
+  }, [open, c.user]);
   useEffect(() => {
     if (open && c.user) void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps

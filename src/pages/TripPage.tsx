@@ -59,12 +59,12 @@ export default function TripPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative mb-6 overflow-hidden rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-100 via-white to-indigo-50 px-8 pb-16 pt-8 shadow-soft">
+      <div className="relative mb-6 overflow-hidden rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-100 via-white to-indigo-50 px-5 pb-14 pt-6 shadow-soft md:px-8 md:pb-16 md:pt-8">
         <Mountains className="absolute inset-x-0 bottom-0 h-20 w-full text-sky-200" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="eyebrow">{resort?.country}{resort?.info.skiArea ? ` · ${resort.info.skiArea}` : ''}</div>
-            <h1 className="mt-1 flex items-center gap-3 text-4xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="mt-1 flex flex-wrap items-center gap-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
               {resort?.name ?? trip.name}
               {chosen && <Badge color="green" className="text-sm"><Star size={13} /> Chosen</Badge>}
             </h1>
@@ -92,7 +92,7 @@ export default function TripPage() {
       </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 overflow-x-auto rounded-full border border-slate-100 bg-slate-100/70 p-1 [scrollbar-width:none]">
+        <div className="flex flex-wrap gap-1 rounded-2xl border border-slate-100 bg-slate-100/70 p-1 md:flex-nowrap md:overflow-x-auto md:rounded-full md:[scrollbar-width:none]">
           {tabs.map((t) => (
             <button
               key={t.value}

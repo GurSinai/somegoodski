@@ -42,7 +42,7 @@ export default function VacationPage() {
       </div>
 
       {/* Hero */}
-      <div className="relative mb-8 overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 px-8 pb-20 pt-8 text-white shadow-lift">
+      <div className="relative mb-6 overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 px-5 pb-16 pt-6 text-white shadow-lift md:mb-8 md:px-8 md:pb-20 md:pt-8">
         <Mountains className="absolute inset-x-0 bottom-0 h-24 w-full text-white" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -56,7 +56,7 @@ export default function VacationPage() {
                 onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
               />
             ) : (
-              <h1 className="group mt-1 flex items-center gap-3 text-4xl font-extrabold tracking-tight">
+              <h1 className="group mt-1 flex items-center gap-3 text-3xl font-extrabold tracking-tight md:text-4xl">
                 {vacation.name}
                 <button onClick={() => setEditingName(true)} className="text-white/50 opacity-0 transition hover:text-white group-hover:opacity-100"><Pencil size={20} /></button>
               </h1>
@@ -156,7 +156,7 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
             const chosen = vacation.selectedTripId === trip.id;
             return (
               <div key={trip.id} className={cx('card flex flex-wrap items-center gap-4 p-4 transition hover:shadow-lift', chosen && 'ring-2 ring-emerald-300')}>
-                <Link to={tripUrl(trip)} className="flex min-w-0 flex-1 items-center gap-4">
+                <Link to={tripUrl(trip)} className="flex min-w-0 flex-1 basis-full items-center gap-3 sm:basis-auto sm:gap-4">
                   <div className={cx('flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-2xl', chosen ? 'bg-emerald-50' : 'bg-sky-50')}>
                     {chosen ? '🏆' : '🏔️'}
                   </div>
@@ -181,7 +181,7 @@ function Resorts({ winter, vacation, trips }: { winter: Winter; vacation: Vacati
                     <div className="text-xl font-extrabold">{price !== null ? moneyRange(price, currency) : <span className="text-sm font-medium text-slate-400">No prices yet</span>}</div>
                   </div>
                 </Link>
-                <div className="flex items-center gap-2">
+                <div className="ml-auto flex items-center gap-2">
                   {!chosen && (
                     <Button size="sm" onClick={() => updateVacation(vacation.id, { selectedTripId: trip.id, status: vacation.status === 'planning' ? 'decided' : vacation.status })}>
                       <Trophy size={13} /> Choose
@@ -437,7 +437,7 @@ function Luggage({ vacation, friends }: { vacation: Vacation; friends: WinterFri
         <p className="text-sm text-slate-400">Nobody is going yet.</p>
       ) : (
         <div className="space-y-2">
-          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-6 gap-y-2">
+          <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-3 gap-y-2 md:gap-x-6">
             <span />
             <span className="label mb-0 text-center">{BAG_LABEL.trolley}</span>
             <span className="label mb-0 text-center">{BAG_LABEL.checked}</span>

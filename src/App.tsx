@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronDown, Download, Mountain, Plus, Snowflake, Upload, Users } from 'lucide-react';
+import { CalendarDays, ChevronDown, Download, Mountain, MoreHorizontal, Plus, Snowflake, Upload, Users } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { startSync } from './collab/engine';
@@ -114,7 +114,7 @@ function Shell() {
             <span className="hidden lg:inline">SomeGoodSki</span>
           </NavLink>
           <WinterSwitcher />
-          <nav className="flex flex-1 gap-1 overflow-x-auto [scrollbar-width:none]">
+          <nav className="hidden flex-1 gap-1 overflow-x-auto [scrollbar-width:none] lg:flex">
             {nav.map(({ to, label, icon: Icon, end }) => (
               <NavLink
                 key={to}
@@ -132,22 +132,70 @@ function Shell() {
               </NavLink>
             ))}
           </nav>
-          <div className="flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1">
             <SyncPill />
             <CurrencyMenu />
-            <button onClick={onExport} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800" title="Export backup (JSON)">
+            <button onClick={onExport} className="hidden rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 lg:block" title="Export backup (JSON)">
               <Download size={18} />
             </button>
-            <button onClick={() => fileRef.current?.click()} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800" title="Import backup (JSON)">
+            <button onClick={() => fileRef.current?.click()} className="hidden rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 lg:block" title="Import backup (JSON)">
               <Upload size={18} />
             </button>
+            <MoreMenu onExport={onExport} onImport={() => fileRef.current?.click()} />
             <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => onImport(e.target.files?.[0])} />
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-10">
+      <main className="mx-auto max-w-7xl px-4 pb-28 pt-6 md:pt-10 lg:pb-10">
         <Outlet />
       </main>
+
+      {/* phones: the sections live in a bottom tab bar */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-100 bg-white/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        <div className="mx-auto flex max-w-md">
+          {nav.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                cx('flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition', isActive ? 'text-sky-700' : 'text-slate-400')
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span className={cx('flex h-7 w-12 items-center justify-center rounded-full transition', isActive && 'bg-sky-100')}>
+                    <Icon size={18} />
+                  </span>
+                  {label}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+/** Phones and tablets: backup export/import live behind a ⋯ menu to keep the header to one row. */
+function MoreMenu({ onExport, onImport }: { onExport: () => void; onImport: () => void }) {
+  const [open, setOpen] = useState(false);
+  const item = 'flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm hover:bg-slate-50';
+  return (
+    <div className="relative lg:hidden">
+      <button onClick={() => setOpen((o) => !o)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800" aria-label="More">
+        <MoreHorizontal size={18} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="animate-fade-up absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-slate-100 bg-white p-1.5 shadow-lift">
+            <button className={item} onClick={() => { setOpen(false); onExport(); }}><Download size={16} className="text-slate-400" /> Export backup</button>
+            <button className={item} onClick={() => { setOpen(false); onImport(); }}><Upload size={16} className="text-slate-400" /> Import backup</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

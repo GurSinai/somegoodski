@@ -40,12 +40,12 @@ export default function WinterHome() {
   return (
     <div>
       {/* Hero */}
-      <div className="relative mb-8 overflow-hidden rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-100 via-white to-indigo-50 px-8 pb-24 pt-10 shadow-soft">
+      <div className="relative mb-6 overflow-hidden rounded-[2rem] border border-sky-100 bg-gradient-to-br from-sky-100 via-white to-indigo-50 px-5 pb-20 pt-7 shadow-soft md:mb-8 md:px-8 md:pb-24 md:pt-10">
         <Mountains className="absolute inset-x-0 bottom-0 h-28 w-full text-sky-200" />
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="eyebrow mb-2">❄ Your season</div>
-            <h1 className="text-5xl font-extrabold tracking-tight text-slate-900">Winter {winter.year}</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">Winter {winter.year}</h1>
             <p className="mt-2 text-slate-500">{formatRange({ start: winter.start, end: winter.end })}</p>
           </div>
           <div className="flex -space-x-2">
@@ -55,24 +55,24 @@ export default function WinterHome() {
       </div>
 
       {/* Steps */}
-      <div className="mb-12 grid gap-4 md:grid-cols-3">
+      <div className="mb-10 grid grid-cols-3 gap-2 md:mb-12 md:gap-4">
         {steps.map(({ n, to, icon: Icon, title, text, done }) => {
           const inner = (
             <>
               <div className="flex items-center justify-between">
-                <span className={cx('flex h-10 w-10 items-center justify-center rounded-2xl', done ? 'bg-emerald-50 text-emerald-600' : 'bg-sky-50 text-sky-600')}>
-                  {done ? <Check size={20} /> : <Icon size={20} />}
+                <span className={cx('flex h-8 w-8 items-center justify-center rounded-xl md:h-10 md:w-10 md:rounded-2xl', done ? 'bg-emerald-50 text-emerald-600' : 'bg-sky-50 text-sky-600')}>
+                  {done ? <Check size={18} /> : <Icon size={18} />}
                 </span>
-                <span className="text-xs font-bold text-slate-300">STEP {n}</span>
+                <span className="hidden text-xs font-bold text-slate-300 md:inline">STEP {n}</span>
               </div>
-              <div className="mt-4 text-lg font-bold">{title}</div>
-              <div className="text-sm text-slate-500">{text}</div>
+              <div className="mt-3 text-sm font-bold md:mt-4 md:text-lg">{title}</div>
+              <div className="text-[11px] leading-snug text-slate-500 md:text-sm">{text}</div>
             </>
           );
           return to.startsWith('#') ? (
-            <a key={n} href={to} onClick={(e) => { e.preventDefault(); document.getElementById('vacations')?.scrollIntoView({ behavior: 'smooth' }); }} className="card p-5 transition hover:-translate-y-0.5 hover:shadow-lift">{inner}</a>
+            <a key={n} href={to} onClick={(e) => { e.preventDefault(); document.getElementById('vacations')?.scrollIntoView({ behavior: 'smooth' }); }} className="card p-3 transition hover:-translate-y-0.5 hover:shadow-lift md:p-5">{inner}</a>
           ) : (
-            <Link key={n} to={to} className="card p-5 transition hover:-translate-y-0.5 hover:shadow-lift">{inner}</Link>
+            <Link key={n} to={to} className="card p-3 transition hover:-translate-y-0.5 hover:shadow-lift md:p-5">{inner}</Link>
           );
         })}
       </div>

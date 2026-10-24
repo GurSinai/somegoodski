@@ -111,9 +111,9 @@ export function Drawer({ open, onClose, title, children, footer }: { open: boole
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex justify-end p-2 sm:p-3">
+    <div className="fixed inset-0 z-50 flex justify-end sm:p-3">
       <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={onClose} />
-      <div className="animate-fade-up relative flex h-full w-full max-w-lg flex-col overflow-hidden rounded-3xl bg-white shadow-lift">
+      <div className="animate-fade-up relative flex h-full w-full max-w-lg flex-col overflow-hidden bg-white pb-[env(safe-area-inset-bottom)] shadow-lift sm:rounded-3xl">
         <div className="flex items-center justify-between px-6 pb-2 pt-5">
           <h2 className="text-xl font-bold">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
