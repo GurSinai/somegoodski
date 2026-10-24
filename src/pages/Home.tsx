@@ -6,6 +6,7 @@ import Snowfall from '../components/Snowfall';
 import { Button, Mountains } from '../components/ui';
 import { upcomingWinterYear } from '../data/seed';
 import { fromISO } from '../lib/dates';
+import { isLocalServer } from '../lib/util';
 import { useStore } from '../store/useStore';
 
 // Any video/photo dropped into src/assets/home is picked up automatically.
@@ -139,7 +140,7 @@ export default function Home() {
           <button onClick={() => setMediaIdx((i) => randomIndex(i))} className="glass flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-white" title="Another video/photo">
             <Shuffle size={14} /> Shuffle
           </button>
-        ) : MEDIA.length === 0 ? (
+        ) : MEDIA.length === 0 && isLocalServer ? (
           <div className="glass rounded-full px-4 py-2 text-xs text-slate-500">
             Add your ski videos or photos to <code className="font-semibold text-slate-700">src/assets/home</code>
           </div>

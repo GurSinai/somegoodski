@@ -1,5 +1,8 @@
 import type { Range } from '../types';
 
+/** Running from this computer (dev server or the release launcher) rather than the hosted site. */
+export const isLocalServer = typeof location !== 'undefined' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+
 export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 
 export function money(n: number, currency: string, digits = 0): string {

@@ -7,6 +7,8 @@ const BUILD_GENERATION = 2;
 
 export default defineConfig({
   plugins: [react()],
+  // relative asset URLs: the same build works locally and under https://<user>.github.io/somegoodski/
+  base: './',
   server: { port: 5173 },
   build: {
     rollupOptions: {
